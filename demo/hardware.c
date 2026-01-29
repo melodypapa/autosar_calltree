@@ -30,7 +30,7 @@ FUNC(void, RTE_CODE) HW_InitADC(void)
     return;
 }
 
-FUNC(void, RTE_CODE) HW_InitHardware(void)
+FUNC(void, RTE_CODE) HW_InitHardware(VAR(uint32, AUTOMATIC) clock_freq, VAR(uint32, AUTOMATIC) gpio_mask)
 {
     /* Master hardware initialization */
     HW_InitClock();

@@ -25,15 +25,15 @@ typedef unsigned int uint32;
 
 /* Function declarations */
 FUNC(void, RTE_CODE) Demo_Init(void);
-FUNC(void, RTE_CODE) Demo_InitHardware(void);
-FUNC(void, RTE_CODE) Demo_InitSoftware(void);
-FUNC(void, RTE_CODE) Demo_InitVariables(void);
+FUNC(void, RTE_CODE) Demo_InitHardware(VAR(uint32, AUTOMATIC) clock_freq, VAR(uint32, AUTOMATIC) gpio_mask);
+FUNC(void, RTE_CODE) Demo_InitSoftware(VAR(uint8, AUTOMATIC) state, VAR(uint8, AUTOMATIC) config);
+FUNC(void, RTE_CODE) Demo_InitVariables(VAR(uint32, AUTOMATIC) config_mode);
 FUNC(void, RTE_CODE) Demo_InitClock(void);
 FUNC(void, RTE_CODE) Demo_InitGPIO(void);
 FUNC(void, RTE_CODE) Demo_InitState(void);
 FUNC(void, RTE_CODE) Demo_InitConfig(void);
 FUNC(void, RTE_CODE) Demo_MainFunction(void);
 FUNC(void, RTE_CODE) Demo_Process(void);
-FUNC(void, RTE_CODE) Demo_Update(void);
+FUNC(void, RTE_CODE) Demo_Update(VAR(uint32, AUTOMATIC) update_mode);
 
 #endif /* DEMO_H */

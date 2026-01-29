@@ -59,6 +59,11 @@ class AutosarParser:
         match = self.FUNC_PATTERN.search(line)
         if match:
             is_static_str, return_type, memory_class, func_name = match.groups()
+            # Extract parameters from the line
+            param_start = line.find(func_name) + len(func_name)
+            param_string = self._extract_param_string(line, param_start)
+            parameters = self.parse_parameters(param_string)
+
             return FunctionInfo(
                 name=func_name,
                 return_type=return_type.strip(),
@@ -68,6 +73,7 @@ class AutosarParser:
                 function_type=FunctionType.AUTOSAR_FUNC,
                 memory_class=memory_class.strip(),
                 macro_type="FUNC",
+                parameters=parameters,
             )
 
         # Try FUNC_P2VAR pattern
@@ -76,6 +82,11 @@ class AutosarParser:
             is_static_str, return_type, ptr_class, memory_class, func_name = (
                 match.groups()
             )
+            # Extract parameters from the line
+            param_start = line.find(func_name) + len(func_name)
+            param_string = self._extract_param_string(line, param_start)
+            parameters = self.parse_parameters(param_string)
+
             return FunctionInfo(
                 name=func_name,
                 return_type=f"{return_type.strip()}*",
@@ -85,6 +96,7 @@ class AutosarParser:
                 function_type=FunctionType.AUTOSAR_FUNC_P2VAR,
                 memory_class=memory_class.strip(),
                 macro_type="FUNC_P2VAR",
+                parameters=parameters,
             )
 
         # Try FUNC_P2CONST pattern
@@ -93,6 +105,11 @@ class AutosarParser:
             is_static_str, return_type, ptr_class, memory_class, func_name = (
                 match.groups()
             )
+            # Extract parameters from the line
+            param_start = line.find(func_name) + len(func_name)
+            param_string = self._extract_param_string(line, param_start)
+            parameters = self.parse_parameters(param_string)
+
             return FunctionInfo(
                 name=func_name,
                 return_type=f"const {return_type.strip()}*",
@@ -102,9 +119,46 @@ class AutosarParser:
                 function_type=FunctionType.AUTOSAR_FUNC_P2CONST,
                 memory_class=memory_class.strip(),
                 macro_type="FUNC_P2CONST",
+                parameters=parameters,
             )
 
         return None
+
+    def _extract_param_string(self, line: str, start_pos: int) -> str:
+        """
+        Extract parameter string from function declaration line.
+
+        Args:
+            line: Function declaration line
+            start_pos: Position to start searching for parameters
+
+        Returns:
+            Parameter string (content inside parentheses)
+        """
+        # Find opening parenthesis
+        paren_start = line.find("(", start_pos)
+        if paren_start == -1:
+            return ""
+
+        # Find matching closing parenthesis
+        paren_depth = 0
+        param_chars = []
+
+        for char in line[paren_start:]:
+            param_chars.append(char)
+            if char == "(":
+                paren_depth += 1
+            elif char == ")":
+                paren_depth -= 1
+                if paren_depth == 0:
+                    break
+
+        # Remove outer parentheses
+        param_string = "".join(param_chars)
+        if param_string.startswith("(") and param_string.endswith(")"):
+            param_string = param_string[1:-1]
+
+        return param_string.strip()
 
     def parse_parameters(self, param_string: str) -> List[Parameter]:
         """

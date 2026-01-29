@@ -5,7 +5,7 @@ version: "1.0"
 
 # Specific file mappings (exact filename match)
 file_mappings:
-  demo.c: ":DemoModule"
+  demo.c: DemoModule
   main.c: Application
 
 # Pattern-based mappings (glob patterns)

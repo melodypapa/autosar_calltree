@@ -24,7 +24,7 @@ FUNC(void, RTE_CODE) COM_InitEthernet(void)
     return;
 }
 
-FUNC(void, RTE_CODE) COM_InitCommunication(void)
+FUNC(void, RTE_CODE) COM_InitCommunication(VAR(uint32, AUTOMATIC) baud_rate, VAR(uint16, AUTOMATIC) buffer_size)
 {
     /* Master communication initialization */
     COM_InitCAN();

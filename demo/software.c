@@ -18,7 +18,7 @@ FUNC(void, RTE_CODE) SW_InitConfig(void)
     return;
 }
 
-FUNC(void, RTE_CODE) SW_InitSoftware(void)
+FUNC(void, RTE_CODE) SW_InitSoftware(VAR(uint8, AUTOMATIC) state, VAR(uint8, AUTOMATIC) config)
 {
     /* Master software initialization */
     SW_InitState();

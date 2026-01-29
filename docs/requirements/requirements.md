@@ -72,6 +72,20 @@ Module-aware Mermaid diagram generation.
 - Module column in function tables
 - Fallback behavior for unmapped files
 
+### Parameter Display Requirements
+
+**Document**: [Parameter Display Requirements](requirements_parameters.md)
+
+**ID Range**: SWR_PARAMS_00001 - SWR_PARAMS_00003
+
+Function parameter extraction and display in sequence diagrams.
+
+**Key Areas**:
+- Parameter extraction from AUTOSAR and C function declarations
+- Parameter display in sequence diagram arrows
+- Optional return statements (omitted by default)
+- Participant order preservation (first encounter order)
+
 ### Cache Requirements
 
 **Document**: [Cache Progress Requirements](requirements_cache_progress.md)
@@ -104,12 +118,13 @@ Python packaging and distribution.
 | CLI | cli.md | SWR_CLI_00001-00014 | Not Created |
 | Configuration | requirements_module_config.md | SWR_CONFIG_00001-00003 | ✅ Complete |
 | Mermaid | requirements_mermaid_modules.md | SWR_MERMAID_00001-00003 | ✅ Complete |
+| Parameter Display | requirements_parameters.md | SWR_PARAMS_00001-00003 | ✅ Complete |
 | Cache | requirements_cache_progress.md | SWR_CACHE_00001-00004 | ✅ Complete |
 | Package | package.md | SWR_PACKAGE_00001-00003 | Not Created |
 
 ## Version History
 
-- **2026-01-29**: Added Configuration, Mermaid, and Cache requirements
+- **2026-01-29**: Added Configuration, Mermaid, Cache, and Parameter Display requirements
 - Initial version created
 
 ## Document Structure

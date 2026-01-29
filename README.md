@@ -16,10 +16,12 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
   - JSON (for custom processing) - *planned*
 - 🏗️ **SW Module Support**: Map C files to SW modules via YAML configuration for architecture-level diagrams
 - 📈 **Module-Aware Diagrams**: Generate diagrams with SW module names as participants
+- 🎯 **Parameter Display**: Function parameters shown in sequence diagram calls for better visibility
 - 🚀 **Performance**: Intelligent caching for fast repeated analysis with file-by-file progress reporting
 - 🎯 **Depth Control**: Configurable call tree depth
 - 🔄 **Circular Dependency Detection**: Identifies recursive calls and cycles
 - 📊 **Statistics**: Detailed analysis statistics including module distribution
+- 📝 **Clean Diagrams**: Return statements omitted by default for cleaner sequence diagrams (configurable)
 
 ## Installation
 
@@ -76,8 +78,12 @@ result = builder.build_tree(
     max_depth=3
 )
 
-# Generate Mermaid diagram with module names
-generator = MermaidGenerator(use_module_names=True)
+# Generate Mermaid diagram with module names and parameters
+# include_returns=False (default) omits return statements for cleaner diagrams
+generator = MermaidGenerator(
+    use_module_names=True,
+    include_returns=False
+)
 generator.generate(result, output_path="call_tree.md")
 ```
 
@@ -109,18 +115,44 @@ Options:
 ### Mermaid Sequence Diagram
 
 ```mermaid
+sequenceDiagram
+    participant DemoModule
+    participant CommunicationModule
+    participant HardwareModule
+    participant SoftwareModule
 
+    DemoModule->>CommunicationModule: COM_InitCommunication(baud_rate, buffer_size)
+    CommunicationModule->>CommunicationModule: COM_InitCAN
+    CommunicationModule->>CommunicationModule: COM_InitEthernet
+    CommunicationModule->>CommunicationModule: COM_InitLIN
+    DemoModule->>DemoModule: Demo_InitVariables(config_mode)
+    DemoModule->>HardwareModule: HW_InitHardware(clock_freq, gpio_mask)
+    HardwareModule->>HardwareModule: HW_InitADC
+    HardwareModule->>HardwareModule: HW_InitClock
+    HardwareModule->>HardwareModule: HW_InitGPIO
+    HardwareModule->>HardwareModule: HW_InitPWM
+    DemoModule->>SoftwareModule: SW_InitSoftware(state, config)
+    SoftwareModule->>SoftwareModule: SW_InitConfig
+    SoftwareModule->>SoftwareModule: SW_InitState
 ```
+
+**Key Features**:
+- Participants appear in the order they are first encountered in the call tree
+- Function parameters are displayed in the call arrows (e.g., `COM_InitCommunication(baud_rate, buffer_size)`)
+- Return statements are omitted by default for cleaner visualization
+- Module names are used as participants when `--use-module-names` is enabled
 
 ### Generated Markdown Structure
 
 The tool generates comprehensive Markdown files with:
 - Metadata header (timestamp, settings, statistics)
-- Mermaid sequence diagram
-- Function details table
+- Mermaid sequence diagram with function parameters
+- Function details table with parameter information
 - Text-based call tree
 - Circular dependency warnings
 - Analysis statistics
+
+**Note**: Return statements are omitted from sequence diagrams by default for cleaner visualization. This can be configured programmatically when using the Python API.
 
 ## Supported AUTOSAR Patterns
 
@@ -181,9 +213,10 @@ calltree --start-function Demo_Init --module-config module_mapping.yaml --use-mo
 ```
 
 This generates diagrams with:
-- **Participants**: SW module names (HardwareModule, SoftwareModule, etc.)
-- **Arrows**: Function names being called between modules
+- **Participants**: SW module names (HardwareModule, SoftwareModule, etc.) in the order they are first encountered
+- **Arrows**: Function names with parameters being called between modules
 - **Function Table**: Includes module column showing each function's SW module
+- **Clean Visualization**: Return statements omitted by default
 
 ## Use Cases
 

@@ -25,16 +25,18 @@ class MermaidGenerator:
     creates markdown documents with metadata, and handles formatting options.
     """
 
-    def __init__(self, abbreviate_rte: bool = True, use_module_names: bool = False):
+    def __init__(self, abbreviate_rte: bool = True, use_module_names: bool = False, include_returns: bool = False):
         """
         Initialize the Mermaid generator.
 
         Args:
             abbreviate_rte: Whether to abbreviate long RTE function names
             use_module_names: Use SW module names as participants instead of function names
+            include_returns: Whether to include return statements in the sequence diagram (default: False)
         """
         self.abbreviate_rte = abbreviate_rte
         self.use_module_names = use_module_names
+        self.include_returns = include_returns
         self.participant_map = {}  # Map full names to abbreviated names
         self.next_participant_id = 1
 
@@ -156,9 +158,9 @@ class MermaidGenerator:
             root: Root node of call tree
 
         Returns:
-            List of participant names
+            List of participant names in the order they are first encountered
         """
-        participants = set()
+        participants = []
 
         def traverse(node: CallTreeNode):
             # Use module name if enabled, otherwise use function name
@@ -170,12 +172,15 @@ class MermaidGenerator:
             else:
                 participant = node.function_info.name
 
-            participants.add(participant)
+            # Add participant only if not already in the list
+            if participant not in participants:
+                participants.append(participant)
+
             for child in node.children:
                 traverse(child)
 
         traverse(root)
-        return sorted(list(participants))
+        return participants
 
     def _generate_sequence_calls(
         self, node: CallTreeNode, lines: List[str], caller: Optional[str] = None
@@ -202,6 +207,11 @@ class MermaidGenerator:
             # When using function names, show generic "call" label
             call_label = "call"
 
+        # Add parameters to the call label
+        if node.function_info.parameters:
+            params_str = self._format_parameters_for_diagram(node.function_info)
+            call_label = f"{call_label}({params_str})"
+
         # Generate call from caller to current
         if caller:
             if node.is_recursive:
@@ -217,8 +227,8 @@ class MermaidGenerator:
         for child in node.children:
             self._generate_sequence_calls(child, lines, current_participant)
 
-        # Generate return from current to caller
-        if caller and not node.is_recursive:
+        # Generate return from current to caller (only if include_returns is True)
+        if caller and not node.is_recursive and self.include_returns:
             lines.append(f"    {current_participant}-->>{caller}: return")
 
     def _get_participant_name(self, function_name: str) -> str:
@@ -340,6 +350,32 @@ class MermaidGenerator:
                 param_strs.append(f"`{type_str}`")
 
         return "<br>".join(param_strs)
+
+    def _format_parameters_for_diagram(self, func: FunctionInfo) -> str:
+        """
+        Format function parameters for sequence diagram display.
+
+        Args:
+            func: Function information
+
+        Returns:
+            Formatted parameter string for diagram
+        """
+        if not func.parameters:
+            return ""
+
+        param_strs = []
+        for param in func.parameters:
+            if param.name:
+                param_strs.append(param.name)
+            else:
+                # If no parameter name, use the type
+                type_str = param.param_type
+                if param.is_pointer:
+                    type_str += "*"
+                param_strs.append(type_str)
+
+        return ", ".join(param_strs)
 
     def _generate_text_tree(self, root: CallTreeNode) -> str:
         """
