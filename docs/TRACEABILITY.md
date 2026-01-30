@@ -13,7 +13,8 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | Analyzers | SWR_ANALYZER_00001-00020 (20) | SWUT_ANALYZER_00001-00020 (20) | ✅ Complete (94% coverage) |
 | Config | SWR_CONFIG_00001-00010 (10) | SWUT_CONFIG_00001-00025 (25) | ✅ Complete (97% coverage) |
 | Generators | SWR_GENERATOR_00001-00020 (20) | SWUT_GENERATOR_00001-00031 (31) | ✅ Complete (96% coverage) |
-| CLI | SWR_CLI_00001-00014 | SWUT_CLI_00001-00014 | ⏳ Pending |
+| CLI | SWR_CLI_00001-00014 (14) | SWUT_CLI_00001-00014 (14) | ✅ Complete (integration tests) |
+| E2E | SWR_E2E_00001-00018 (18) | SWUT_E2E_00001-00018 (18) | ✅ Complete (integration tests) |
 
 ---
 
@@ -197,6 +198,59 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 
 ---
 
+## CLI Module
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_CLI_00001 | SWUT_CLI_00001 | test_cli_entry_point_exists | ✅ Pass |
+| SWR_CLI_00002 | SWUT_CLI_00002-00004 | test_start_function_accepts_name, test_start_function_required_for_analysis, test_missing_function_error | ✅ Pass |
+| SWR_CLI_00003 | SWUT_CLI_00005-00007 | test_source_dir_default, test_source_dir_custom, test_source_dir_must_exist | ✅ Pass |
+| SWR_CLI_00004 | SWUT_CLI_00008-00010 | test_output_default, test_output_custom_path, test_output_creates_file | ✅ Pass |
+| SWR_CLI_00005 | SWUT_CLI_00011-00013 | test_max_depth_default, test_max_depth_custom, test_max_depth_integer_validation | ✅ Pass |
+| SWR_CLI_00006 | SWUT_CLI_00014-00017 | test_format_default, test_format_mermaid, test_format_xmi_warning, test_format_both | ✅ Pass |
+| SWR_CLI_00007 | SWUT_CLI_00018-00021 | test_no_cache_flag, test_rebuild_cache_flag, test_cache_dir_custom | ✅ Pass |
+| SWR_CLI_00008 | SWUT_CLI_00022-00023 | test_verbose_shows_statistics, test_verbose_shows_module_distribution | ✅ Pass |
+| SWR_CLI_00009 | SWUT_CLI_00024-00026 | test_list_functions, test_list_functions_numbered, test_list_functions_total | ✅ Pass |
+| SWR_CLI_00010 | SWUT_CLI_00027-00029 | test_search_pattern, test_search_shows_location, test_empty_search_results | ✅ Pass |
+| SWR_CLI_00011 | SWUT_CLI_00030-00033 | test_module_config_loads, test_module_config_error_handling, test_use_module_names_requires_config, test_use_module_names_with_config | ✅ Pass |
+| SWR_CLI_00012 | SWUT_CLI_00034-00035 | test_default_abbreviate_rte, test_no_abbreviate_rte_flag | ✅ Pass |
+| SWR_CLI_00013 | SWUT_CLI_00036-00038 | test_colored_output, test_progress_spinners, test_statistics_table | ✅ Pass |
+| SWR_CLI_00014 | SWUT_CLI_00039-00042 | test_success_exit_code, test_error_exit_code, test_keyboard_interrupt_exit_code, test_clear_error_messages | ✅ Pass |
+
+---
+
+## End-to-End Workflows
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_E2E_00001 | SWUT_E2E_00001 | test_basic_workflow | ✅ Pass |
+| SWR_E2E_00002 | SWUT_E2E_00002 | test_workflow_with_module_names | ✅ Pass |
+| SWR_E2E_00003 | SWUT_E2E_00003 | test_workflow_different_depths | ✅ Pass |
+| SWR_E2E_00004 | SWUT_E2E_00004 | test_workflow_function_list | ✅ Pass |
+| SWR_E2E_00005 | SWUT_E2E_00005 | test_workflow_search_functions | ✅ Pass |
+| SWR_E2E_00006 | SWUT_E2E_00006 | test_workflow_circular_detection | ✅ Pass |
+| SWR_E2E_00007 | SWUT_E2E_00007 | test_workflow_cache_usage | ✅ Pass |
+| SWR_E2E_00008 | SWUT_E2E_00008 | test_workflow_statistics_collection | ✅ Pass |
+| SWR_E2E_00009 | SWUT_E2E_00009 | test_workflow_mermaid_output_format | ✅ Pass |
+| SWR_E2E_00010 | SWUT_E2E_00010 | test_workflow_with_parameters | ✅ Pass |
+| SWR_E2E_00011 | SWUT_E2E_00011 | test_workflow_qualified_names | ✅ Pass |
+| SWR_E2E_00012 | SWUT_E2E_00012 | test_workflow_error_conditions | ✅ Pass |
+| SWR_E2E_00013 | SWUT_E2E_00013 | test_workflow_verbose_mode | ✅ Pass |
+| SWR_E2E_00014 | SWUT_E2E_00014 | test_workflow_multiple_analyses | ✅ Pass |
+| SWR_E2E_00015 | SWUT_E2E_00015 | test_workflow_text_tree_generation | ✅ Pass |
+| SWR_E2E_00016 | SWUT_E2E_00016 | test_workflow_leaf_nodes | ✅ Pass |
+| SWR_E2E_00017 | SWUT_E2E_00017 | test_workflow_module_statistics | ✅ Pass |
+| SWR_E2E_00018 | SWUT_E2E_00018 | test_workflow_functions_by_file | ✅ Pass |
+| SWR_E2E_00019 | SWUT_E2E_00019 | test_mermaid_diagram_structure | ✅ Pass |
+| SWR_E2E_00020 | SWUT_E2E_00020 | test_function_table_presence | ✅ Pass |
+| SWR_E2E_00021 | SWUT_E2E_00021 | test_metadata_section | ✅ Pass |
+| SWR_E2E_00022 | SWUT_E2E_00022 | test_analyze_specific_function | ✅ Pass |
+| SWR_E2E_00023 | SWUT_E2E_00023 | test_shallow_analysis | ✅ Pass |
+| SWR_E2E_00024 | SWUT_E2E_00024 | test_deep_analysis | ✅ Pass |
+| SWR_E2E_00025 | SWUT_E2E_00025 | test_rebuild_database | ✅ Pass |
+
+---
+
 ## Revision History
 
 | Date | Version | Author | Change Description |
@@ -205,3 +259,4 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | 2026-01-30 | 1.1 | Claude | Added AUTOSAR and C parser modules with 33 requirements and tests |
 | 2026-01-30 | 1.2 | Claude | Added Database (24 req, 20 tests, 80% cov) and Analyzers (20 req, 20 tests, 94% cov) modules |
 | 2026-01-30 | 1.3 | Claude | Added Config (10 req, 25 tests, 97% cov) and Generators (20 req, 31 tests, 96% cov) modules |
+| 2026-01-30 | 1.4 | Claude | Added CLI (14 req, 14 tests) and E2E (18 req, 25 tests) integration tests |
