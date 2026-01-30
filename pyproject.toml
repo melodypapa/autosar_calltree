@@ -55,6 +55,7 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=3.0.0",
     "black==24.8.0",
+    "ruff>=0.0.0",
     "flake8>=4.0.0",
     "mypy>=0.950",
     "isort>=5.10.0",

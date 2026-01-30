@@ -4,9 +4,7 @@ Unit tests for Module Configuration module.
 Tests the ModuleConfig class which manages SW module mappings from YAML files.
 """
 
-import re
 from pathlib import Path
-from typing import List
 
 import pytest
 

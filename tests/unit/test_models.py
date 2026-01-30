@@ -1,10 +1,7 @@
 """Tests for models module (SWUT_MODEL_*)"""
 
-from dataclasses import fields
 from datetime import datetime
 from pathlib import Path
-
-import pytest
 
 from autosar_calltree.database.models import (
     AnalysisResult,

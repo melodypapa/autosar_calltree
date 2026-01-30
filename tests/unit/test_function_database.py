@@ -5,13 +5,8 @@ Tests cover database initialization, building, indexing, smart lookup,
 caching, and query methods.
 """
 
-import pickle
-import shutil
 import tempfile
 from pathlib import Path
-from typing import List
-
-import pytest
 
 from autosar_calltree.config.module_config import ModuleConfig
 from autosar_calltree.database.function_database import (
@@ -84,7 +79,7 @@ file_mappings:
             cache_path = Path(temp_dir) / "test_cache"
             assert not cache_path.exists()
 
-            db = FunctionDatabase(source_dir=temp_dir, cache_dir=str(cache_path))
+            FunctionDatabase(source_dir=temp_dir, cache_dir=str(cache_path))
 
             assert cache_path.exists()
             assert cache_path.is_dir()

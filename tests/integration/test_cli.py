@@ -4,11 +4,8 @@ CLI integration tests.
 Tests the Click-based CLI using CliRunner.
 """
 
-import shutil
 from pathlib import Path
-from typing import List
 
-import pytest
 from click.testing import CliRunner
 
 from autosar_calltree.cli.main import cli
