@@ -15,7 +15,8 @@ def extract_swut_from_tests(tests_dir: Path) -> Set[str]:
         content = test_file.read_text()
         # Match comments like: # SWUT_MODEL_00001
         matches = re.findall(r'#\s*SWUT_[A-Z_]+_\d+', content)
-        swut_refs.update(m.strip() for m in matches)
+        # Strip the '#' prefix to match traceability matrix format
+        swut_refs.update(m.strip().replace('#', '').strip() for m in matches)
 
     return swut_refs
 
