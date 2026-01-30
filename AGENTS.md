@@ -547,9 +547,9 @@ These commands are documented in `.claude/commands/` and can be used from within
 
 ## Related Resources
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/autosar-calltree/issues)
+- **Issues**: [GitHub Issues](https://github.com/melodypapa/autosar-calltree/issues)
 - **Documentation**: [Read the Docs](https://autosar-calltree.readthedocs.io)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/autosar-calltree/discussions)
+- **Discussions**: [GitHub Discussions](https://github.com/melodypapa/autosar-calltree/discussions)
 - **License**: MIT License - See [LICENSE](LICENSE) file for details
 - **Author**: Melodypapa <melodypapa@outlook.com>
 

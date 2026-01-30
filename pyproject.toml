@@ -67,10 +67,10 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/autosar-calltree"
+Homepage = "https://github.com/melodypapa/autosar-calltree"
 Documentation = "https://autosar-calltree.readthedocs.io"
-Repository = "https://github.com/yourusername/autosar-calltree"
-"Bug Tracker" = "https://github.com/yourusername/autosar-calltree/issues"
+Repository = "https://github.com/melodypapa/autosar-calltree"
+"Bug Tracker" = "https://github.com/melodypapa/autosar-calltree/issues"
 
 [project.scripts]
 calltree = "autosar_calltree.cli:cli"
