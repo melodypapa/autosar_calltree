@@ -17,7 +17,7 @@ import pickle
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser

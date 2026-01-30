@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Optional
 
 import click
-from rich import print as rprint
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table

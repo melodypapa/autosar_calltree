@@ -2,9 +2,8 @@
 
 from pathlib import Path
 
-import pytest
 
-from autosar_calltree.database.models import FunctionType, Parameter
+from autosar_calltree.database.models import FunctionType
 from autosar_calltree.parsers.autosar_parser import AutosarParser
 
 

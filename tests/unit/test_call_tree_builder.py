@@ -5,11 +5,9 @@ Tests cover tree building, traversal, cycle detection, statistics,
 and utility methods.
 """
 
-import shutil
 import tempfile
 from pathlib import Path
 
-import pytest
 
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.database.function_database import FunctionDatabase
@@ -589,7 +587,7 @@ class TestVerboseOutput:
         old_stdout = sys.stdout
         sys.stdout = StringIO()
 
-        result = builder.build_tree("Demo_Init", max_depth=2, verbose=True)
+        builder.build_tree("Demo_Init", max_depth=2, verbose=True)
 
         output = sys.stdout.getvalue()
         sys.stdout = old_stdout
@@ -612,7 +610,7 @@ class TestVerboseOutput:
         old_stdout = sys.stdout
         sys.stdout = StringIO()
 
-        result = builder.build_tree("Demo_Init", max_depth=2, verbose=False)
+        builder.build_tree("Demo_Init", max_depth=2, verbose=False)
 
         output = sys.stdout.getvalue()
         sys.stdout = old_stdout

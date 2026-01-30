@@ -6,7 +6,7 @@ of function calls, detecting cycles, and collecting statistics.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import List, Set
 
 from ..database.function_database import FunctionDatabase
 from ..database.models import (

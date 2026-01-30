@@ -12,7 +12,7 @@ Requirements:
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 from ..database.models import AnalysisResult, CallTreeNode, FunctionInfo
 

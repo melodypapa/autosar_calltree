@@ -7,7 +7,7 @@ extracting function information including parameters, return types, and function
 
 import re
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Optional
 
 from ..database.models import FunctionInfo, FunctionType, Parameter
 
@@ -120,7 +120,7 @@ class CParser:
         """
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
-        except Exception as e:
+        except Exception:
             return []
 
         # Remove comments to avoid false positives
@@ -200,7 +200,7 @@ class CParser:
             FunctionInfo object or None if parsing fails
         """
         static_keyword = match.group("static")
-        inline_keyword = match.group("inline")
+        match.group("inline")
         return_type = match.group("return_type").strip()
         function_name = match.group("function_name")
         params_str = match.group("params")

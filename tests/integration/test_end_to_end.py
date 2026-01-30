@@ -4,10 +4,7 @@ End-to-end integration tests.
 Tests complete workflows from database building to output generation.
 """
 
-from pathlib import Path
-from typing import List
 
-import pytest
 
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.config.module_config import ModuleConfig
@@ -303,7 +300,7 @@ class TestEndToEndWorkflow:
         db.build_database(use_cache=False, verbose=True)
 
         # Capture output
-        captured = capsys.readouterr()
+        capsys.readouterr()
         # Verbose mode should print progress
         # (This is a basic check - actual verbose output goes to stderr)
 
@@ -426,7 +423,7 @@ class TestOutputFileContent:
         # Check essential Mermaid elements
         lines = content.split("\n")
         mermaid_start = [i for i, line in enumerate(lines) if "```mermaid" in line]
-        mermaid_end = [
+        [
             i
             for i, line in enumerate(lines)
             if "```" in line and i > mermaid_start[0]
