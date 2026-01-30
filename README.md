@@ -399,7 +399,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Authors
 
-- Your Name <your.email@example.com>
+- Melodypapa <melodypapa@outlook.com>
 
 ## Acknowledgments
 
