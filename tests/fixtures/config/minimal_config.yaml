@@ -1,0 +1,3 @@
+# Minimal Configuration
+file_mappings:
+  demo.c: DemoModule

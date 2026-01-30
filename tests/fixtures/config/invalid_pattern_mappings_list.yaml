@@ -1,0 +1,3 @@
+pattern_mappings:
+  - "hw_*.c"
+  - "sw_*.c"

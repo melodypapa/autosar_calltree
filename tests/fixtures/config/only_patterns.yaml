@@ -1,0 +1,4 @@
+# Configuration with only pattern mappings
+pattern_mappings:
+  "hw_*.c": HardwareModule
+  "sw_*.c": SoftwareModule

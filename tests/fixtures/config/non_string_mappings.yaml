@@ -1,0 +1,4 @@
+file_mappings:
+  demo.c: 123
+  main.c:
+    nested: value

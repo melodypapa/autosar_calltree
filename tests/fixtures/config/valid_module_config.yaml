@@ -1,0 +1,15 @@
+# Valid Module Configuration for Testing
+version: "1.0"
+
+file_mappings:
+  demo.c: DemoModule
+  main.c: Application
+  test.c: TestModule
+
+pattern_mappings:
+  "hw_*.c": HardwareModule
+  "sw_*.c": SoftwareModule
+  "com_*.c": CommunicationModule
+  "drv_*.c": DriverModule
+
+default_module: "Other"
