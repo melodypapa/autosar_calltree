@@ -29,9 +29,9 @@ jobs:
       - name: Format with isort
         run: isort src/ tests/
 
-      - name: Check for uncommitted changes
+      - name: Show formatting changes
         run: |
-          git diff --exit-code || echo "Files were reformatted"
+          git diff || echo "No formatting changes needed"
 
       - name: Lint with flake8
         run: flake8 src/ tests/
