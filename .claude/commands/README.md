@@ -1,22 +1,25 @@
 # Custom Slash Commands
 
-This directory contains custom slash commands (skills) for Claude Code to automate common workflows in the autosar-pdf2txt project.
+This directory contains custom slash commands (skills) for Claude Code to automate common workflows in the autosar_calltree project.
 
 ## Available Commands
 
 ### `/gh-workflow` - GitHub Workflow Automation
 Automates the complete GitHub workflow:
-1. Create GitHub issue based on changes
-2. Create feature branch
-3. Stage and commit changes
-4. Push to GitHub only (not gitee)
-5. Create pull request
+1. Run quality checks (ruff, mypy, pytest)
+2. Analyze current changes
+3. Ask about version bump (manual)
+4. Create GitHub issue
+5. Create feature branch
+6. Stage and commit changes
+7. Push to GitHub
+8. Create pull request
 
 **Usage:**
 ```
 /gh-workflow
-/gh-workflow Implement new parser for AUTOSAR models
-/gh-workflow feature: Add support for base class extraction
+/gh-workflow Add support for new AUTOSAR macros
+/gh-workflow feat: Improve call tree visualization
 ```
 
 ### `/merge-pr` - Merge Pull Request
@@ -55,20 +58,7 @@ Run all quality checks (linting, type checking, testing) to ensure code meets pr
 - ✅ Ruff linting: No errors
 - ✅ Mypy type checking: No issues
 - ✅ Pytest: All tests pass
-- ✅ Coverage: ≥95%
-
-### `/parse` - PDF Parser
-Parse AUTOSAR PDF files and extract model hierarchies.
-
-**Usage:**
-```
-/parse                           # Parse PDFs in current directory
-/parse input.pdf                 # Parse single PDF
-/parse input.pdf -o output.md    # Parse and save to file
-/parse /path/to/pdfs/            # Parse all PDFs in directory
-/parse --write-class-files       # Write individual class files
-/parse -v                        # Verbose mode for debugging
-```
+- ✅ Coverage: ≥90%
 
 ### `/req` - Requirement Management
 Manage AUTOSAR project requirements with traceability.
@@ -81,44 +71,6 @@ Manage AUTOSAR project requirements with traceability.
 /req list draft
 /req search parser
 ```
-
-### `/sync-docs` - Synchronize Documentation
-Synchronize requirements, test cases, and source code to ensure consistency across the codebase.
-
-**What It Does:**
-- Analyzes source code to extract implementation details
-- Compares implementation with requirements and test case documentation
-- Updates documentation to match actual implementation
-- Ensures traceability and accuracy across the codebase
-
-**Common Synchronization Tasks:**
-- Attribute changes (added/removed/moved)
-- Inheritance hierarchy updates
-- Type changes and signature updates
-- Unit test case alignment with implementation
-- Integration test workflow updates
-
-**Files Modified:**
-- `docs/requirements/requirements.md` - Requirements specifications
-- `docs/test_cases/unit_tests.md` - Unit test case documentation
-- `docs/test_cases/integration_tests.md` - Integration test case documentation
-
-**Usage:**
-```
-/sync-docs    # Analyze and sync all documentation
-```
-
-**Verification After Sync:**
-```bash
-pytest tests/ --cache-clear
-ruff check src/ tests/
-mypy src/autosar_pdf2txt/
-```
-
-**Related Commands:**
-- `/req` - Manage individual requirements
-- `/test` - Run tests and coverage
-- `/quality` - Run quality checks
 
 ## Creating New Commands
 
@@ -175,5 +127,4 @@ When creating or modifying commands:
 ## References
 
 - Project documentation: `CLAUDE.md`
-- Requirements: `docs/requirement/requirements.md`
-- Coding standards: `docs/development/coding_rules.md`
+- Requirements: `docs/requirements/`

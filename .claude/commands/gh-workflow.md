@@ -8,8 +8,8 @@ When the user runs `/gh-workflow`, perform the following steps in order:
 
 ### 1. Quality Checks (Must Pass Before Proceeding)
 - Run linting: `ruff check src/ tests/`
-- Run type checking: `mypy src/autosar_pdf2txt/`
-- Run unit tests: `python scripts/run_tests.py --unit`
+- Run type checking: `mypy src/`
+- Run unit tests: `pytest tests/ --cov=autosar_calltree`
 - **All checks must pass** before proceeding to next step
 - If any checks fail, report errors and ask user if they want to:
   - Abort the workflow
@@ -21,7 +21,7 @@ When the user runs `/gh-workflow`, perform the following steps in order:
   ───────────────────────────────────
   Ruff         ✅ Pass    No errors
   Mypy         ✅ Pass    No issues
-  Pytest       ✅ Pass    128/128 tests, 97% coverage
+  Pytest       ✅ Pass    278/278 tests, 94% coverage
   ```
 
 ### 2. Analyze Current Changes
@@ -30,19 +30,16 @@ When the user runs `/gh-workflow`, perform the following steps in order:
 - Ask the user for a brief summary of the changes if not clear from the diff
 - Determine the commit type based on the changes (feat, fix, docs, etc.)
 
-### 3. Update Version Number
-- Determine if version bump is needed based on commit type:
-  - `feat` → bump MINOR version (0.1.0 → 0.2.0)
-  - `fix` → bump PATCH version (0.1.0 → 0.1.1)
-  - `breaking` → bump MAJOR version (0.1.0 → 1.0.0)
-  - Other types (docs, style, refactor, test, chore) → no version bump
-- Run version bump script: `python scripts/bump_version.py <commit_type>`
-- Script updates both version sources:
-  - `src/autosar_pdf2txt/__init__.py` (runtime version)
-  - `setup.py` (package version)
-- Validates both files are in sync before bumping
-- Stage the updated files (`__init__.py` and `setup.py`)
-- Display version change: `[INFO] Version bumped: 0.1.0 -> 0.2.0`
+### 3. Ask About Version Bump (Manual)
+- Ask the user if a version bump is needed for this change
+- If user confirms version bump is needed:
+  - Ask which version part to bump (MAJOR, MINOR, or PATCH)
+  - Wait for user to manually update version files
+  - Verify version files are updated correctly
+- If user declines, continue without version bump
+- Display current version: `[INFO] Current version: 0.3.0`
+
+**NOTE**: Version bumps must be done manually by the user before running this workflow, or in response to this prompt.
 
 ### 4. Create GitHub Issue
 - Create a GitHub issue using `gh issue create`
@@ -57,8 +54,7 @@ When the user runs `/gh-workflow`, perform the following steps in order:
 
 ### 6. Stage and Commit Changes
 - Stage all relevant modified files including:
-  - Updated `src/autosar_pdf2txt/__init__.py` (if version bumped)
-  - Updated `setup.py` (if version bumped)
+  - Updated version files (if user manually bumped version)
   - Source code changes
   - Test changes
 - Create a commit with:
@@ -122,7 +118,7 @@ Use `$ARGUMENTS` to accept optional context:
 /gh-workflow feat: Add support for base class extraction
 ```
 
-## Example Workflow with Version Bump
+## Example Workflow
 
 ```
 User: /gh-workflow feat: Add support for primitive types
@@ -132,41 +128,39 @@ System: [Step 1] Running quality checks...
         ───────────────────────────────────
         Ruff         ✅ Pass    No errors
         Mypy         ✅ Pass    No issues
-        Pytest       ✅ Pass    240/241 tests, 88.1% coverage
+        Pytest       ✅ Pass    278/278 tests, 94% coverage
 
         [Step 2] Analyzing current changes...
         Modified files:
-          - src/autosar_pdf2txt/models/autosar_models.py
-          - src/autosar_pdf2txt/parser/pdf_parser.py
+          - src/autosar_calltree/models/autosar_models.py
+          - src/autosar_calltree/parser/pdf_parser.py
           - tests/parser/test_pdf_parser.py
 
         Commit type: feat (new feature)
 
-        [Step 3] Updating version number...
-        [INFO] Current version in __init__.py: 0.1.0
-        [INFO] Current version in setup.py: 0.1.0
-        [INFO] Commit type 'feat' requires MINOR version bump
-        [INFO] Updated version to 0.2.0 in src/autosar_pdf2txt/__init__.py
-        [INFO] Updated version to 0.2.0 in setup.py
-        [SUCCESS] Version bumped: 0.1.0 -> 0.2.0
-        [INFO] Both files updated successfully
+        [Step 3] Checking version bump...
+        Does this change require a version bump? (y/n): y
+        Which version part to bump? (MAJOR/MINOR/PATCH): MINOR
+        [INFO] Please manually update version files now.
+        [INFO] Update pyproject.toml and src/autosar_calltree/version.py
+        Press Enter when ready...
 
         [Step 4] Creating GitHub issue...
         Issue #53 created: feat: Add support for primitive types
 
         [Step 5] Creating feature branch...
-        Branch: feature/swr-model-00024-primitive-type-support
+        Branch: feature/add-primitive-type-support
 
         [Step 6] Staging and committing changes...
         Committed: feat: Add support for primitive types
         - Added AutosarPrimitive model
         - Updated parser to recognize 'Primitive <name>' pattern
-        - Updated version: 0.1.0 -> 0.2.0
+        - Version: 0.3.0 -> 0.4.0 (manually bumped)
         - Files modified:
-          * src/autosar_pdf2txt/__init__.py
-          * setup.py
-          * src/autosar_pdf2txt/models/autosar_models.py
-          * src/autosar_pdf2txt/parser/pdf_parser.py
+          * pyproject.toml
+          * src/autosar_calltree/version.py
+          * src/autosar_calltree/models/autosar_models.py
+          * src/autosar_calltree/parser/pdf_parser.py
           * tests/parser/test_pdf_parser.py
         Closes #53
 
@@ -174,7 +168,7 @@ System: [Step 1] Running quality checks...
         Branch pushed to origin
 
         [Step 8] Creating pull request...
-        PR #54 created: https://github.com/melodypapa/autosar-pdf/pull/54
+        PR #54 created: https://github.com/melodypapa/autosar_calltree/pull/54
 
         ✅ Workflow complete!
 ```
@@ -192,6 +186,10 @@ System: [Step 1] Running quality checks...
 
 ## Notes
 
+- **Version management is manual**: Users must manually update version files if needed
+- Version files to update when bumping:
+  - `pyproject.toml` (project version)
+  - `src/autosar_calltree/version.py` (runtime version)
 - Always confirm with the user before executing destructive operations
 - Show progress updates at each step
 - Report any errors and ask for guidance
