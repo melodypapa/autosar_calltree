@@ -23,12 +23,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      # Temporarily disabled - see issue #8
-      # - name: Check formatting with Black
-      #   run: black --check src/ tests/
-      #
-      # - name: Check import sorting with isort
-      #   run: isort --check-only src/ tests/
+      - name: Check formatting with Black
+        run: black --check src/ tests/
+
+      - name: Check import sorting with isort
+        run: isort --check-only src/ tests/
 
       - name: Lint with flake8
         run: flake8 src/ tests/
