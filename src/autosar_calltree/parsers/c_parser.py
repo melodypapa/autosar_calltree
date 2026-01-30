@@ -6,10 +6,10 @@ extracting function information including parameters, return types, and function
 """
 
 import re
-from typing import List, Optional, Set
 from pathlib import Path
+from typing import List, Optional, Set
 
-from ..database.models import FunctionInfo, Parameter, FunctionType
+from ..database.models import FunctionInfo, FunctionType, Parameter
 
 
 class CParser:
@@ -145,9 +145,13 @@ class CParser:
                         if line_start != -1:
                             # Position after the function declaration line
                             body_start = line_start + len(line)
-                            function_body = self._extract_function_body(content, body_start)
+                            function_body = self._extract_function_body(
+                                content, body_start
+                            )
                             if function_body:
-                                called_functions = self._extract_function_calls(function_body)
+                                called_functions = self._extract_function_calls(
+                                    function_body
+                                )
                                 autosar_func.calls = called_functions
                         functions.append(autosar_func)
 

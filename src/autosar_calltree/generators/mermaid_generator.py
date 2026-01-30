@@ -10,11 +10,11 @@ Requirements:
 - SWR_MERMAID_00003: Fallback Behavior
 """
 
-from typing import List, Set, Optional
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Set
 
-from ..database.models import CallTreeNode, AnalysisResult, FunctionInfo
+from ..database.models import AnalysisResult, CallTreeNode, FunctionInfo
 
 
 class MermaidGenerator:
@@ -25,7 +25,12 @@ class MermaidGenerator:
     creates markdown documents with metadata, and handles formatting options.
     """
 
-    def __init__(self, abbreviate_rte: bool = True, use_module_names: bool = False, include_returns: bool = False):
+    def __init__(
+        self,
+        abbreviate_rte: bool = True,
+        use_module_names: bool = False,
+        include_returns: bool = False,
+    ):
         """
         Initialize the Mermaid generator.
 
@@ -37,7 +42,7 @@ class MermaidGenerator:
         self.abbreviate_rte = abbreviate_rte
         self.use_module_names = use_module_names
         self.include_returns = include_returns
-        self.participant_map = {}  # Map full names to abbreviated names
+        self.participant_map: Dict[str, str] = {}  # Map full names to abbreviated names
         self.next_participant_id = 1
 
     def generate(
@@ -166,9 +171,10 @@ class MermaidGenerator:
             # Use module name if enabled, otherwise use function name
             if self.use_module_names:
                 # Use module name if available, otherwise fallback to filename
-                participant = node.function_info.sw_module or Path(
-                    node.function_info.file_path
-                ).stem
+                participant = (
+                    node.function_info.sw_module
+                    or Path(node.function_info.file_path).stem
+                )
             else:
                 participant = node.function_info.name
 
@@ -197,9 +203,9 @@ class MermaidGenerator:
         """
         # Determine current participant (module or function name)
         if self.use_module_names:
-            current_participant = node.function_info.sw_module or Path(
-                node.function_info.file_path
-            ).stem
+            current_participant = (
+                node.function_info.sw_module or Path(node.function_info.file_path).stem
+            )
             # When using modules, show function name on arrows
             call_label = node.function_info.name
         else:
@@ -241,7 +247,7 @@ class MermaidGenerator:
         Returns:
             Participant name to use in diagram
         """
-        return self.participant_map.get(function_name, function_name)
+        return str(self.participant_map.get(function_name, function_name))
 
     def _abbreviate_rte_name(self, rte_function: str) -> str:
         """

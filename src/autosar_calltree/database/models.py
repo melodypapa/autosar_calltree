@@ -5,10 +5,10 @@ This module defines the data structures used throughout the package.
 """
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Set, Dict
-from datetime import datetime
+from typing import Dict, List, Optional, Set
 
 
 class FunctionType(Enum):
@@ -176,6 +176,8 @@ class AnalysisResult:
 
     def get_all_functions(self) -> Set[FunctionInfo]:
         """Get all unique functions in the call tree."""
+        if self.call_tree is None:
+            return set()
         return self.call_tree.get_all_functions()
 
     def has_circular_dependencies(self) -> bool:

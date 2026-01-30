@@ -1,9 +1,11 @@
 """Tests for C parser module (SWUT_PARSER_C_*)"""
 
-import pytest
 from pathlib import Path
-from autosar_calltree.parsers.c_parser import CParser
+
+import pytest
+
 from autosar_calltree.database.models import FunctionType
+from autosar_calltree.parsers.c_parser import CParser
 
 
 class TestCParserPatterns:
@@ -15,7 +17,7 @@ class TestCParserPatterns:
         parser = CParser()
 
         # Test basic void function
-        line = 'void Demo_Init(void)'
+        line = "void Demo_Init(void)"
         match = parser.function_pattern.search(line)
         assert match is not None
         assert match.group("return_type") == "void"
@@ -23,27 +25,27 @@ class TestCParserPatterns:
         assert match.group("params") == "void"
 
         # Test function with return type
-        line = 'uint32 get_value(void)'
+        line = "uint32 get_value(void)"
         match = parser.function_pattern.search(line)
         assert match is not None
         assert match.group("return_type") == "uint32"
         assert match.group("function_name") == "get_value"
 
         # Test static function
-        line = 'static uint8 internal_function(void)'
+        line = "static uint8 internal_function(void)"
         match = parser.function_pattern.search(line)
         assert match is not None
         assert match.group("static") == "static "
         assert match.group("return_type") == "uint8"
 
         # Test inline function
-        line = 'inline void fast_function(void)'
+        line = "inline void fast_function(void)"
         match = parser.function_pattern.search(line)
         assert match is not None
         assert match.group("inline") == "inline"
 
         # Test __inline__ variant
-        line = '__inline__ void compiler_specific(void)'
+        line = "__inline__ void compiler_specific(void)"
         match = parser.function_pattern.search(line)
         assert match is not None
         assert match.group("inline") == "__inline__"
@@ -75,10 +77,13 @@ class TestCParserPatterns:
 
         # Test that patterns with C keywords don't parse
         # (Control structures should not match function pattern after filtering)
-        line = 'if (condition) {'
+        line = "if (condition) {"
         match = parser.function_pattern.search(line)
         if match:  # If it matches, the keyword check should filter it out
-            assert match.group("return_type") in parser.C_KEYWORDS or match.group("function_name") in parser.C_KEYWORDS
+            assert (
+                match.group("return_type") in parser.C_KEYWORDS
+                or match.group("function_name") in parser.C_KEYWORDS
+            )
 
     # SWUT_PARSER_C_00003: AUTOSAR Type Filtering
     def test_SWUT_PARSER_C_00003_autosar_type_filtering(self):
@@ -107,7 +112,7 @@ class TestCParserPatterns:
         parser = CParser()
 
         # Test preprocessor directive pattern
-        line = '#define FAKE_FUNCTION(x) void fake_function_##x(void)'
+        line = "#define FAKE_FUNCTION(x) void fake_function_##x(void)"
         match = parser.function_pattern.search(line)
         if match:
             result = parser._parse_function_match(match, line, Path("test.c"))
@@ -121,7 +126,12 @@ class TestCParserParsing:
     def test_SWUT_PARSER_C_00004_file_level_parsing(self):
         """Test parse_file method with traditional C file."""
         parser = CParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "traditional_c" / "standard_functions.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "standard_functions.c"
+        )
 
         functions = parser.parse_file(fixture_path)
 
@@ -136,7 +146,9 @@ class TestCParserParsing:
         assert "fast_function" in func_names
 
         # Check that static flag is set correctly
-        internal_func = next((f for f in functions if f.name == "internal_function"), None)
+        internal_func = next(
+            (f for f in functions if f.name == "internal_function"), None
+        )
         assert internal_func is not None
         assert internal_func.is_static is True
 
@@ -146,23 +158,25 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test multi-line comment removal
-        content = '/* This is a comment */ void function(void) { /* another comment */ }'
+        content = (
+            "/* This is a comment */ void function(void) { /* another comment */ }"
+        )
         cleaned = parser._remove_comments(content)
-        assert '/*' not in cleaned
-        assert '*/' not in cleaned
-        assert 'void function(void)' in cleaned
+        assert "/*" not in cleaned
+        assert "*/" not in cleaned
+        assert "void function(void)" in cleaned
 
         # Test single-line comment removal
-        content = '// This is a comment\nvoid function(void)\n// Another comment'
+        content = "// This is a comment\nvoid function(void)\n// Another comment"
         cleaned = parser._remove_comments(content)
-        assert '//' not in cleaned
-        assert 'void function(void)' in cleaned
+        assert "//" not in cleaned
+        assert "void function(void)" in cleaned
 
         # Test that code-like text in comments doesn't cause false positives
-        content = '/* void fake_func(void); */\nvoid real_function(void)'
+        content = "/* void fake_func(void); */\nvoid real_function(void)"
         cleaned = parser._remove_comments(content)
-        assert 'fake_func' not in cleaned
-        assert 'real_function' in cleaned
+        assert "fake_func" not in cleaned
+        assert "real_function" in cleaned
 
     # SWUT_PARSER_C_00006: Parameter String Parsing
     def test_SWUT_PARSER_C_00006_parameter_string_parsing(self):
@@ -170,22 +184,22 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test void parameter
-        params = parser._parse_parameters('void')
+        params = parser._parse_parameters("void")
         assert len(params) == 0
 
         # Test empty parameter
-        params = parser._parse_parameters('')
+        params = parser._parse_parameters("")
         assert len(params) == 0
 
         # Test single parameter
-        params = parser._parse_parameters('uint32 value')
+        params = parser._parse_parameters("uint32 value")
         assert len(params) == 1
         assert params[0].name == "value"
         assert params[0].param_type == "uint32"
         assert params[0].is_pointer is False
 
         # Test pointer parameter
-        params = parser._parse_parameters('uint8* buffer')
+        params = parser._parse_parameters("uint8* buffer")
         assert len(params) == 1
         assert params[0].name == "buffer"
         assert params[0].param_type == "uint8"
@@ -193,7 +207,7 @@ class TestCParserParsing:
 
         # Test const pointer parameter
         # Note: Current implementation doesn't strip const keyword or set is_const
-        params = parser._parse_parameters('const ConfigType* config')
+        params = parser._parse_parameters("const ConfigType* config")
         assert len(params) == 1
         assert params[0].name == "config"
         assert params[0].param_type == "const ConfigType"  # const is part of type
@@ -201,7 +215,7 @@ class TestCParserParsing:
         # is_const is not set by traditional C parser (known limitation)
 
         # Test multiple parameters
-        params = parser._parse_parameters('uint8 param1, uint16 param2, uint32 param3')
+        params = parser._parse_parameters("uint8 param1, uint16 param2, uint32 param3")
         assert len(params) == 3
         assert params[0].name == "param1"
         assert params[1].name == "param2"
@@ -213,25 +227,25 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test simple splitting
-        parts = parser._smart_split('uint8 a, uint16 b', ',')
+        parts = parser._smart_split("uint8 a, uint16 b", ",")
         assert len(parts) == 2
-        assert parts[0].strip() == 'uint8 a'
-        assert parts[1].strip() == 'uint16 b'
+        assert parts[0].strip() == "uint8 a"
+        assert parts[1].strip() == "uint16 b"
 
         # Test splitting with nested parentheses
-        parts = parser._smart_split('void (*callback)(int), uint32 context', ',')
+        parts = parser._smart_split("void (*callback)(int), uint32 context", ",")
         assert len(parts) == 2
-        assert parts[0].strip() == 'void (*callback)(int)'
-        assert parts[1].strip() == 'uint32 context'
+        assert parts[0].strip() == "void (*callback)(int)"
+        assert parts[1].strip() == "uint32 context"
 
         # Test splitting with array brackets
-        parts = parser._smart_split('int arr[10], uint32 value', ',')
+        parts = parser._smart_split("int arr[10], uint32 value", ",")
         assert len(parts) == 2
-        assert parts[0].strip() == 'int arr[10]'
-        assert parts[1].strip() == 'uint32 value'
+        assert parts[0].strip() == "int arr[10]"
+        assert parts[1].strip() == "uint32 value"
 
         # Test splitting with complex nesting
-        parts = parser._smart_split('uint8 (*func)(int, float), uint32 a, uint8 b', ',')
+        parts = parser._smart_split("uint8 (*func)(int, float), uint32 a, uint8 b", ",")
         assert len(parts) == 3
 
     # SWUT_PARSER_C_00008: Function Body Extraction
@@ -240,31 +254,31 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test simple function body
-        content = 'void test(void) {\n    return;\n}'
-        body = parser._extract_function_body(content, len('void test(void)'))
+        content = "void test(void) {\n    return;\n}"
+        body = parser._extract_function_body(content, len("void test(void)"))
         assert body is not None
-        assert '{' in body
-        assert '}' in body
-        assert 'return' in body
+        assert "{" in body
+        assert "}" in body
+        assert "return" in body
 
         # Test function body with nested braces
-        content = '''void test(void) {
+        content = """void test(void) {
     if (1) {
         inner_func();
     }
-}'''
-        body = parser._extract_function_body(content, len('void test(void)'))
+}"""
+        body = parser._extract_function_body(content, len("void test(void)"))
         assert body is not None
-        assert 'inner_func()' in body
+        assert "inner_func()" in body
 
         # Test missing opening brace
-        content = 'void test(void);'
-        body = parser._extract_function_body(content, len('void test(void)'))
+        content = "void test(void);"
+        body = parser._extract_function_body(content, len("void test(void)"))
         assert body is None
 
         # Test unbalanced braces (missing closing)
-        content = 'void test(void) {\n    return;'
-        body = parser._extract_function_body(content, len('void test(void)'))
+        content = "void test(void) {\n    return;"
+        body = parser._extract_function_body(content, len("void test(void)"))
         assert body is None
 
     # SWUT_PARSER_C_00009: Function Call Extraction
@@ -273,13 +287,13 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test simple function calls
-        body = 'void test(void) {\n    helper1();\n    helper2();\n}'
+        body = "void test(void) {\n    helper1();\n    helper2();\n}"
         calls = parser._extract_function_calls(body)
-        assert 'helper1' in calls
-        assert 'helper2' in calls
+        assert "helper1" in calls
+        assert "helper2" in calls
 
         # Test that C keywords are filtered
-        body = '''void test(void) {
+        body = """void test(void) {
     if (value > 10) {
         return;
     }
@@ -287,36 +301,38 @@ class TestCParserParsing:
         break;
     }
     helper();
-}'''
+}"""
         calls = parser._extract_function_calls(body)
-        assert 'helper' in calls
-        assert 'if' not in calls
-        assert 'return' not in calls
-        assert 'while' not in calls
-        assert 'break' not in calls
+        assert "helper" in calls
+        assert "if" not in calls
+        assert "return" not in calls
+        assert "while" not in calls
+        assert "break" not in calls
 
         # Test that AUTOSAR types are filtered
-        body = 'void test(void) {\n    uint8* buffer = (uint8*)0x2000;\n    helper();\n}'
+        body = (
+            "void test(void) {\n    uint8* buffer = (uint8*)0x2000;\n    helper();\n}"
+        )
         calls = parser._extract_function_calls(body)
-        assert 'helper' in calls
-        assert 'uint8' not in calls
+        assert "helper" in calls
+        assert "uint8" not in calls
 
         # Test RTE calls
-        body = 'void test(void) {\n    Rte_Call_StartOperation();\n    helper();\n}'
+        body = "void test(void) {\n    Rte_Call_StartOperation();\n    helper();\n}"
         calls = parser._extract_function_calls(body)
-        assert 'Rte_Call_StartOperation' in calls
-        assert 'helper' in calls
+        assert "Rte_Call_StartOperation" in calls
+        assert "helper" in calls
 
         # Test deduplication
-        body = 'void test(void) {\n    helper();\n    helper();\n    helper();\n}'
+        body = "void test(void) {\n    helper();\n    helper();\n    helper();\n}"
         calls = parser._extract_function_calls(body)
-        assert calls.count('helper') == 1  # Should be deduplicated
+        assert calls.count("helper") == 1  # Should be deduplicated
 
     # SWUT_PARSER_C_00010: Function Match Parsing
     def test_SWUT_PARSER_C_00010_function_match_parsing(self):
         """Test complete function match parsing."""
         parser = CParser()
-        content = 'void simple_function(void)\n{\n    return;\n}\n'
+        content = "void simple_function(void)\n{\n    return;\n}\n"
         match = parser.function_pattern.search(content)
 
         if match:
@@ -334,17 +350,26 @@ class TestCParserParsing:
     def test_SWUT_PARSER_C_00011_static_function_detection(self):
         """Test that static keyword is detected and is_static flag is set."""
         parser = CParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "traditional_c" / "standard_functions.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "standard_functions.c"
+        )
 
         functions = parser.parse_file(fixture_path)
 
         # Find static function
-        static_func = next((f for f in functions if f.name == "internal_function"), None)
+        static_func = next(
+            (f for f in functions if f.name == "internal_function"), None
+        )
         assert static_func is not None
         assert static_func.is_static is True
 
         # Find non-static function
-        non_static_func = next((f for f in functions if f.name == "simple_function"), None)
+        non_static_func = next(
+            (f for f in functions if f.name == "simple_function"), None
+        )
         assert non_static_func is not None
         assert non_static_func.is_static is False
 
@@ -354,7 +379,7 @@ class TestCParserParsing:
         parser = CParser()
 
         # Single line file
-        content = 'void func(void) {}'
+        content = "void func(void) {}"
         match = parser.function_pattern.search(content)
         if match:
             result = parser._parse_function_match(match, content, Path("test.c"))
@@ -362,7 +387,7 @@ class TestCParserParsing:
             assert result.line_number == 1
 
         # Multi-line file with function on third line
-        content = '// Line 1\n// Line 2\nvoid func(void) {}'
+        content = "// Line 1\n// Line 2\nvoid func(void) {}"
         match = parser.function_pattern.search(content)
         if match:
             result = parser._parse_function_match(match, content, Path("test.c"))
@@ -398,10 +423,10 @@ class TestCParserParsing:
         assert parser.autosar_parser is not None
 
         # Test that is_autosar_function works through integration
-        autosar_line = 'FUNC(void, RTE_CODE) TestFunc(void)'
+        autosar_line = "FUNC(void, RTE_CODE) TestFunc(void)"
         assert parser.autosar_parser.is_autosar_function(autosar_line) is True
 
-        c_line = 'void test_function(void)'
+        c_line = "void test_function(void)"
         assert parser.autosar_parser.is_autosar_function(c_line) is False
 
     # SWUT_PARSER_C_00015: Single Declaration Parsing
@@ -410,7 +435,7 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test valid declaration
-        declaration = 'void test_function(uint32 value)'
+        declaration = "void test_function(uint32 value)"
         result = parser.parse_function_declaration(declaration)
         assert result is not None
         assert result.name == "test_function"
@@ -419,7 +444,7 @@ class TestCParserParsing:
         assert result.parameters[0].name == "value"
 
         # Test invalid declaration
-        declaration = 'not a function declaration'
+        declaration = "not a function declaration"
         result = parser.parse_function_declaration(declaration)
         assert result is None
 
@@ -429,25 +454,25 @@ class TestCParserParsing:
         parser = CParser()
 
         # Test single pointer
-        params = parser._parse_parameters('uint8* buffer')
+        params = parser._parse_parameters("uint8* buffer")
         assert len(params) == 1
         assert params[0].is_pointer is True
         assert params[0].param_type == "uint8"
 
         # Test const pointer
-        params = parser._parse_parameters('const uint32* data')
+        params = parser._parse_parameters("const uint32* data")
         assert len(params) == 1
         assert params[0].is_pointer is True
         # is_const flag is not set by traditional C parser (known limitation)
         assert params[0].param_type == "const uint32"
         # Test double pointer
-        params = parser._parse_parameters('uint8** buffer_ptr')
+        params = parser._parse_parameters("uint8** buffer_ptr")
         assert len(params) == 1
         assert params[0].is_pointer is True
         assert params[0].param_type == "uint8"  # All asterisks stripped
 
         # Test non-pointer
-        params = parser._parse_parameters('uint32 value')
+        params = parser._parse_parameters("uint32 value")
         assert len(params) == 1
         assert params[0].is_pointer is False
         assert params[0].param_type == "uint32"
@@ -456,7 +481,9 @@ class TestCParserParsing:
     def test_SWUT_PARSER_C_00018_functioninfo_creation_c_functions(self):
         """Test that FunctionInfo objects are created correctly for C functions."""
         parser = CParser()
-        content = 'static uint32 process_value(uint8 input)\n{\n    return input * 2;\n}\n'
+        content = (
+            "static uint32 process_value(uint8 input)\n{\n    return input * 2;\n}\n"
+        )
         match = parser.function_pattern.search(content)
 
         if match:
@@ -466,8 +493,12 @@ class TestCParserParsing:
             assert result.return_type == "uint32"
             assert result.function_type == FunctionType.TRADITIONAL_C
             assert result.is_static is True
-            assert result.memory_class is None  # Traditional C functions don't have memory_class
-            assert result.macro_type is None  # Traditional C functions don't have macro_type
+            assert (
+                result.memory_class is None
+            )  # Traditional C functions don't have memory_class
+            assert (
+                result.macro_type is None
+            )  # Traditional C functions don't have macro_type
             assert len(result.parameters) == 1
             assert result.parameters[0].name == "input"
             assert result.parameters[0].param_type == "uint8"
@@ -479,7 +510,12 @@ class TestCParserWithFixtures:
     def test_parse_standard_functions_fixture(self):
         """Test parsing standard_functions.c fixture."""
         parser = CParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "traditional_c" / "standard_functions.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "standard_functions.c"
+        )
 
         functions = parser.parse_file(fixture_path)
 
@@ -503,7 +539,12 @@ class TestCParserWithFixtures:
     def test_parse_with_comments_fixture(self):
         """Test parsing with_comments.c fixture."""
         parser = CParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "traditional_c" / "with_comments.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "with_comments.c"
+        )
 
         functions = parser.parse_file(fixture_path)
 
@@ -519,7 +560,12 @@ class TestCParserWithFixtures:
     def test_parse_with_function_calls_fixture(self):
         """Test parsing with_function_calls.c fixture."""
         parser = CParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "traditional_c" / "with_function_calls.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "with_function_calls.c"
+        )
 
         functions = parser.parse_file(fixture_path)
 
@@ -542,7 +588,9 @@ class TestCParserWithFixtures:
         assert "switch" not in control.calls
 
         # Check RTE calls
-        rte_func = next((f for f in functions if f.name == "function_with_rte_calls"), None)
+        rte_func = next(
+            (f for f in functions if f.name == "function_with_rte_calls"), None
+        )
         assert rte_func is not None
         assert "Rte_Call_StartOperation" in rte_func.calls
         assert "Rte_Write_Parameter_1" in rte_func.calls

@@ -9,10 +9,10 @@ Requirements:
 - SWR_CONFIG_00002: Module Configuration Validation
 """
 
-from pathlib import Path
-from typing import Optional, Dict, List, Tuple
 import fnmatch
 import re
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 
 class ModuleConfig:
@@ -59,7 +59,7 @@ class ModuleConfig:
             FileNotFoundError: If config file doesn't exist
             ValueError: If config file format is invalid
         """
-        import yaml
+        import yaml  # type: ignore
 
         if not config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")

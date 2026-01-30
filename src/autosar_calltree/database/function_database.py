@@ -12,16 +12,16 @@ Requirements:
 - SWR_CACHE_00004: Performance Considerations
 """
 
-import pickle
 import hashlib
-from pathlib import Path
-from typing import Dict, List, Optional, Set
-from datetime import datetime
+import pickle
 from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
+from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser
 from ..parsers.c_parser import CParser
-from ..config.module_config import ModuleConfig
 from .models import FunctionInfo
 
 
@@ -45,7 +45,10 @@ class FunctionDatabase:
     """
 
     def __init__(
-        self, source_dir: str, cache_dir: Optional[str] = None, module_config: Optional[ModuleConfig] = None
+        self,
+        source_dir: str,
+        cache_dir: Optional[str] = None,
+        module_config: Optional[ModuleConfig] = None,
     ):
         """
         Initialize the function database.
@@ -178,7 +181,9 @@ class FunctionDatabase:
         """
         # Apply module mapping if configuration is available
         if self.module_config:
-            func_info.sw_module = self.module_config.get_module_for_file(func_info.file_path)
+            func_info.sw_module = self.module_config.get_module_for_file(
+                func_info.file_path
+            )
 
             # Track module statistics
             if func_info.sw_module:
@@ -274,7 +279,7 @@ class FunctionDatabase:
             file_stem = Path(func_info.file_path).stem.lower()
 
             # Check if function name matches file name
-            if func_name_lower.startswith(file_stem.replace('_', '')):
+            if func_name_lower.startswith(file_stem.replace("_", "")):
                 # e.g., COM_InitCommunication matches communication.c or com_*.c
                 if func_info.sw_module and func_info.sw_module != "DemoModule":
                     return func_info
@@ -353,7 +358,7 @@ class FunctionDatabase:
 
         return results
 
-    def get_statistics(self) -> Dict[str, any]:
+    def get_statistics(self) -> Dict[str, Any]:
         """
         Get database statistics.
 
@@ -483,7 +488,9 @@ class FunctionDatabase:
                 ):
                     file_name = Path(file_path).name
                     func_count = len(functions)
-                    print(f"  [{idx}/{self.total_files_scanned}] {file_name}: {func_count} functions")
+                    print(
+                        f"  [{idx}/{self.total_files_scanned}] {file_name}: {func_count} functions"
+                    )
 
             return True
 

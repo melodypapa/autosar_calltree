@@ -1,19 +1,21 @@
 """Tests for models module (SWUT_MODEL_*)"""
 
+from dataclasses import fields
+from datetime import datetime
+from pathlib import Path
+
+import pytest
+
 from autosar_calltree.database.models import (
-    FunctionType,
-    Parameter,
-    FunctionInfo,
+    AnalysisResult,
+    AnalysisStatistics,
     CallTreeNode,
     CircularDependency,
-    AnalysisStatistics,
-    AnalysisResult,
     FunctionDict,
+    FunctionInfo,
+    FunctionType,
+    Parameter,
 )
-from pathlib import Path
-from datetime import datetime
-from dataclasses import fields
-import pytest
 
 
 # SWUT_MODEL_00001: FunctionType Enum Values
@@ -40,7 +42,7 @@ def test_SWUT_MODEL_00002_parameter_core_fields():
         param_type="uint32",
         is_pointer=False,
         is_const=False,
-        memory_class="AUTOMATIC"
+        memory_class="AUTOMATIC",
     )
 
     # Verify field values
@@ -69,11 +71,15 @@ def test_SWUT_MODEL_00003_parameter_str_representation():
     assert str(param_ptr) == "uint8* buffer"
 
     # Test const pointer parameter
-    param_const_ptr = Parameter(name="config", param_type="ConfigType", is_const=True, is_pointer=True)
+    param_const_ptr = Parameter(
+        name="config", param_type="ConfigType", is_const=True, is_pointer=True
+    )
     assert str(param_const_ptr) == "const ConfigType* config"
 
     # Test parameter with memory class
-    param_memclass = Parameter(name="data", param_type="uint32", memory_class="AUTOMATIC")
+    param_memclass = Parameter(
+        name="data", param_type="uint32", memory_class="AUTOMATIC"
+    )
     assert str(param_memclass) == "uint32 data [AUTOMATIC]"
 
     # Test const pointer with memory class
@@ -82,7 +88,7 @@ def test_SWUT_MODEL_00003_parameter_str_representation():
         param_type="uint8",
         is_const=True,
         is_pointer=True,
-        memory_class="APPL_DATA"
+        memory_class="APPL_DATA",
     )
     assert str(param_full) == "const uint8* buffer [APPL_DATA]"
 
@@ -97,7 +103,7 @@ def test_SWUT_MODEL_00004_function_info_identity_fields():
         file_path=Path("/src/demo.c"),
         line_number=42,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Verify field values
@@ -114,7 +120,7 @@ def test_SWUT_MODEL_00004_function_info_identity_fields():
         file_path=Path("/src/demo.c"),
         line_number=100,
         is_static=True,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_static.is_static is True
 
@@ -131,7 +137,7 @@ def test_SWUT_MODEL_00005_function_info_type_classification():
         is_static=False,
         function_type=FunctionType.AUTOSAR_FUNC,
         memory_class="RTE_CODE",
-        macro_type="FUNC"
+        macro_type="FUNC",
     )
     assert func_autosar.function_type == FunctionType.AUTOSAR_FUNC
     assert func_autosar.memory_class == "RTE_CODE"
@@ -146,7 +152,7 @@ def test_SWUT_MODEL_00005_function_info_type_classification():
         is_static=False,
         function_type=FunctionType.AUTOSAR_FUNC_P2VAR,
         memory_class="AUTOMATIC",
-        macro_type="FUNC_P2VAR"
+        macro_type="FUNC_P2VAR",
     )
     assert func_p2var.function_type == FunctionType.AUTOSAR_FUNC_P2VAR
 
@@ -157,7 +163,7 @@ def test_SWUT_MODEL_00005_function_info_type_classification():
         file_path=Path("/src/main.c"),
         line_number=50,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_c.function_type == FunctionType.TRADITIONAL_C
     assert func_c.memory_class is None
@@ -177,9 +183,9 @@ def test_SWUT_MODEL_00006_function_info_call_relationships():
         function_type=FunctionType.TRADITIONAL_C,
         parameters=[
             Parameter(name="param1", param_type="uint32"),
-            Parameter(name="param2", param_type="uint8")
+            Parameter(name="param2", param_type="uint8"),
         ],
-        calls=["Helper_Function1", "Helper_Function2"]
+        calls=["Helper_Function1", "Helper_Function2"],
     )
 
     # Verify parameters list
@@ -219,7 +225,7 @@ def test_SWUT_MODEL_00007_function_info_disambiguation_module():
         is_static=True,
         function_type=FunctionType.TRADITIONAL_C,
         qualified_name="module1/helper.c::Helper",
-        sw_module="Module1"
+        sw_module="Module1",
     )
     assert func1.qualified_name == "module1/helper.c::Helper"
     assert func1.sw_module == "Module1"
@@ -233,7 +239,7 @@ def test_SWUT_MODEL_00007_function_info_disambiguation_module():
         is_static=True,
         function_type=FunctionType.TRADITIONAL_C,
         qualified_name="module2/helper.c::Helper",
-        sw_module="Module2"
+        sw_module="Module2",
     )
     assert func2.qualified_name == "module2/helper.c::Helper"
     assert func2.sw_module == "Module2"
@@ -248,7 +254,7 @@ def test_SWUT_MODEL_00007_function_info_disambiguation_module():
         file_path=Path("/src/orphan.c"),
         line_number=5,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_no_module.qualified_name is None
     assert func_no_module.sw_module is None
@@ -264,7 +270,7 @@ def test_SWUT_MODEL_00008_function_info_hash():
         file_path=Path("/src/test.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     func2 = FunctionInfo(
@@ -273,7 +279,7 @@ def test_SWUT_MODEL_00008_function_info_hash():
         file_path=Path("/src/test.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Hash should be based on (name, file_path, line_number)
@@ -296,7 +302,7 @@ def test_SWUT_MODEL_00008_function_info_hash():
         file_path=Path("/src/test.c"),
         line_number=20,  # Different line
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert hash(func1) != hash(func3)
 
@@ -316,7 +322,7 @@ def test_SWUT_MODEL_00009_function_info_equality():
         is_static=False,
         function_type=FunctionType.TRADITIONAL_C,
         parameters=[Parameter(name="p1", param_type="int")],
-        calls=["Helper1"]
+        calls=["Helper1"],
     )
 
     func2 = FunctionInfo(
@@ -345,7 +351,7 @@ def test_SWUT_MODEL_00009_function_info_equality():
         file_path=Path("/src/test.c"),
         line_number=20,  # Different line
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func1 != func3
 
@@ -356,7 +362,7 @@ def test_SWUT_MODEL_00009_function_info_equality():
         file_path=Path("/src/other.c"),  # Different file
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func1 != func4
 
@@ -371,7 +377,7 @@ def test_SWUT_MODEL_00010_function_info_signature():
         file_path=Path("/src/init.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_no_params.get_signature() == "void Init()"
 
@@ -383,7 +389,7 @@ def test_SWUT_MODEL_00010_function_info_signature():
         line_number=20,
         is_static=False,
         function_type=FunctionType.TRADITIONAL_C,
-        parameters=[Parameter(name="value", param_type="uint32")]
+        parameters=[Parameter(name="value", param_type="uint32")],
     )
     assert func_one_param.get_signature() == "uint8 Process(uint32 value)"
 
@@ -398,11 +404,13 @@ def test_SWUT_MODEL_00010_function_info_signature():
         parameters=[
             Parameter(name="id", param_type="uint32"),
             Parameter(name="data", param_type="uint8", is_pointer=True),
-            Parameter(name="length", param_type="uint16")
-        ]
+            Parameter(name="length", param_type="uint16"),
+        ],
     )
     signature = func_multi_params.get_signature()
-    assert signature == "Std_ReturnType ComplexFunc(uint32 id, uint8* data, uint16 length)"
+    assert (
+        signature == "Std_ReturnType ComplexFunc(uint32 id, uint8* data, uint16 length)"
+    )
 
     # Test function with complex parameters
     func_complex_params = FunctionInfo(
@@ -413,10 +421,19 @@ def test_SWUT_MODEL_00010_function_info_signature():
         is_static=False,
         function_type=FunctionType.TRADITIONAL_C,
         parameters=[
-            Parameter(name="config", param_type="ConfigType", is_const=True, is_pointer=True, memory_class="APPL_DATA")
-        ]
+            Parameter(
+                name="config",
+                param_type="ConfigType",
+                is_const=True,
+                is_pointer=True,
+                memory_class="APPL_DATA",
+            )
+        ],
     )
-    assert func_complex_params.get_signature() == "void AdvancedFunc(const ConfigType* config [APPL_DATA])"
+    assert (
+        func_complex_params.get_signature()
+        == "void AdvancedFunc(const ConfigType* config [APPL_DATA])"
+    )
 
 
 # SWUT_MODEL_00011: FunctionInfo RTE Function Detection
@@ -429,7 +446,7 @@ def test_SWUT_MODEL_00011_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_rte_call.is_rte_function() is True
 
@@ -440,7 +457,7 @@ def test_SWUT_MODEL_00011_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=20,
         is_static=False,
-        function_type=FunctionType.RTE_CALL
+        function_type=FunctionType.RTE_CALL,
     )
     assert func_rte_type.is_rte_function() is True
 
@@ -451,7 +468,7 @@ def test_SWUT_MODEL_00011_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=30,
         is_static=False,
-        function_type=FunctionType.RTE_CALL
+        function_type=FunctionType.RTE_CALL,
     )
     assert func_rte_both.is_rte_function() is True
 
@@ -462,7 +479,7 @@ def test_SWUT_MODEL_00011_function_info_rte_detection():
         file_path=Path("/src/regular.c"),
         line_number=40,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_regular.is_rte_function() is False
 
@@ -473,7 +490,7 @@ def test_SWUT_MODEL_00011_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=50,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_mixed.is_rte_function() is True  # Due to Rte_ prefix
 
@@ -488,16 +505,11 @@ def test_SWUT_MODEL_00012_call_tree_node_structure():
         file_path=Path("/src/parent.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Create node with all core fields
-    node = CallTreeNode(
-        function_info=func_info,
-        depth=0,
-        children=[],
-        parent=None
-    )
+    node = CallTreeNode(function_info=func_info, depth=0, children=[], parent=None)
 
     # Verify field values
     assert node.function_info == func_info
@@ -512,13 +524,10 @@ def test_SWUT_MODEL_00012_call_tree_node_structure():
         file_path=Path("/src/child.c"),
         line_number=20,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     child_node = CallTreeNode(
-        function_info=child_func,
-        depth=1,
-        children=[],
-        parent=node
+        function_info=child_func, depth=1, children=[], parent=node
     )
 
     assert child_node.depth == 1
@@ -534,49 +543,30 @@ def test_SWUT_MODEL_00013_call_tree_node_state_flags():
         file_path=Path("/src/test.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Test default values
-    node = CallTreeNode(
-        function_info=func,
-        depth=0
-    )
+    node = CallTreeNode(function_info=func, depth=0)
     assert node.is_recursive is False
     assert node.is_truncated is False
     assert node.call_count == 1
 
     # Test recursive flag
-    node_recursive = CallTreeNode(
-        function_info=func,
-        depth=2,
-        is_recursive=True
-    )
+    node_recursive = CallTreeNode(function_info=func, depth=2, is_recursive=True)
     assert node_recursive.is_recursive is True
 
     # Test truncated flag
-    node_truncated = CallTreeNode(
-        function_info=func,
-        depth=5,
-        is_truncated=True
-    )
+    node_truncated = CallTreeNode(function_info=func, depth=5, is_truncated=True)
     assert node_truncated.is_truncated is True
 
     # Test call count
-    node_called = CallTreeNode(
-        function_info=func,
-        depth=1,
-        call_count=3
-    )
+    node_called = CallTreeNode(function_info=func, depth=1, call_count=3)
     assert node_called.call_count == 3
 
     # Test all flags
     node_all = CallTreeNode(
-        function_info=func,
-        depth=3,
-        is_recursive=True,
-        is_truncated=False,
-        call_count=5
+        function_info=func, depth=3, is_recursive=True, is_truncated=False, call_count=5
     )
     assert node_all.is_recursive is True
     assert node_all.is_truncated is False
@@ -593,7 +583,7 @@ def test_SWUT_MODEL_00014_call_tree_node_add_child():
         file_path=Path("/src/parent.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     parent = CallTreeNode(function_info=parent_func, depth=0)
 
@@ -603,7 +593,7 @@ def test_SWUT_MODEL_00014_call_tree_node_add_child():
         file_path=Path("/src/child1.c"),
         line_number=20,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     child1 = CallTreeNode(function_info=child1_func, depth=1)
 
@@ -613,7 +603,7 @@ def test_SWUT_MODEL_00014_call_tree_node_add_child():
         file_path=Path("/src/child2.c"),
         line_number=30,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     child2 = CallTreeNode(function_info=child2_func, depth=1)
 
@@ -645,7 +635,7 @@ def test_SWUT_MODEL_00015_call_tree_node_get_all_functions():
         file_path=Path("/src/f1.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     func2 = FunctionInfo(
         name="Func2",
@@ -653,7 +643,7 @@ def test_SWUT_MODEL_00015_call_tree_node_get_all_functions():
         file_path=Path("/src/f2.c"),
         line_number=20,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     func3 = FunctionInfo(
         name="Func3",
@@ -661,7 +651,7 @@ def test_SWUT_MODEL_00015_call_tree_node_get_all_functions():
         file_path=Path("/src/f3.c"),
         line_number=30,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Build tree: root -> child1 -> grandchild
@@ -699,7 +689,7 @@ def test_SWUT_MODEL_00016_call_tree_node_get_max_depth():
         file_path=Path("/src/f.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Test leaf node
@@ -739,28 +729,19 @@ def test_SWUT_MODEL_00016_call_tree_node_get_max_depth():
 def test_SWUT_MODEL_00017_circular_dependency_structure():
     """Test that CircularDependency dataclass has core fields for representing detected cycles."""
     # Create circular dependency
-    cycle = CircularDependency(
-        cycle=["FuncA", "FuncB", "FuncC", "FuncA"],
-        depth=3
-    )
+    cycle = CircularDependency(cycle=["FuncA", "FuncB", "FuncC", "FuncA"], depth=3)
 
     # Verify fields
     assert cycle.cycle == ["FuncA", "FuncB", "FuncC", "FuncA"]
     assert cycle.depth == 3
 
     # Test different cycle
-    cycle2 = CircularDependency(
-        cycle=["Init", "Process", "Validate", "Init"],
-        depth=5
-    )
+    cycle2 = CircularDependency(cycle=["Init", "Process", "Validate", "Init"], depth=5)
     assert len(cycle2.cycle) == 4
     assert cycle2.depth == 5
 
     # Test simple 2-function cycle
-    cycle3 = CircularDependency(
-        cycle=["A", "B", "A"],
-        depth=1
-    )
+    cycle3 = CircularDependency(cycle=["A", "B", "A"], depth=1)
     assert len(cycle3.cycle) == 3
     assert cycle3.depth == 1
 
@@ -769,31 +750,19 @@ def test_SWUT_MODEL_00017_circular_dependency_structure():
 def test_SWUT_MODEL_00018_circular_dependency_str():
     """Test that CircularDependency.__str__ formats cycles in readable arrow notation."""
     # Test 3-function cycle
-    cycle1 = CircularDependency(
-        cycle=["FuncA", "FuncB", "FuncC", "FuncA"],
-        depth=3
-    )
+    cycle1 = CircularDependency(cycle=["FuncA", "FuncB", "FuncC", "FuncA"], depth=3)
     assert str(cycle1) == "FuncA -> FuncB -> FuncC -> FuncA"
 
     # Test 2-function cycle
-    cycle2 = CircularDependency(
-        cycle=["Init", "Process", "Init"],
-        depth=2
-    )
+    cycle2 = CircularDependency(cycle=["Init", "Process", "Init"], depth=2)
     assert str(cycle2) == "Init -> Process -> Init"
 
     # Test 4-function cycle
-    cycle3 = CircularDependency(
-        cycle=["A", "B", "C", "D", "A"],
-        depth=5
-    )
+    cycle3 = CircularDependency(cycle=["A", "B", "C", "D", "A"], depth=5)
     assert str(cycle3) == "A -> B -> C -> D -> A"
 
     # Test single function (self-call)
-    cycle4 = CircularDependency(
-        cycle=["RecursiveFunc", "RecursiveFunc"],
-        depth=1
-    )
+    cycle4 = CircularDependency(cycle=["RecursiveFunc", "RecursiveFunc"], depth=1)
     assert str(cycle4) == "RecursiveFunc -> RecursiveFunc"
 
 
@@ -820,7 +789,7 @@ def test_SWUT_MODEL_00019_analysis_statistics_counters():
         static_functions=30,
         rte_functions=10,
         autosar_functions=40,
-        circular_dependencies_found=2
+        circular_dependencies_found=2,
     )
     assert stats2.total_functions == 100
     assert stats2.unique_functions == 50
@@ -851,7 +820,7 @@ def test_SWUT_MODEL_00020_analysis_statistics_to_dict():
         static_functions=30,
         rte_functions=10,
         autosar_functions=40,
-        circular_dependencies_found=2
+        circular_dependencies_found=2,
     )
 
     result = stats.to_dict()
@@ -869,9 +838,14 @@ def test_SWUT_MODEL_00020_analysis_statistics_to_dict():
 
     # Verify all keys present
     expected_keys = {
-        "total_functions", "unique_functions", "max_depth_reached",
-        "total_function_calls", "static_functions", "rte_functions",
-        "autosar_functions", "circular_dependencies_found"
+        "total_functions",
+        "unique_functions",
+        "max_depth_reached",
+        "total_function_calls",
+        "static_functions",
+        "rte_functions",
+        "autosar_functions",
+        "circular_dependencies_found",
     }
     assert set(result.keys()) == expected_keys
 
@@ -892,7 +866,7 @@ def test_SWUT_MODEL_00021_analysis_result_container():
         file_path=Path("/src/root.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     tree = CallTreeNode(function_info=func, depth=0)
     stats = AnalysisStatistics(total_functions=10, unique_functions=8)
@@ -904,7 +878,7 @@ def test_SWUT_MODEL_00021_analysis_result_container():
         call_tree=tree,
         statistics=stats,
         circular_dependencies=[cycle],
-        errors=["Warning: unresolved function"]
+        errors=["Warning: unresolved function"],
     )
 
     # Verify fields
@@ -918,9 +892,7 @@ def test_SWUT_MODEL_00021_analysis_result_container():
 
     # Test with defaults
     result_default = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats
+        root_function="Test", call_tree=tree, statistics=stats
     )
     assert len(result_default.circular_dependencies) == 0
     assert len(result_default.errors) == 0
@@ -936,7 +908,7 @@ def test_SWUT_MODEL_00022_analysis_result_metadata():
         file_path=Path("/src/test.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     tree = CallTreeNode(function_info=func, depth=0)
     stats = AnalysisStatistics()
@@ -949,7 +921,7 @@ def test_SWUT_MODEL_00022_analysis_result_metadata():
         statistics=stats,
         timestamp=timestamp,
         source_directory=Path("/src"),
-        max_depth_limit=5
+        max_depth_limit=5,
     )
 
     assert result.timestamp == timestamp
@@ -958,9 +930,7 @@ def test_SWUT_MODEL_00022_analysis_result_metadata():
 
     # Test defaults (timestamp should be near current time)
     result_default = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats
+        root_function="Test", call_tree=tree, statistics=stats
     )
 
     # Verify timestamp is recent (within 1 second)
@@ -983,7 +953,7 @@ def test_SWUT_MODEL_00023_analysis_result_get_all_functions():
         file_path=Path("/src/root.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     func2 = FunctionInfo(
         name="Child",
@@ -991,7 +961,7 @@ def test_SWUT_MODEL_00023_analysis_result_get_all_functions():
         file_path=Path("/src/child.c"),
         line_number=20,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     root = CallTreeNode(function_info=func1, depth=0)
@@ -999,11 +969,7 @@ def test_SWUT_MODEL_00023_analysis_result_get_all_functions():
     root.add_child(child)
 
     stats = AnalysisStatistics()
-    result = AnalysisResult(
-        root_function="Root",
-        call_tree=root,
-        statistics=stats
-    )
+    result = AnalysisResult(root_function="Root", call_tree=root, statistics=stats)
 
     # Collect functions
     all_funcs = result.get_all_functions()
@@ -1015,9 +981,7 @@ def test_SWUT_MODEL_00023_analysis_result_get_all_functions():
 
     # Test with None call_tree (should raise error)
     result_no_tree = AnalysisResult(
-        root_function="Missing",
-        call_tree=None,
-        statistics=stats
+        root_function="Missing", call_tree=None, statistics=stats
     )
 
     # get_all_functions() returns an empty set when call_tree is None
@@ -1036,25 +1000,20 @@ def test_SWUT_MODEL_00024_analysis_result_has_circular_deps():
         file_path=Path("/src/test.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     tree = CallTreeNode(function_info=func, depth=0)
     stats = AnalysisStatistics()
 
     # Test with no circular dependencies
     result_no_cycles = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats,
-        circular_dependencies=[]
+        root_function="Test", call_tree=tree, statistics=stats, circular_dependencies=[]
     )
     assert result_no_cycles.has_circular_dependencies() is False
 
     # Test with default (empty list)
     result_default = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats
+        root_function="Test", call_tree=tree, statistics=stats
     )
     assert result_default.has_circular_dependencies() is False
 
@@ -1064,7 +1023,7 @@ def test_SWUT_MODEL_00024_analysis_result_has_circular_deps():
         root_function="Test",
         call_tree=tree,
         statistics=stats,
-        circular_dependencies=[cycle]
+        circular_dependencies=[cycle],
     )
     assert result_with_cycle.has_circular_dependencies() is True
 
@@ -1074,7 +1033,7 @@ def test_SWUT_MODEL_00024_analysis_result_has_circular_deps():
         root_function="Test",
         call_tree=tree,
         statistics=stats,
-        circular_dependencies=[cycle, cycle2]
+        circular_dependencies=[cycle, cycle2],
     )
     assert result_multiple.has_circular_dependencies() is True
 
@@ -1089,7 +1048,7 @@ def test_SWUT_MODEL_00025_function_dict_type_alias():
         file_path=Path("/src/com.c"),
         line_number=10,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     func2 = FunctionInfo(
         name="COM_Init",  # Same name, different file
@@ -1097,7 +1056,7 @@ def test_SWUT_MODEL_00025_function_dict_type_alias():
         file_path=Path("/src/com_decl.c"),
         line_number=5,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     func3 = FunctionInfo(
         name="Demo_Init",
@@ -1105,13 +1064,13 @@ def test_SWUT_MODEL_00025_function_dict_type_alias():
         file_path=Path("/src/demo.c"),
         line_number=15,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
 
     # Build function dict
     func_dict: FunctionDict = {
         "COM_Init": [func1, func2],  # Multiple definitions
-        "Demo_Init": [func3]  # Single definition
+        "Demo_Init": [func3],  # Single definition
     }
 
     # Verify structure
@@ -1124,4 +1083,6 @@ def test_SWUT_MODEL_00025_function_dict_type_alias():
     assert func_dict["COM_Init"][1] == func2
 
     # Verify values are FunctionInfo objects
-    assert all(isinstance(f, FunctionInfo) for funcs in func_dict.values() for f in funcs)
+    assert all(
+        isinstance(f, FunctionInfo) for funcs in func_dict.values() for f in funcs
+    )

@@ -5,16 +5,16 @@ This module builds call trees by performing depth-first traversal
 of function calls, detecting cycles, and collecting statistics.
 """
 
-from typing import List, Set, Optional, Dict
 from pathlib import Path
+from typing import Dict, List, Optional, Set
 
 from ..database.function_database import FunctionDatabase
 from ..database.models import (
-    FunctionInfo,
-    CallTreeNode,
-    CircularDependency,
     AnalysisResult,
     AnalysisStatistics,
+    CallTreeNode,
+    CircularDependency,
+    FunctionInfo,
 )
 
 
@@ -116,7 +116,7 @@ class CallTreeBuilder:
         )
 
         if verbose:
-            print(f"\nAnalysis complete:")
+            print("\nAnalysis complete:")
             print(f"  - Total nodes: {self.total_nodes}")
             print(f"  - Unique functions: {unique_functions}")
             print(f"  - Max depth reached: {self.max_depth_reached}")

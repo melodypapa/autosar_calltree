@@ -1,9 +1,11 @@
 """Tests for AUTOSAR parser module (SWUT_PARSER_AUTOSAR_*)"""
 
-import pytest
 from pathlib import Path
-from autosar_calltree.parsers.autosar_parser import AutosarParser
+
+import pytest
+
 from autosar_calltree.database.models import FunctionType, Parameter
+from autosar_calltree.parsers.autosar_parser import AutosarParser
 
 
 class TestAutosarParserPatterns:
@@ -15,7 +17,7 @@ class TestAutosarParserPatterns:
         parser = AutosarParser()
 
         # Test basic FUNC pattern
-        line = 'FUNC(void, RTE_CODE) Demo_Init(void)'
+        line = "FUNC(void, RTE_CODE) Demo_Init(void)"
         result = parser.parse_function_declaration(line, Path("test.c"), 1)
         assert result is not None
         assert result.name == "Demo_Init"
@@ -26,7 +28,7 @@ class TestAutosarParserPatterns:
         assert result.is_static is False
 
         # Test FUNC with return type and parameters
-        line = 'FUNC(uint32, AUTOMATIC) HW_ReadSensor(VAR(uint32, AUTOMATIC) sensor_id)'
+        line = "FUNC(uint32, AUTOMATIC) HW_ReadSensor(VAR(uint32, AUTOMATIC) sensor_id)"
         result = parser.parse_function_declaration(line, Path("test.c"), 5)
         assert result is not None
         assert result.name == "HW_ReadSensor"
@@ -37,7 +39,7 @@ class TestAutosarParserPatterns:
         assert result.parameters[0].param_type == "uint32"
 
         # Test STATIC FUNC
-        line = 'STATIC FUNC(uint8, CODE) Internal_Function(void)'
+        line = "STATIC FUNC(uint8, CODE) Internal_Function(void)"
         result = parser.parse_function_declaration(line, Path("test.c"), 10)
         assert result is not None
         assert result.name == "Internal_Function"
@@ -50,7 +52,7 @@ class TestAutosarParserPatterns:
         parser = AutosarParser()
 
         # Test basic FUNC_P2VAR pattern
-        line = 'FUNC_P2VAR(uint8, AUTOMATIC, Demo_VAR) GetBuffer(void)'
+        line = "FUNC_P2VAR(uint8, AUTOMATIC, Demo_VAR) GetBuffer(void)"
         result = parser.parse_function_declaration(line, Path("test.c"), 1)
         assert result is not None
         assert result.name == "GetBuffer"
@@ -60,7 +62,7 @@ class TestAutosarParserPatterns:
         assert result.function_type == FunctionType.AUTOSAR_FUNC_P2VAR
 
         # Test FUNC_P2VAR with parameters
-        line = 'FUNC_P2VAR(uint32, RTE_VAR, APPL_DATA) GetData(VAR(uint8, AUTOMATIC) index)'
+        line = "FUNC_P2VAR(uint32, RTE_VAR, APPL_DATA) GetData(VAR(uint8, AUTOMATIC) index)"
         result = parser.parse_function_declaration(line, Path("test.c"), 5)
         assert result is not None
         assert result.name == "GetData"
@@ -73,7 +75,7 @@ class TestAutosarParserPatterns:
         parser = AutosarParser()
 
         # Test basic FUNC_P2CONST pattern
-        line = 'FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_VAR) GetConfig(void)'
+        line = "FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_VAR) GetConfig(void)"
         result = parser.parse_function_declaration(line, Path("test.c"), 1)
         assert result is not None
         assert result.name == "GetConfig"
@@ -83,7 +85,7 @@ class TestAutosarParserPatterns:
         assert result.function_type == FunctionType.AUTOSAR_FUNC_P2CONST
 
         # Test FUNC_P2CONST with parameters
-        line = 'FUNC_P2CONST(uint8, RTE_CONST, CONFIG_VAR) GetReadOnlyData(VAR(uint32, AUTOMATIC) offset)'
+        line = "FUNC_P2CONST(uint8, RTE_CONST, CONFIG_VAR) GetReadOnlyData(VAR(uint32, AUTOMATIC) offset)"
         result = parser.parse_function_declaration(line, Path("test.c"), 5)
         assert result is not None
         assert result.name == "GetReadOnlyData"
@@ -99,29 +101,29 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test simple parameter list
-        line = 'FUNC(void, RTE_CODE) TestFunc(VAR(uint32, AUTOMATIC) value)'
-        start = line.find('TestFunc') + len('TestFunc')
+        line = "FUNC(void, RTE_CODE) TestFunc(VAR(uint32, AUTOMATIC) value)"
+        start = line.find("TestFunc") + len("TestFunc")
         param_string = parser._extract_param_string(line, start)
-        assert param_string == 'VAR(uint32, AUTOMATIC) value'
+        assert param_string == "VAR(uint32, AUTOMATIC) value"
 
         # Test multiple parameters
-        line = 'FUNC(void, RTE_CODE) TestFunc(VAR(uint8, AUTOMATIC) a, VAR(uint16, AUTOMATIC) b)'
-        start = line.find('TestFunc') + len('TestFunc')
+        line = "FUNC(void, RTE_CODE) TestFunc(VAR(uint8, AUTOMATIC) a, VAR(uint16, AUTOMATIC) b)"
+        start = line.find("TestFunc") + len("TestFunc")
         param_string = parser._extract_param_string(line, start)
-        assert 'VAR(uint8, AUTOMATIC) a' in param_string
-        assert 'VAR(uint16, AUTOMATIC) b' in param_string
+        assert "VAR(uint8, AUTOMATIC) a" in param_string
+        assert "VAR(uint16, AUTOMATIC) b" in param_string
 
         # Test empty parameter list
-        line = 'FUNC(void, RTE_CODE) TestFunc(void)'
-        start = line.find('TestFunc') + len('TestFunc')
+        line = "FUNC(void, RTE_CODE) TestFunc(void)"
+        start = line.find("TestFunc") + len("TestFunc")
         param_string = parser._extract_param_string(line, start)
-        assert param_string == 'void'
+        assert param_string == "void"
 
         # Test nested parentheses (function pointer parameter)
-        line = 'FUNC(void, RTE_CODE) TestFunc(VAR(void, AUTOMATIC) (*callback)(VAR(uint32, AUTOMATIC)))'
-        start = line.find('TestFunc') + len('TestFunc')
+        line = "FUNC(void, RTE_CODE) TestFunc(VAR(void, AUTOMATIC) (*callback)(VAR(uint32, AUTOMATIC)))"
+        start = line.find("TestFunc") + len("TestFunc")
         param_string = parser._extract_param_string(line, start)
-        assert '(VAR(uint32, AUTOMATIC))' in param_string
+        assert "(VAR(uint32, AUTOMATIC))" in param_string
 
     # SWUT_PARSER_AUTOSAR_00005: VAR Parameter Pattern Recognition
     def test_SWUT_PARSER_AUTOSAR_00005_var_parameter_pattern(self):
@@ -129,7 +131,7 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test basic VAR parameter
-        param_str = 'VAR(uint32, AUTOMATIC) config_mode'
+        param_str = "VAR(uint32, AUTOMATIC) config_mode"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == "config_mode"
@@ -139,13 +141,13 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "AUTOMATIC"
 
         # Test VAR with different memory class
-        param_str = 'VAR(uint8, APPL_DATA) value'
+        param_str = "VAR(uint8, APPL_DATA) value"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].memory_class == "APPL_DATA"
 
         # Test multiple VAR parameters
-        param_str = 'VAR(uint8, AUTOMATIC) param1, VAR(uint16, AUTOMATIC) param2, VAR(uint32, AUTOMATIC) param3'
+        param_str = "VAR(uint8, AUTOMATIC) param1, VAR(uint16, AUTOMATIC) param2, VAR(uint32, AUTOMATIC) param3"
         params = parser.parse_parameters(param_str)
         assert len(params) == 3
         assert params[0].name == "param1"
@@ -158,7 +160,7 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test basic P2VAR parameter
-        param_str = 'P2VAR(uint8, AUTOMATIC, APPL_DATA) buffer'
+        param_str = "P2VAR(uint8, AUTOMATIC, APPL_DATA) buffer"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == "buffer"
@@ -168,7 +170,7 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "APPL_DATA"
 
         # Test P2VAR with different memory classes
-        param_str = 'P2VAR(ConfigType, RTE_VAR, APPL_DATA) config'
+        param_str = "P2VAR(ConfigType, RTE_VAR, APPL_DATA) config"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].memory_class == "APPL_DATA"
@@ -179,7 +181,7 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test basic P2CONST parameter
-        param_str = 'P2CONST(uint8, AUTOMATIC, APPL_CONST) data'
+        param_str = "P2CONST(uint8, AUTOMATIC, APPL_CONST) data"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == "data"
@@ -189,7 +191,7 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "APPL_CONST"
 
         # Test P2CONST with different memory classes
-        param_str = 'P2CONST(ConfigType, RTE_CONST, APPL_DATA) config'
+        param_str = "P2CONST(ConfigType, RTE_CONST, APPL_DATA) config"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].memory_class == "APPL_DATA"
@@ -200,7 +202,7 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test basic CONST parameter
-        param_str = 'CONST(uint32, AUTOMATIC) timeout'
+        param_str = "CONST(uint32, AUTOMATIC) timeout"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == "timeout"
@@ -210,7 +212,7 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "AUTOMATIC"
 
         # Test CONST with different memory class
-        param_str = 'CONST(uint16, RTE_CONST) max_retries'
+        param_str = "CONST(uint16, RTE_CONST) max_retries"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].memory_class == "RTE_CONST"
@@ -221,7 +223,7 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test pointer parameter
-        param_str = 'uint8* buffer'
+        param_str = "uint8* buffer"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == "buffer"
@@ -230,7 +232,7 @@ class TestAutosarParserParameters:
         assert params[0].is_const is False
 
         # Test const pointer parameter
-        param_str = 'const ConfigType* config'
+        param_str = "const ConfigType* config"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == "config"
@@ -239,7 +241,7 @@ class TestAutosarParserParameters:
         assert params[0].is_const is True
 
         # Test type-only parameter (no name)
-        param_str = 'uint32'
+        param_str = "uint32"
         params = parser.parse_parameters(param_str)
         assert len(params) == 1
         assert params[0].name == ""
@@ -251,19 +253,21 @@ class TestAutosarParserParameters:
         parser = AutosarParser()
 
         # Test simple splitting
-        param_str = 'VAR(uint32, AUTOMATIC) a, VAR(uint8, AUTOMATIC) b'
+        param_str = "VAR(uint32, AUTOMATIC) a, VAR(uint8, AUTOMATIC) b"
         parts = parser._split_parameters(param_str)
         assert len(parts) == 2
-        assert parts[0].strip() == 'VAR(uint32, AUTOMATIC) a'
-        assert parts[1].strip() == 'VAR(uint8, AUTOMATIC) b'
+        assert parts[0].strip() == "VAR(uint32, AUTOMATIC) a"
+        assert parts[1].strip() == "VAR(uint8, AUTOMATIC) b"
 
         # Test splitting with nested parentheses in VAR macro
-        param_str = 'VAR(uint32, AUTOMATIC) value, P2VAR(uint8, AUTOMATIC, APPL_DATA) buffer'
+        param_str = (
+            "VAR(uint32, AUTOMATIC) value, P2VAR(uint8, AUTOMATIC, APPL_DATA) buffer"
+        )
         parts = parser._split_parameters(param_str)
         assert len(parts) == 2
 
         # Test splitting with function pointer
-        param_str = 'VAR(void, AUTOMATIC) (*callback)(VAR(uint32, AUTOMATIC)), VAR(uint32, AUTOMATIC) context'
+        param_str = "VAR(void, AUTOMATIC) (*callback)(VAR(uint32, AUTOMATIC)), VAR(uint32, AUTOMATIC) context"
         parts = parser._split_parameters(param_str)
         assert len(parts) == 2
 
@@ -277,7 +281,7 @@ class TestAutosarParserEdgeCases:
         parser = AutosarParser()
 
         # Test FUNC declaration
-        line = 'FUNC(void, RTE_CODE) Demo_Init(void)'
+        line = "FUNC(void, RTE_CODE) Demo_Init(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 8)
         assert result is not None
         assert result.name == "Demo_Init"
@@ -289,7 +293,7 @@ class TestAutosarParserEdgeCases:
         assert result.memory_class == "RTE_CODE"
 
         # Test FUNC_P2VAR declaration
-        line = 'FUNC_P2VAR(uint8, AUTOMATIC, APPL_VAR) GetBuffer(void)'
+        line = "FUNC_P2VAR(uint8, AUTOMATIC, APPL_VAR) GetBuffer(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 15)
         assert result is not None
         assert result.name == "GetBuffer"
@@ -298,7 +302,7 @@ class TestAutosarParserEdgeCases:
         assert result.macro_type == "FUNC_P2VAR"
 
         # Test FUNC_P2CONST declaration
-        line = 'FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_CONST) GetConfig(void)'
+        line = "FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_CONST) GetConfig(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 20)
         assert result is not None
         assert result.name == "GetConfig"
@@ -307,7 +311,7 @@ class TestAutosarParserEdgeCases:
         assert result.macro_type == "FUNC_P2CONST"
 
         # Test non-matching line returns None
-        line = 'void traditional_c_function(void)'
+        line = "void traditional_c_function(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 25)
         assert result is None
 
@@ -317,19 +321,31 @@ class TestAutosarParserEdgeCases:
         parser = AutosarParser()
 
         # Test FUNC detection
-        assert parser.is_autosar_function('FUNC(void, RTE_CODE) Demo_Init(void)') is True
+        assert (
+            parser.is_autosar_function("FUNC(void, RTE_CODE) Demo_Init(void)") is True
+        )
 
         # Test FUNC_P2VAR detection
-        assert parser.is_autosar_function('FUNC_P2VAR(uint8, AUTOMATIC, APPL_VAR) GetBuffer(void)') is True
+        assert (
+            parser.is_autosar_function(
+                "FUNC_P2VAR(uint8, AUTOMATIC, APPL_VAR) GetBuffer(void)"
+            )
+            is True
+        )
 
         # Test FUNC_P2CONST detection
-        assert parser.is_autosar_function('FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_CONST) GetConfig(void)') is True
+        assert (
+            parser.is_autosar_function(
+                "FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_CONST) GetConfig(void)"
+            )
+            is True
+        )
 
         # Test non-AUTOSAR function
-        assert parser.is_autosar_function('void traditional_c_function(void)') is False
+        assert parser.is_autosar_function("void traditional_c_function(void)") is False
 
         # Test empty string
-        assert parser.is_autosar_function('') is False
+        assert parser.is_autosar_function("") is False
 
     # SWUT_PARSER_AUTOSAR_00013: Empty Parameter List Handling
     def test_SWUT_PARSER_AUTOSAR_00013_empty_parameter_list_handling(self):
@@ -337,15 +353,15 @@ class TestAutosarParserEdgeCases:
         parser = AutosarParser()
 
         # Test void parameter list
-        params = parser.parse_parameters('void')
+        params = parser.parse_parameters("void")
         assert len(params) == 0
 
         # Test empty parameter list
-        params = parser.parse_parameters('')
+        params = parser.parse_parameters("")
         assert len(params) == 0
 
         # Test whitespace-only parameter list
-        params = parser.parse_parameters('   ')
+        params = parser.parse_parameters("   ")
         assert len(params) == 0
 
     # SWUT_PARSER_AUTOSAR_00014: Whitespace Tolerance
@@ -354,7 +370,7 @@ class TestAutosarParserEdgeCases:
         parser = AutosarParser()
 
         # Test extra spaces in FUNC macro
-        line = 'FUNC(  void  ,  RTE_CODE  )  Demo_Init  (  void  )'
+        line = "FUNC(  void  ,  RTE_CODE  )  Demo_Init  (  void  )"
         result = parser.parse_function_declaration(line, Path("test.c"), 1)
         assert result is not None
         assert result.name == "Demo_Init"
@@ -362,7 +378,9 @@ class TestAutosarParserEdgeCases:
         assert result.memory_class == "RTE_CODE"
 
         # Test extra spaces in parameters
-        line = 'FUNC(void, RTE_CODE) TestFunc(  VAR  (  uint32  ,  AUTOMATIC  )  value  )'
+        line = (
+            "FUNC(void, RTE_CODE) TestFunc(  VAR  (  uint32  ,  AUTOMATIC  )  value  )"
+        )
         result = parser.parse_function_declaration(line, Path("test.c"), 2)
         assert result is not None
         assert len(result.parameters) == 1
@@ -374,7 +392,7 @@ class TestAutosarParserEdgeCases:
         parser = AutosarParser()
 
         # Test FUNC FunctionInfo creation
-        line = 'FUNC(void, RTE_CODE) Demo_Init(VAR(uint32, AUTOMATIC) mode)'
+        line = "FUNC(void, RTE_CODE) Demo_Init(VAR(uint32, AUTOMATIC) mode)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 8)
         assert result.name == "Demo_Init"
         assert result.return_type == "void"
@@ -388,7 +406,7 @@ class TestAutosarParserEdgeCases:
         assert result.parameters[0].name == "mode"
 
         # Test STATIC FUNC FunctionInfo creation
-        line = 'STATIC FUNC(uint8, CODE) InternalFunction(void)'
+        line = "STATIC FUNC(uint8, CODE) InternalFunction(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 12)
         assert result.name == "InternalFunction"
         assert result.return_type == "uint8"
@@ -397,7 +415,7 @@ class TestAutosarParserEdgeCases:
         assert result.memory_class == "CODE"
 
         # Test FUNC_P2VAR FunctionInfo creation
-        line = 'FUNC_P2VAR(uint32, AUTOMATIC, APPL_DATA) GetBuffer(void)'
+        line = "FUNC_P2VAR(uint32, AUTOMATIC, APPL_DATA) GetBuffer(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 15)
         assert result.name == "GetBuffer"
         assert result.return_type == "uint32*"
@@ -405,7 +423,7 @@ class TestAutosarParserEdgeCases:
         assert result.macro_type == "FUNC_P2VAR"
 
         # Test FUNC_P2CONST FunctionInfo creation
-        line = 'FUNC_P2CONST(uint8, RTE_CONST, CONFIG_VAR) GetConfig(void)'
+        line = "FUNC_P2CONST(uint8, RTE_CONST, CONFIG_VAR) GetConfig(void)"
         result = parser.parse_function_declaration(line, Path("demo.c"), 18)
         assert result.name == "GetConfig"
         assert result.return_type == "const uint8*"
@@ -419,7 +437,12 @@ class TestAutosarParserWithFixtures:
     def test_parse_basic_functions_fixture(self):
         """Test parsing basic_functions.c fixture."""
         parser = AutosarParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "autosar_code" / "basic_functions.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "autosar_code"
+            / "basic_functions.c"
+        )
         content = fixture_path.read_text()
 
         functions = []
@@ -442,7 +465,12 @@ class TestAutosarParserWithFixtures:
     def test_parse_with_parameters_fixture(self):
         """Test parsing with_parameters.c fixture."""
         parser = AutosarParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "autosar_code" / "with_parameters.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "autosar_code"
+            / "with_parameters.c"
+        )
         content = fixture_path.read_text()
 
         functions = []
@@ -471,7 +499,12 @@ class TestAutosarParserWithFixtures:
     def test_parse_complex_macros_fixture(self):
         """Test parsing complex_macros.c fixture."""
         parser = AutosarParser()
-        fixture_path = Path(__file__).parent.parent / "fixtures" / "autosar_code" / "complex_macros.c"
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "autosar_code"
+            / "complex_macros.c"
+        )
         content = fixture_path.read_text()
 
         functions = []

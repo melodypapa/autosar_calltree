@@ -9,17 +9,16 @@ from pathlib import Path
 from typing import Optional
 
 import click
+from rich import print as rprint
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-from rich import print as rprint
 
-from ..database.function_database import FunctionDatabase
 from ..analyzers.call_tree_builder import CallTreeBuilder
-from ..generators.mermaid_generator import MermaidGenerator
 from ..config.module_config import ModuleConfig
+from ..database.function_database import FunctionDatabase
+from ..generators.mermaid_generator import MermaidGenerator
 from ..version import __version__
-
 
 console = Console(record=True)
 
@@ -286,7 +285,8 @@ def cli(
                 )
 
                 generator = MermaidGenerator(
-                    abbreviate_rte=not no_abbreviate_rte, use_module_names=use_module_names
+                    abbreviate_rte=not no_abbreviate_rte,
+                    use_module_names=use_module_names,
                 )
                 generator.generate(result, str(mermaid_output))
 
