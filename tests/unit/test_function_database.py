@@ -187,13 +187,27 @@ class TestDatabaseBuilding:
 
     def test_SWUT_DB_00005_database_building(self):
         """Test database builds correctly from demo directory (SWR_DB_00005)."""
-        db = FunctionDatabase(source_dir="./demo")
-        db.build_database(use_cache=False, verbose=False)
+        import tempfile
+        import shutil
 
-        assert db.total_files_scanned == 4
-        assert db.total_functions_found >= 5
-        assert len(db.functions) > 0
-        assert len(db.functions_by_file) == 4
+        # Create a temporary directory to avoid including large_scale demo files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+
+            # Copy only the core demo files (exclude large_scale)
+            demo_files = ["hardware.c", "software.c", "communication.c", "demo.c"]
+            for filename in demo_files:
+                src = Path("./demo") / filename
+                if src.exists():
+                    shutil.copy(src, temp_path / filename)
+
+            db = FunctionDatabase(source_dir=str(temp_path))
+            db.build_database(use_cache=False, verbose=False)
+
+            assert db.total_files_scanned == 4
+            assert db.total_functions_found >= 5
+            assert len(db.functions) > 0
+            assert len(db.functions_by_file) == 4
 
     def test_SWUT_DB_00005_parse_error_collection(self):
         """Test parse errors are collected without stopping scan (SWR_DB_00021)."""
@@ -587,13 +601,27 @@ class TestQueryMethods:
 
     def test_SWUT_DB_00015_function_search_pattern(self):
         """Test functions can be searched by pattern (SWR_DB_00019)."""
-        db = FunctionDatabase(source_dir="./demo")
-        db.build_database(use_cache=False, verbose=False)
+        import tempfile
+        import shutil
 
-        result = db.search_functions("Init")
+        # Create a temporary directory to avoid including large_scale demo files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
 
-        assert len(result) > 0
-        assert all("Init" in f.name for f in result)
+            # Copy only the core demo files (exclude large_scale)
+            demo_files = ["hardware.c", "software.c", "communication.c", "demo.c"]
+            for filename in demo_files:
+                src = Path("./demo") / filename
+                if src.exists():
+                    shutil.copy(src, temp_path / filename)
+
+            db = FunctionDatabase(source_dir=str(temp_path))
+            db.build_database(use_cache=False, verbose=False)
+
+            result = db.search_functions("Init")
+
+            assert len(result) > 0
+            assert all("Init" in f.name for f in result)
 
     def test_SWUT_DB_00015_search_case_insensitive(self):
         """Test search is case-insensitive."""
@@ -617,21 +645,35 @@ class TestQueryMethods:
 
     def test_SWUT_DB_00016_database_statistics(self):
         """Test database returns accurate statistics (SWR_DB_00020)."""
-        db = FunctionDatabase(source_dir="./demo")
-        db.build_database(use_cache=False, verbose=False)
+        import tempfile
+        import shutil
 
-        stats = db.get_statistics()
+        # Create a temporary directory to avoid including large_scale demo files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
 
-        assert "total_files_scanned" in stats
-        assert "total_functions_found" in stats
-        assert "unique_function_names" in stats
-        assert "static_functions" in stats
-        assert "parse_errors" in stats
-        assert "module_stats" in stats
+            # Copy only the core demo files (exclude large_scale)
+            demo_files = ["hardware.c", "software.c", "communication.c", "demo.c"]
+            for filename in demo_files:
+                src = Path("./demo") / filename
+                if src.exists():
+                    shutil.copy(src, temp_path / filename)
 
-        assert stats["total_files_scanned"] == 4
-        assert stats["total_functions_found"] > 0
-        assert stats["unique_function_names"] > 0
+            db = FunctionDatabase(source_dir=str(temp_path))
+            db.build_database(use_cache=False, verbose=False)
+
+            stats = db.get_statistics()
+
+            assert "total_files_scanned" in stats
+            assert "total_functions_found" in stats
+            assert "unique_function_names" in stats
+            assert "static_functions" in stats
+            assert "parse_errors" in stats
+            assert "module_stats" in stats
+
+            assert stats["total_files_scanned"] == 4
+            assert stats["total_functions_found"] > 0
+            assert stats["unique_function_names"] > 0
 
     def test_SWUT_DB_00017_get_all_function_names(self):
         """Test database returns sorted list of function names (SWR_DB_00023)."""

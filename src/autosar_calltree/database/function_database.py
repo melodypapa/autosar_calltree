@@ -129,8 +129,8 @@ class FunctionDatabase:
 
         # Parse each file
         for idx, file_path in enumerate(c_files, 1):
-            if verbose and idx % 100 == 0:
-                print(f"Processing file {idx}/{len(c_files)}: {file_path.name}")
+            if verbose:
+                print(f"[{idx}/{len(c_files)}] Processing: {file_path.name}")
 
             try:
                 self._parse_file(file_path)
