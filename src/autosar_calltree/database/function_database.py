@@ -130,7 +130,9 @@ class FunctionDatabase:
         # Parse each file
         for idx, file_path in enumerate(c_files, 1):
             if verbose:
-                print(f"[{idx}/{len(c_files)}] Processing: {file_path.name}")
+                # Count lines in the file
+                line_count = len(file_path.read_text(encoding='utf-8', errors='ignore').splitlines())
+                print(f"Processing: [{idx}/{len(c_files)}] {file_path.name} (line: {line_count})")
 
             try:
                 self._parse_file(file_path)
