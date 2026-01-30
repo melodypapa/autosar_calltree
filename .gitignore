@@ -59,6 +59,6 @@ docs/_templates/
 
 # Project specific
 *.md.backup
-examples/output/
+demo/large_scale
 test_output/
 .claude/settings.local.json
