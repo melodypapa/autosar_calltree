@@ -4,8 +4,6 @@ End-to-end integration tests.
 Tests complete workflows from database building to output generation.
 """
 
-
-
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.config.module_config import ModuleConfig
 from autosar_calltree.database.function_database import FunctionDatabase
