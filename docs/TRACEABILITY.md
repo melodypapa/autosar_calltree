@@ -9,8 +9,8 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | Models | SWR_MODEL_00001-00025 (25) | SWUT_MODEL_00001-00025 (25) | ✅ Complete (100% coverage) |
 | AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 (15) | SWUT_PARSER_AUTOSAR_00001-00015 (15) | ✅ Complete (97% coverage) |
 | C Parser | SWR_PARSER_C_00001-00018 (18) | SWUT_PARSER_C_00001-00018 (18) | ✅ Complete (86% coverage) |
-| Database | SWR_DB_00001-00020 | SWUT_DB_00001-00020 | ⏳ Pending |
-| Analyzers | SWR_ANALYZER_00001-00015 | SWUT_ANALYZER_00001-00015 | ⏳ Pending |
+| Database | SWR_DB_00001-00024 (24) | SWUT_DB_00001-00020 (20) | ✅ Complete (80% coverage) |
+| Analyzers | SWR_ANALYZER_00001-00020 (20) | SWUT_ANALYZER_00001-00020 (20) | ✅ Complete (94% coverage) |
 | Config | SWR_CONFIG_00001-00010 | SWUT_CONFIG_00001-00010 | ⏳ Pending |
 | Generators | SWR_GENERATOR_00001-00020 | SWUT_GENERATOR_00001-00020 | ⏳ Pending |
 | CLI | SWR_CLI_00001-00014 | SWUT_CLI_00001-00014 | ⏳ Pending |
@@ -96,9 +96,67 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 
 ---
 
+## Database Module
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_DB_00001 | SWUT_DB_00001 | test_SWUT_DB_00001_database_initialization | ✅ Pass |
+| SWR_DB_00002 | SWUT_DB_00002 | test_SWUT_DB_00002_cache_directory_creation | ✅ Pass |
+| SWR_DB_00003 | SWUT_DB_00003 | test_SWUT_DB_00003_three_index_structure | ✅ Pass |
+| SWR_DB_00004 | SWUT_DB_00004 | test_SWUT_DB_00004_source_file_discovery | ✅ Pass |
+| SWR_DB_00005 | SWUT_DB_00005 | test_SWUT_DB_00005_database_building | ✅ Pass |
+| SWR_DB_00006 | SWUT_DB_00006 | test_SWUT_DB_00006_module_config_integration | ✅ Pass |
+| SWR_DB_00007 | SWUT_DB_00007 | test_SWUT_DB_00007_module_statistics_tracking | ✅ Pass |
+| SWR_DB_00009 | SWUT_DB_00009 | test_SWUT_DB_00009_smart_lookup_implementation_preference | ✅ Pass |
+| SWR_DB_00010 | SWUT_DB_00010 | test_SWUT_DB_00010_smart_lookup_filename_heuristics | ✅ Pass |
+| SWR_DB_00011 | SWUT_DB_00011 | test_SWUT_DB_00011_smart_lookup_cross_module_awareness | ✅ Pass |
+| SWR_DB_00012 | SWUT_DB_00012 | test_SWUT_DB_00012_smart_lookup_module_preference | ✅ Pass |
+| SWR_DB_00013 | SWUT_DB_00013 | test_SWUT_DB_00013_cache_metadata_validation | ✅ Pass |
+| SWR_DB_00014 | SWUT_DB_00010 | test_SWUT_DB_00010_cache_save_load | ✅ Pass |
+| SWR_DB_00015 | SWUT_DB_00015 | test_SWUT_DB_00015_cache_loading_progress | ✅ Pass |
+| SWR_DB_00016 | SWUT_DB_00012 | test_SWUT_DB_00012_cache_error_handling | ✅ Pass |
+| SWR_DB_00017 | SWUT_DB_00013 | test_SWUT_DB_00013_function_lookup_by_name | ✅ Pass |
+| SWR_DB_00018 | SWUT_DB_00014 | test_SWUT_DB_00014_qualified_function_lookup | ✅ Pass |
+| SWR_DB_00019 | SWUT_DB_00015 | test_SWUT_DB_00015_function_search_pattern | ✅ Pass |
+| SWR_DB_00020 | SWUT_DB_00016 | test_SWUT_DB_00016_database_statistics | ✅ Pass |
+| SWR_DB_00021 | SWUT_DB_00005 | test_SWUT_DB_00005_parse_error_collection | ✅ Pass |
+| SWR_DB_00022 | SWUT_DB_00020 | test_SWUT_DB_00020_cache_clearing | ✅ Pass |
+| SWR_DB_00023 | SWUT_DB_00017 | test_SWUT_DB_00017_get_all_function_names | ✅ Pass |
+| SWR_DB_00024 | SWUT_DB_00018 | test_SWUT_DB_00018_get_functions_by_file | ✅ Pass |
+
+---
+
+## Analyzers Module
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_ANALYZER_00001 | SWUT_ANALYZER_00001 | test_SWUT_ANALYZER_00001_builder_initialization | ✅ Pass |
+| SWR_ANALYZER_00002 | SWUT_ANALYZER_00002 | test_SWUT_ANALYZER_00002_state_reset_between_builds | ✅ Pass |
+| SWR_ANALYZER_00003 | SWUT_ANALYZER_00003 | test_SWUT_ANALYZER_00003_start_function_lookup | ✅ Pass |
+| SWR_ANALYZER_00004 | SWUT_ANALYZER_00004 | test_SWUT_ANALYZER_00004_multiple_definition_warning | ✅ Pass |
+| SWR_ANALYZER_00005 | SWUT_ANALYZER_00005 | test_SWUT_ANALYZER_00005_depth_first_traversal | ✅ Pass |
+| SWR_ANALYZER_00006 | SWUT_ANALYZER_00006 | test_SWUT_ANALYZER_00006_cycle_detection | ✅ Pass |
+| SWR_ANALYZER_00007 | SWUT_ANALYZER_00007 | test_SWUT_ANALYZER_00007_cycle_handling_in_tree | ✅ Pass |
+| SWR_ANALYZER_00008 | SWUT_ANALYZER_00008 | test_SWUT_ANALYZER_00008_max_depth_enforcement | ✅ Pass |
+| SWR_ANALYZER_00009 | SWUT_ANALYZER_00009 | test_SWUT_ANALYZER_00009_node_depth_tracking | ✅ Pass |
+| SWR_ANALYZER_00010 | SWUT_ANALYZER_00010 | test_SWUT_ANALYZER_00010_missing_function_handling | ✅ Pass |
+| SWR_ANALYZER_00011 | SWUT_ANALYZER_00011 | test_SWUT_ANALYZER_00011_statistics_collection | ✅ Pass |
+| SWR_ANALYZER_00012 | SWUT_ANALYZER_00012 | test_SWUT_ANALYZER_00012_unique_function_tracking | ✅ Pass |
+| SWR_ANALYZER_00013 | SWUT_ANALYZER_00013 | test_SWUT_ANALYZER_00013_qualified_name_generation | ✅ Pass |
+| SWR_ANALYZER_00014 | SWUT_ANALYZER_00014 | test_SWUT_ANALYZER_00014_result_object_creation | ✅ Pass |
+| SWR_ANALYZER_00015 | SWUT_ANALYZER_00015 | test_SWUT_ANALYZER_00015_error_result_missing_function | ✅ Pass |
+| SWR_ANALYZER_00016 | SWUT_ANALYZER_00016 | test_SWUT_ANALYZER_00016_get_all_functions_in_tree | ✅ Pass |
+| SWR_ANALYZER_00017 | SWUT_ANALYZER_00017 | test_SWUT_ANALYZER_00017_get_tree_depth | ✅ Pass |
+| SWR_ANALYZER_00018 | SWUT_ANALYZER_00018 | test_SWUT_ANALYZER_00018_get_leaf_nodes | ✅ Pass |
+| SWR_ANALYZER_00019 | SWUT_ANALYZER_00019 | test_SWUT_ANALYZER_00019_text_tree_generation | ✅ Pass |
+| SWR_ANALYZER_00020 | SWUT_ANALYZER_00020 | test_SWUT_ANALYZER_00020_verbose_progress_logging | ✅ Pass |
+
+---
+
 ## Revision History
 
 | Date | Version | Author | Change Description |
 |------|---------|--------|-------------------|
 | 2025-01-30 | 1.0 | Claude | Initial traceability matrix with models module |
 | 2026-01-30 | 1.1 | Claude | Added AUTOSAR and C parser modules with 33 requirements and tests |
+| 2026-01-30 | 1.2 | Claude | Added Database (24 req, 20 tests, 80% cov) and Analyzers (20 req, 20 tests, 94% cov) modules |
