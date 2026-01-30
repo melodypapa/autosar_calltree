@@ -7,6 +7,7 @@ Tests the ModuleConfig class which manages SW module mappings from YAML files.
 import re
 from pathlib import Path
 from typing import List
+
 import pytest
 
 from autosar_calltree.config.module_config import ModuleConfig
@@ -80,7 +81,9 @@ file_mappings:
 """
     )
 
-    with pytest.raises((ValueError, Exception)):  # Could be ValueError or yaml.YAMLError
+    with pytest.raises(
+        (ValueError, Exception)
+    ):  # Could be ValueError or yaml.YAMLError
         ModuleConfig(config_path)
 
 
@@ -133,7 +136,12 @@ def test_SWUT_CONFIG_00008_pattern_compilation(valid_config_path: Path) -> None:
     for pattern, module in config.pattern_mappings:
         assert hasattr(pattern, "match")  # Compiled regex has match method
         assert isinstance(module, str)
-        assert module in ["HardwareModule", "SoftwareModule", "CommunicationModule", "DriverModule"]
+        assert module in [
+            "HardwareModule",
+            "SoftwareModule",
+            "CommunicationModule",
+            "DriverModule",
+        ]
 
 
 # SWUT_CONFIG_00009: Invalid Pattern Mappings Type
@@ -224,7 +232,9 @@ pattern_mappings:
     config = ModuleConfig(config_path)
 
     # hw_driver.c matches both specific and pattern
-    assert config.get_module_for_file(Path("hw_driver.c")) == "SpecialModule"  # Specific wins
+    assert (
+        config.get_module_for_file(Path("hw_driver.c")) == "SpecialModule"
+    )  # Specific wins
     # hw_init.c only matches pattern
     assert config.get_module_for_file(Path("hw_init.c")) == "HardwareModule"
 
@@ -359,6 +369,7 @@ pattern_mappings:
 
 # Additional edge case tests
 
+
 def test_pattern_matching_with_wildcards(tmp_path: Path) -> None:
     """Test various glob pattern wildcard scenarios."""
     config_path = tmp_path / "wildcards.yaml"
@@ -399,7 +410,9 @@ pattern_mappings:
     config = ModuleConfig(config_path)
 
     assert config.get_module_for_file(Path("HW_driver.c")) == "HardwareModule"
-    assert config.get_module_for_file(Path("hw_driver.c")) is None  # Lowercase doesn't match
+    assert (
+        config.get_module_for_file(Path("hw_driver.c")) is None
+    )  # Lowercase doesn't match
 
 
 def test_module_lookup_with_path_separator(tmp_path: Path) -> None:
@@ -418,7 +431,9 @@ pattern_mappings:
 
     # Full path should work
     assert config.get_module_for_file(Path("/very/long/path/to/demo.c")) == "DemoModule"
-    assert config.get_module_for_file(Path("./relative/hw_driver.c")) == "HardwareModule"
+    assert (
+        config.get_module_for_file(Path("./relative/hw_driver.c")) == "HardwareModule"
+    )
 
 
 def test_statistics_without_default_module(tmp_path: Path) -> None:

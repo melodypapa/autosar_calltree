@@ -13,16 +13,18 @@ from typing import List
 
 import pytest
 
+from autosar_calltree.config.module_config import ModuleConfig
 from autosar_calltree.database.function_database import (
     CacheMetadata,
     FunctionDatabase,
 )
 from autosar_calltree.database.models import FunctionInfo, FunctionType
-from autosar_calltree.config.module_config import ModuleConfig
 
 
 # Helper to create function info with proper enum
-def create_function(name, file_path, line_number, calls=None, sw_module=None, is_static=False):
+def create_function(
+    name, file_path, line_number, calls=None, sw_module=None, is_static=False
+):
     """Helper to create FunctionInfo with proper enum handling."""
     return FunctionInfo(
         name=name,
@@ -32,7 +34,7 @@ def create_function(name, file_path, line_number, calls=None, sw_module=None, is
         is_static=is_static,
         function_type=FunctionType.TRADITIONAL_C,
         calls=calls or [],
-        sw_module=sw_module
+        sw_module=sw_module,
     )
 
 
@@ -54,9 +56,7 @@ class TestFunctionDatabaseInitialization:
         """Test database can be initialized with custom cache directory."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = Path(temp_dir) / "custom_cache"
-            db = FunctionDatabase(
-                source_dir="./demo", cache_dir=str(cache_path)
-            )
+            db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_path))
 
             assert db.cache_dir == cache_path
             assert db.cache_file == cache_path / "function_db.pkl"
@@ -65,16 +65,16 @@ class TestFunctionDatabaseInitialization:
         """Test database can be initialized with module configuration."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
-            config_file.write_text("""
+            config_file.write_text(
+                """
 version: "1.0"
 file_mappings:
   demo.c: DemoModule
-""")
+"""
+            )
 
             config = ModuleConfig(config_file)
-            db = FunctionDatabase(
-                source_dir="./demo", module_config=config
-            )
+            db = FunctionDatabase(source_dir="./demo", module_config=config)
 
             assert db.module_config == config
 
@@ -84,9 +84,7 @@ file_mappings:
             cache_path = Path(temp_dir) / "test_cache"
             assert not cache_path.exists()
 
-            db = FunctionDatabase(
-                source_dir=temp_dir, cache_dir=str(cache_path)
-            )
+            db = FunctionDatabase(source_dir=temp_dir, cache_dir=str(cache_path))
 
             assert cache_path.exists()
             assert cache_path.is_dir()
@@ -103,7 +101,7 @@ class TestDatabaseIndexing:
             name="test_func",
             file_path="test.c",
             line_number=10,
-            calls=["func1", "func2"]
+            calls=["func1", "func2"],
         )
 
         db._add_function(func)
@@ -125,17 +123,11 @@ class TestDatabaseIndexing:
         db = FunctionDatabase(source_dir="./demo")
 
         func1 = create_function(
-            name="duplicate",
-            file_path="file1.c",
-            line_number=10,
-            calls=[]
+            name="duplicate", file_path="file1.c", line_number=10, calls=[]
         )
 
         func2 = create_function(
-            name="duplicate",
-            file_path="file2.c",
-            line_number=20,
-            calls=[]
+            name="duplicate", file_path="file2.c", line_number=20, calls=[]
         )
 
         db._add_function(func1)
@@ -158,7 +150,7 @@ class TestDatabaseIndexing:
             name="MyFunction",
             file_path="/path/to/my_function.c",
             line_number=10,
-            calls=[]
+            calls=[],
         )
 
         db._add_function(func)
@@ -214,11 +206,13 @@ class TestDatabaseBuilding:
             temp_path = Path(temp_dir)
 
             # Valid file
-            (temp_path / "valid.c").write_text("""
+            (temp_path / "valid.c").write_text(
+                """
 void valid_func(void) {
     return;
 }
-""")
+"""
+            )
 
             # File that might cause issues (empty)
             (temp_path / "empty.c").write_text("")
@@ -240,20 +234,19 @@ class TestModuleConfiguration:
         """Test module configuration is applied to functions (SWR_DB_00006)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
-            config_file.write_text("""
+            config_file.write_text(
+                """
 version: "1.0"
 file_mappings:
   test.c: TestModule
-""")
+"""
+            )
 
             config = ModuleConfig(config_file)
             db = FunctionDatabase(source_dir=temp_dir, module_config=config)
 
             func = create_function(
-                name="test_func",
-                file_path="test.c",
-                line_number=10,
-                calls=[]
+                name="test_func", file_path="test.c", line_number=10, calls=[]
             )
 
             db._add_function(func)
@@ -265,20 +258,19 @@ file_mappings:
         """Test function without module mapping has no module assigned."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
-            config_file.write_text("""
+            config_file.write_text(
+                """
 version: "1.0"
 file_mappings:
   other.c: OtherModule
-""")
+"""
+            )
 
             config = ModuleConfig(config_file)
             db = FunctionDatabase(source_dir=temp_dir, module_config=config)
 
             func = create_function(
-                name="test_func",
-                file_path="unmapped.c",
-                line_number=10,
-                calls=[]
+                name="test_func", file_path="unmapped.c", line_number=10, calls=[]
             )
 
             db._add_function(func)
@@ -289,36 +281,29 @@ file_mappings:
         """Test module statistics are tracked correctly (SWR_DB_00007)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
-            config_file.write_text("""
+            config_file.write_text(
+                """
 version: "1.0"
 file_mappings:
   file1.c: ModuleA
   file2.c: ModuleB
-""")
+"""
+            )
 
             config = ModuleConfig(config_file)
             db = FunctionDatabase(source_dir=temp_dir, module_config=config)
 
             # Add functions to different modules
             func1 = create_function(
-                name="func1",
-                file_path="file1.c",
-                line_number=10,
-                calls=[]
+                name="func1", file_path="file1.c", line_number=10, calls=[]
             )
 
             func2 = create_function(
-                name="func2",
-                file_path="file1.c",
-                line_number=20,
-                calls=[]
+                name="func2", file_path="file1.c", line_number=20, calls=[]
             )
 
             func3 = create_function(
-                name="func3",
-                file_path="file2.c",
-                line_number=10,
-                calls=[]
+                name="func3", file_path="file2.c", line_number=10, calls=[]
             )
 
             db._add_function(func1)
@@ -338,10 +323,7 @@ class TestSmartFunctionLookup:
 
         # Declaration (no calls)
         declaration = create_function(
-            name="COM_Init",
-            file_path="demo.c",
-            line_number=5,
-            calls=[]
+            name="COM_Init", file_path="demo.c", line_number=5, calls=[]
         )
 
         # Implementation (has calls)
@@ -349,14 +331,13 @@ class TestSmartFunctionLookup:
             name="COM_Init",
             file_path="communication.c",
             line_number=10,
-            calls=["other_func"]
+            calls=["other_func"],
         )
 
         db.functions["COM_Init"] = [declaration, implementation]
 
         result = db._select_best_function_match(
-            db.functions["COM_Init"],
-            context_file="demo.c"
+            db.functions["COM_Init"], context_file="demo.c"
         )
 
         assert result == implementation
@@ -372,7 +353,7 @@ class TestSmartFunctionLookup:
             file_path="communication.c",
             line_number=10,
             calls=["other_func"],
-            sw_module="CommunicationModule"
+            sw_module="CommunicationModule",
         )
 
         # Function in non-matching file
@@ -380,14 +361,12 @@ class TestSmartFunctionLookup:
             name="COM_InitCommunication",
             file_path="demo.c",
             line_number=5,
-            calls=["other_func"]
+            calls=["other_func"],
         )
 
         db.functions["COM_InitCommunication"] = [implementation, other]
 
-        result = db._select_best_function_match(
-            db.functions["COM_InitCommunication"]
-        )
+        result = db._select_best_function_match(db.functions["COM_InitCommunication"])
 
         assert result == implementation
         assert result.sw_module == "CommunicationModule"
@@ -398,10 +377,7 @@ class TestSmartFunctionLookup:
 
         # Declaration in calling file
         local_decl = create_function(
-            name="COM_Init",
-            file_path="demo.c",
-            line_number=5,
-            calls=[]
+            name="COM_Init", file_path="demo.c", line_number=5, calls=[]
         )
 
         # Implementation in other file
@@ -409,14 +385,13 @@ class TestSmartFunctionLookup:
             name="COM_Init",
             file_path="communication.c",
             line_number=10,
-            calls=["other_func"]
+            calls=["other_func"],
         )
 
         db.functions["COM_Init"] = [local_decl, external_impl]
 
         result = db._select_best_function_match(
-            db.functions["COM_Init"],
-            context_file="demo.c"
+            db.functions["COM_Init"], context_file="demo.c"
         )
 
         assert result == external_impl
@@ -432,22 +407,17 @@ class TestSmartFunctionLookup:
             file_path="file1.c",
             line_number=10,
             calls=[],
-            sw_module="ModuleA"
+            sw_module="ModuleA",
         )
 
         # Function without module
         without_module = create_function(
-            name="SomeFunc",
-            file_path="file2.c",
-            line_number=10,
-            calls=[]
+            name="SomeFunc", file_path="file2.c", line_number=10, calls=[]
         )
 
         db.functions["SomeFunc"] = [with_module, without_module]
 
-        result = db._select_best_function_match(
-            db.functions["SomeFunc"]
-        )
+        result = db._select_best_function_match(db.functions["SomeFunc"])
 
         assert result == with_module
         assert result.sw_module == "ModuleA"
@@ -457,10 +427,7 @@ class TestSmartFunctionLookup:
         db = FunctionDatabase(source_dir="./demo")
 
         func = create_function(
-            name="SingleFunc",
-            file_path="file.c",
-            line_number=10,
-            calls=[]
+            name="SingleFunc", file_path="file.c", line_number=10, calls=[]
         )
 
         result = db._select_best_function_match([func])
@@ -475,10 +442,7 @@ class TestCaching:
         """Test cache can be saved and loaded (SWR_DB_00014)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
-            db = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
 
             db.build_database(use_cache=False, verbose=False)
             original_functions = db.total_functions_found
@@ -488,10 +452,7 @@ class TestCaching:
             assert db.cache_file.exists()
 
             # Create new database and load from cache
-            db2 = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db2 = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
             loaded = db2._load_from_cache(verbose=False)
 
             assert loaded is True
@@ -504,17 +465,13 @@ class TestCaching:
             cache_dir = Path(temp_dir) / "cache"
 
             # Build and save cache
-            db1 = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db1 = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
             db1.build_database(use_cache=False, verbose=False)
             db1._save_to_cache(verbose=False)
 
             # Try to load with wrong source directory
             db2 = FunctionDatabase(
-                source_dir="/wrong/directory",
-                cache_dir=str(cache_dir)
+                source_dir="/wrong/directory", cache_dir=str(cache_dir)
             )
             loaded = db2._load_from_cache(verbose=False)
 
@@ -524,10 +481,7 @@ class TestCaching:
         """Test cache loading handles errors gracefully (SWR_DB_00016)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
-            db = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
 
             # Create corrupted cache file
             cache_dir.mkdir(parents=True, exist_ok=True)
@@ -545,18 +499,12 @@ class TestCaching:
             cache_dir = Path(temp_dir) / "cache"
 
             # Build and save cache
-            db1 = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db1 = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
             db1.build_database(use_cache=False, verbose=False)
             db1._save_to_cache(verbose=False)
 
             # Load with verbose and capture output
-            db2 = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db2 = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
 
             import sys
             from io import StringIO
@@ -578,10 +526,7 @@ class TestCaching:
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
 
-            db = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
             db.build_database(use_cache=True, verbose=False)
 
             assert db.cache_file.exists()
@@ -595,10 +540,7 @@ class TestCaching:
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
 
-            db = FunctionDatabase(
-                source_dir="./demo",
-                cache_dir=str(cache_dir)
-            )
+            db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
 
             # Should not raise
             db.clear_cache()
@@ -754,9 +696,7 @@ class TestCacheMetadata:
         from datetime import datetime
 
         metadata = CacheMetadata(
-            created_at=datetime.now(),
-            source_directory="/test/path",
-            file_count=5
+            created_at=datetime.now(), source_directory="/test/path", file_count=5
         )
 
         assert metadata.source_directory == "/test/path"
@@ -767,16 +707,13 @@ class TestCacheMetadata:
         """Test CacheMetadata can include file checksums."""
         from datetime import datetime
 
-        checksums = {
-            "file1.c": "abc123",
-            "file2.c": "def456"
-        }
+        checksums = {"file1.c": "abc123", "file2.c": "def456"}
 
         metadata = CacheMetadata(
             created_at=datetime.now(),
             source_directory="/test/path",
             file_count=2,
-            file_checksums=checksums
+            file_checksums=checksums,
         )
 
         assert len(metadata.file_checksums) == 2

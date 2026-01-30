@@ -90,7 +90,11 @@ class TestEndToEndWorkflow:
         # Verify module names in output
         content = output_path.read_text()
         assert "DemoModule" in content
-        assert "HardwareModule" in content or "SoftwareModule" in content or "CommunicationModule" in content
+        assert (
+            "HardwareModule" in content
+            or "SoftwareModule" in content
+            or "CommunicationModule" in content
+        )
 
     def test_workflow_different_depths(self, demo_dir, tmp_path):
         """
@@ -114,8 +118,12 @@ class TestEndToEndWorkflow:
         assert result_3.statistics.max_depth_reached <= 3
 
         # Deeper depth should have more or equal functions
-        assert result_2.statistics.total_functions >= result_1.statistics.total_functions
-        assert result_3.statistics.total_functions >= result_2.statistics.total_functions
+        assert (
+            result_2.statistics.total_functions >= result_1.statistics.total_functions
+        )
+        assert (
+            result_3.statistics.total_functions >= result_2.statistics.total_functions
+        )
 
     def test_workflow_function_list(self, demo_dir):
         """
@@ -218,10 +226,19 @@ class TestEndToEndWorkflow:
         # Verify Mermaid structure
         assert "```mermaid" in content
         assert "sequenceDiagram" in content
-        assert "participant" in content or "Note over" in content or "->>" in content or "-->>" in content
+        assert (
+            "participant" in content
+            or "Note over" in content
+            or "->>" in content
+            or "-->>" in content
+        )
 
         # Verify metadata (any of these headers is acceptable)
-        assert "# Call Tree:" in content or "## Function Call Tree" in content or "## Metadata" in content
+        assert (
+            "# Call Tree:" in content
+            or "## Function Call Tree" in content
+            or "## Metadata" in content
+        )
 
     def test_workflow_with_parameters(self, demo_dir, tmp_path):
         """
@@ -409,7 +426,12 @@ class TestOutputFileContent:
         # Check essential Mermaid elements
         lines = content.split("\n")
         mermaid_start = [i for i, line in enumerate(lines) if "```mermaid" in line]
-        mermaid_end = [i for i, line in enumerate(lines) if "```" in line and i > mermaid_start[0] if mermaid_start]
+        mermaid_end = [
+            i
+            for i, line in enumerate(lines)
+            if "```" in line and i > mermaid_start[0]
+            if mermaid_start
+        ]
 
         assert len(mermaid_start) > 0, "No Mermaid code block found"
 

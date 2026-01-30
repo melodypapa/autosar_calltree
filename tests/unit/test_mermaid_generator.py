@@ -8,6 +8,7 @@ from call trees.
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+
 import pytest
 
 from autosar_calltree.database.models import (
@@ -126,12 +127,19 @@ def create_mock_analysis_result(
     """Create a mock AnalysisResult."""
     root = None
     if has_tree:
-        root = create_mock_call_tree([
-            ("Demo_Init", "demo.c", "DemoModule", [
-                ("HW_Init", "hw.c", "HardwareModule", []),
-                ("SW_Init", "sw.c", "SoftwareModule", []),
-            ]),
-        ])
+        root = create_mock_call_tree(
+            [
+                (
+                    "Demo_Init",
+                    "demo.c",
+                    "DemoModule",
+                    [
+                        ("HW_Init", "hw.c", "HardwareModule", []),
+                        ("SW_Init", "sw.c", "SoftwareModule", []),
+                    ],
+                ),
+            ]
+        )
 
     stats = AnalysisStatistics(
         total_functions=10,
@@ -188,12 +196,19 @@ def test_SWUT_GENERATOR_00002_mermaid_header() -> None:
 # SWUT_GENERATOR_00003: Participant Collection - Function Names
 def test_SWUT_GENERATOR_00003_collect_participants_functions() -> None:
     """Test participants collected as function names when use_module_names=False."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", None, [
-            ("HW_Init", "hw.c", None, []),
-            ("SW_Init", "sw.c", None, []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                None,
+                [
+                    ("HW_Init", "hw.c", None, []),
+                    ("SW_Init", "sw.c", None, []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=False)
     participants = gen._collect_participants(root)
@@ -207,12 +222,19 @@ def test_SWUT_GENERATOR_00003_collect_participants_functions() -> None:
 # SWUT_GENERATOR_00004: Participant Collection - Module Names
 def test_SWUT_GENERATOR_00004_collect_participants_modules() -> None:
     """Test participants collected as module names when use_module_names=True."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-            ("SW_Init", "sw.c", "SoftwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                    ("SW_Init", "sw.c", "SoftwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     participants = gen._collect_participants(root)
@@ -226,11 +248,18 @@ def test_SWUT_GENERATOR_00004_collect_participants_modules() -> None:
 # SWUT_GENERATOR_00005: Module Fallback to Filename
 def test_SWUT_GENERATOR_00005_module_fallback_to_filename() -> None:
     """Test functions without module assignment use filename as participant."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("Unmapped_Init", "unmapped.c", None, []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("Unmapped_Init", "unmapped.c", None, []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     participants = gen._collect_participants(root)
@@ -276,11 +305,18 @@ def test_SWUT_GENERATOR_00008_short_rte_not_abbreviated() -> None:
 # SWUT_GENERATOR_00009: Sequence Call Generation - Function Mode
 def test_SWUT_GENERATOR_00009_sequence_calls_function_mode() -> None:
     """Test sequence calls are generated correctly with function participants."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", None, [
-            ("HW_Init", "hw.c", None, []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                None,
+                [
+                    ("HW_Init", "hw.c", None, []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=False)
     lines: List[str] = []
@@ -293,11 +329,18 @@ def test_SWUT_GENERATOR_00009_sequence_calls_function_mode() -> None:
 # SWUT_GENERATOR_00010: Sequence Call Generation - Module Mode
 def test_SWUT_GENERATOR_00010_sequence_calls_module_mode() -> None:
     """Test sequence calls show function names on arrows in module mode."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     lines: List[str] = []
@@ -311,11 +354,19 @@ def test_SWUT_GENERATOR_00010_sequence_calls_module_mode() -> None:
 def test_SWUT_GENERATOR_00011_parameters_on_arrows() -> None:
     """Test that function parameters are displayed on sequence arrows."""
     params = [Parameter("timerId", "uint32", False, False)]
-    root = create_mock_call_tree_with_params([
-        ("Demo_Init", "demo.c", "DemoModule", [], [
-            ("HW_Init", "hw.c", "HardwareModule", params, []),
-        ]),
-    ])
+    root = create_mock_call_tree_with_params(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [],
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", params, []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     lines: List[str] = []
@@ -332,11 +383,19 @@ def test_SWUT_GENERATOR_00012_multiple_parameters() -> None:
         Parameter("value", "uint32", False, False),
         Parameter("status", "uint8*", True, False),
     ]
-    root = create_mock_call_tree_with_params([
-        ("Parent", "p.c", "ParentMod", [], [
-            ("Func", "f.c", "Mod", params, []),
-        ]),
-    ])
+    root = create_mock_call_tree_with_params(
+        [
+            (
+                "Parent",
+                "p.c",
+                "ParentMod",
+                [],
+                [
+                    ("Func", "f.c", "Mod", params, []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     lines: List[str] = []
@@ -349,11 +408,18 @@ def test_SWUT_GENERATOR_00012_multiple_parameters() -> None:
 # SWUT_GENERATOR_00013: Recursive Call Handling
 def test_SWUT_GENERATOR_00013_recursive_call_handling() -> None:
     """Test that recursive calls use special arrow syntax."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     # Mark child as recursive
     root.children[0].is_recursive = True
@@ -370,11 +436,18 @@ def test_SWUT_GENERATOR_00013_recursive_call_handling() -> None:
 # SWUT_GENERATOR_00014: Return Statement Generation
 def test_SWUT_GENERATOR_00014_return_statements() -> None:
     """Test that return statements are generated when include_returns=True."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True, include_returns=True)
     lines: List[str] = []
@@ -387,11 +460,18 @@ def test_SWUT_GENERATOR_00014_return_statements() -> None:
 # SWUT_GENERATOR_00015: Return Statements Disabled by Default
 def test_SWUT_GENERATOR_00015_returns_disabled_default() -> None:
     """Test that return statements are not generated by default."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)  # include_returns defaults to False
     lines: List[str] = []
@@ -418,11 +498,18 @@ def test_SWUT_GENERATOR_00016_function_table_format() -> None:
 # SWUT_GENERATOR_00017: Function Table - Module Mode
 def test_SWUT_GENERATOR_00017_function_table_module_column() -> None:
     """Test function table includes Module column when use_module_names=True."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     table = gen._generate_function_table(root)
@@ -437,11 +524,18 @@ def test_SWUT_GENERATOR_00017_function_table_module_column() -> None:
 # SWUT_GENERATOR_00018: Function Table - N/A for Unmapped
 def test_SWUT_GENERATOR_00018_function_table_na_for_unmapped() -> None:
     """Test unmapped functions show 'N/A' in Module column."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("Unmapped", "unmapped.c", None, []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("Unmapped", "unmapped.c", None, []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     table = gen._generate_function_table(root)
@@ -495,12 +589,19 @@ def test_SWUT_GENERATOR_00021_parameter_formatting_diagram() -> None:
 # SWUT_GENERATOR_00022: Text Tree Generation
 def test_SWUT_GENERATOR_00022_text_tree_generation() -> None:
     """Test text tree is generated with correct formatting."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-            ("SW_Init", "sw.c", "SoftwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                    ("SW_Init", "sw.c", "SoftwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator()
     tree = gen._generate_text_tree(root)
@@ -620,18 +721,30 @@ def test_SWUT_GENERATOR_00028_optional_sections(tmp_path: Path) -> None:
 def test_SWUT_GENERATOR_00029_unique_functions_in_table() -> None:
     """Test function table shows each function only once."""
     # Create tree where same function appears multiple times
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-            ("SW_Init", "sw.c", "SoftwareModule", [
-                ("HW_Init", "hw.c", "HardwareModule", []),
-            ]),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                    (
+                        "SW_Init",
+                        "sw.c",
+                        "SoftwareModule",
+                        [
+                            ("HW_Init", "hw.c", "HardwareModule", []),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator()
     table = gen._generate_function_table(root)
-    lines = [l for l in table.split("\n") if "HW_Init" in l]
+    lines = [line for line in table.split("\n") if "HW_Init" in line]
 
     # HW_Init should appear only once despite being called twice
     assert len(lines) == 1
@@ -640,15 +753,17 @@ def test_SWUT_GENERATOR_00029_unique_functions_in_table() -> None:
 # SWUT_GENERATOR_00030: Sorted Function Table
 def test_SWUT_GENERATOR_00030_sorted_function_table() -> None:
     """Test function table is sorted alphabetically."""
-    root = create_mock_call_tree([
-        ("Z_Function", "z.c", None),
-        ("A_Function", "a.c", None),
-        ("M_Function", "m.c", None),
-    ])
+    root = create_mock_call_tree(
+        [
+            ("Z_Function", "z.c", None),
+            ("A_Function", "a.c", None),
+            ("M_Function", "m.c", None),
+        ]
+    )
 
     gen = MermaidGenerator()
     table = gen._generate_function_table(root)
-    lines = [l for l in table.split("\n") if "| `" in l]
+    lines = [line for line in table.split("\n") if "| `" in line]
 
     # Extract function names from table
     func_names = []
@@ -679,6 +794,7 @@ def test_SWUT_GENERATOR_00031_parent_directory_creation(tmp_path: Path) -> None:
 
 # Additional edge case tests
 
+
 def test_function_table_with_parameters() -> None:
     """Test function table with various parameter types."""
     params = [
@@ -698,11 +814,18 @@ def test_function_table_with_parameters() -> None:
 
 def test_text_tree_with_recursive_nodes() -> None:
     """Test text tree marks recursive nodes."""
-    root = create_mock_call_tree([
-        ("Demo_Init", "demo.c", "DemoModule", [
-            ("HW_Init", "hw.c", "HardwareModule", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
 
     root.children[0].is_recursive = True
 
@@ -764,14 +887,26 @@ def test_rte_abbreviation_preserves_prefix() -> None:
 
 def test_participant_order_preserved() -> None:
     """Test participants maintain order of first encounter."""
-    root = create_mock_call_tree([
-        ("Third", "3.c", "Mod3", [
-            ("First", "1.c", "Mod1", []),
-            ("Second", "2.c", "Mod2", [
-                ("Fourth", "4.c", "Mod4", []),
-            ]),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Third",
+                "3.c",
+                "Mod3",
+                [
+                    ("First", "1.c", "Mod1", []),
+                    (
+                        "Second",
+                        "2.c",
+                        "Mod2",
+                        [
+                            ("Fourth", "4.c", "Mod4", []),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     participants = gen._collect_participants(root)
@@ -785,12 +920,19 @@ def test_participant_order_preserved() -> None:
 
 def test_multiple_calls_to_same_function() -> None:
     """Test diagram handles multiple calls to same function."""
-    root = create_mock_call_tree([
-        ("Main", "main.c", "MainMod", [
-            ("Helper", "helper.c", "HelperMod", []),
-            ("Helper", "helper.c", "HelperMod", []),  # Called again
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    ("Helper", "helper.c", "HelperMod", []),
+                    ("Helper", "helper.c", "HelperMod", []),  # Called again
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     diagram = gen._generate_mermaid_diagram(root)
@@ -801,15 +943,32 @@ def test_multiple_calls_to_same_function() -> None:
 
 def test_deeply_nested_tree() -> None:
     """Test text tree generation with deeply nested structure."""
-    root = create_mock_call_tree([
-        ("A", "a.c", "ModA", [
-            ("B", "b.c", "ModB", [
-                ("C", "c.c", "ModC", [
-                    ("D", "d.c", "ModD", []),
-                ]),
-            ]),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "A",
+                "a.c",
+                "ModA",
+                [
+                    (
+                        "B",
+                        "b.c",
+                        "ModB",
+                        [
+                            (
+                                "C",
+                                "c.c",
+                                "ModC",
+                                [
+                                    ("D", "d.c", "ModD", []),
+                                ],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator()
     tree = gen._generate_text_tree(root)
@@ -845,12 +1004,19 @@ def test_statistics_in_metadata() -> None:
 
 def test_mixed_modules_and_filenames() -> None:
     """Test participant collection with mixed modules and filenames."""
-    root = create_mock_call_tree([
-        ("Func1", "file1.c", "Module1", [
-            ("Func2", "file2.c", None, []),  # No module
-            ("Func3", "file3.c", "Module3", []),
-        ]),
-    ])
+    root = create_mock_call_tree(
+        [
+            (
+                "Func1",
+                "file1.c",
+                "Module1",
+                [
+                    ("Func2", "file2.c", None, []),  # No module
+                    ("Func3", "file3.c", "Module3", []),
+                ],
+            ),
+        ]
+    )
 
     gen = MermaidGenerator(use_module_names=True)
     participants = gen._collect_participants(root)

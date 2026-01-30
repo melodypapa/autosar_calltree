@@ -13,10 +13,14 @@ def extract_swut_from_tests(tests_dir: Path) -> Set[str]:
 
     for test_file in tests_dir.rglob("test_*.py"):
         content = test_file.read_text()
-        # Match comments like: # SWUT_MODEL_00001
-        matches = re.findall(r'#\s*SWUT_[A-Z_]+_\d+', content)
-        # Strip the '#' prefix to match traceability matrix format
-        swut_refs.update(m.strip().replace('#', '').strip() for m in matches)
+        # Match function definitions like: def test_SWUT_MODEL_00001_function_type_enum_values():
+        matches = re.findall(r'def\s+(test_SWUT_[A-Z_]+_\d+_[^(]+)', content)
+        # Extract just the SWUT_XXX_YYYYY prefix from the test name
+        for m in matches:
+            # Extract SWUT_XXX_YYYYY from test_SWUT_XXX_YYYYY_description
+            swut_match = re.match(r'(test_)?(SWUT_[A-Z_]+_\d+)', m)
+            if swut_match:
+                swut_refs.add(swut_match.group(2))
 
     return swut_refs
 

@@ -256,17 +256,122 @@ autosar-calltree/
 
 ### Running Tests
 
+The project has **comprehensive test coverage** with 278 tests across all modules:
+
 ```bash
+# Run all tests
 pytest tests/
-pytest --cov=autosar_calltree --cov-report=html
+
+# Run with verbose output
+pytest -vv tests/
+
+# Run specific test module
+pytest tests/test_models.py
+pytest tests/test_parsers.py
+pytest tests/test_database.py
+pytest tests/test_analyzers.py
+pytest tests/test_config.py
+pytest tests/test_generators.py
+pytest tests/test_cli.py
+pytest tests/test_integration.py
+
+# Run specific test case
+pytest tests/test_models.py::TestFunctionType::test_function_type_enum_values
+
+# Run tests with live stdout output (useful for debugging)
+pytest -vv -s tests/
+
+# Run tests and show coverage report
+pytest --cov=autosar_calltree --cov-report=html --cov-report=term
+
+# Run tests with coverage and omit tests from coverage report
+pytest --cov=autosar_calltree --cov-report=html --cov-report=term --omit=tests/
 ```
+
+### Test Coverage
+
+The project maintains **94% code coverage** across all modules:
+
+| Module | Coverage | Tests |
+|--------|----------|-------|
+| Models | 100% | 25 |
+| AUTOSAR Parser | 97% | 15 |
+| C Parser | 86% | 18 |
+| Database | 80% | 20 |
+| Analyzers | 94% | 20 |
+| Config | 97% | 25 |
+| Generators | 96% | 31 |
+| CLI (Integration) | ~90% | 14 |
+| End-to-End | ~90% | 110 |
+| **Total** | **94%** | **278** |
 
 ### Code Quality
 
 ```bash
+# Format code with Black
 black src/ tests/
+
+# Sort imports with isort
+isort src/ tests/
+
+# Lint with flake8
 flake8 src/ tests/
+
+# Type checking with mypy
 mypy src/
+
+# Run all quality checks (uses pre-configured scripts)
+./scripts/run_quality.sh
+
+# Check for traceability between requirements and tests
+python scripts/check_traceability.py
+```
+
+### Slash Commands
+
+The project provides convenient slash commands for common development tasks:
+
+```bash
+# Run all tests
+/test
+
+# Run quality checks
+/quality
+
+# Test requirement management
+/req
+
+# Merge a pull request
+/merge-pr
+
+# Generate GitHub workflow
+/gh-workflow
+
+# Parse and update documentation
+/parse
+
+# Sync documentation
+/sync-docs
+```
+
+These commands are documented in `.claude/commands/` and can be used from within Claude Code.
+
+### Requirements Traceability
+
+The project maintains 100% traceability between requirements and tests:
+
+```bash
+# Check traceability matrix
+python scripts/check_traceability.py
+
+# View traceability documentation
+cat docs/TRACEABILITY.md
+
+# View requirements index
+cat docs/requirements/README.md
+
+# View test index
+cat docs/tests/README.md
 ```
 
 ### Building Documentation

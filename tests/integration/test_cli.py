@@ -32,7 +32,9 @@ class TestStartFunctionOption:
         """Test that --start-function accepts function name."""
         runner = CliRunner()
         with runner.isolated_filesystem():
-            result = runner.invoke(cli, ["--source-dir", str(demo_dir), "--start-function", "Demo_Init"])
+            result = runner.invoke(
+                cli, ["--source-dir", str(demo_dir), "--start-function", "Demo_Init"]
+            )
             assert result.exit_code == 0
 
     def test_start_function_required_for_analysis(self, demo_dir):
@@ -48,7 +50,13 @@ class TestStartFunctionOption:
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
-                cli, ["--source-dir", str(demo_dir), "--start-function", "NonExistentFunction"]
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "NonExistentFunction",
+                ],
             )
             assert result.exit_code == 1
             assert "Error" in result.output
@@ -66,7 +74,9 @@ class TestSourceDirOption:
             demo_path.mkdir()
             (demo_path / "test.c").write_text("void test(void) { return; }")
 
-            result = runner.invoke(cli, ["--start-function", "test", "--list-functions"])
+            result = runner.invoke(
+                cli, ["--start-function", "test", "--list-functions"]
+            )
             assert result.exit_code == 0
 
     def test_source_dir_custom(self, demo_dir):
@@ -104,7 +114,14 @@ class TestOutputPathOption:
             custom_output = "custom_output.md"
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--output", custom_output],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--output",
+                    custom_output,
+                ],
             )
             assert result.exit_code == 0
             assert Path(custom_output).exists()
@@ -116,7 +133,14 @@ class TestOutputPathOption:
             output_path = "test_output.md"
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--output", output_path],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--output",
+                    output_path,
+                ],
             )
             assert result.exit_code == 0
             assert Path(output_path).is_file()
@@ -140,7 +164,15 @@ class TestMaxDepthOption:
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
-                cli, ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--max-depth", "1"]
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--max-depth",
+                    "1",
+                ],
             )
             assert result.exit_code == 0
 
@@ -150,7 +182,14 @@ class TestMaxDepthOption:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--max-depth", "abc"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--max-depth",
+                    "abc",
+                ],
             )
             assert result.exit_code != 0
 
@@ -174,7 +213,14 @@ class TestOutputFormatOption:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--format", "mermaid"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--format",
+                    "mermaid",
+                ],
             )
             assert result.exit_code == 0
             assert Path("call_tree.md").exists()
@@ -187,7 +233,14 @@ class TestOutputFormatOption:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--format", "xmi"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--format",
+                    "xmi",
+                ],
             )
             assert result.exit_code == 0
             assert "XMI format not yet implemented" in result.output
@@ -198,7 +251,14 @@ class TestOutputFormatOption:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--format", "both"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--format",
+                    "both",
+                ],
             )
             assert result.exit_code == 0
             assert Path("call_tree.mermaid.md").exists()
@@ -214,7 +274,13 @@ class TestCacheOptions:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--no-cache"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--no-cache",
+                ],
             )
             assert result.exit_code == 0
 
@@ -232,7 +298,13 @@ class TestCacheOptions:
             # Second run with rebuild
             result2 = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--rebuild-cache"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--rebuild-cache",
+                ],
             )
             assert result2.exit_code == 0
 
@@ -243,7 +315,14 @@ class TestCacheOptions:
             cache_dir = str(tmp_path / "custom_cache")
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--cache-dir", cache_dir],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cache-dir",
+                    cache_dir,
+                ],
             )
             assert result.exit_code == 0
             # Cache directory should be created
@@ -259,7 +338,13 @@ class TestVerboseOutput:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--verbose"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--verbose",
+                ],
             )
             assert result.exit_code == 0
             assert "Database Statistics" in result.output
@@ -285,7 +370,10 @@ class TestVerboseOutput:
             assert result.exit_code == 0
             # Module distribution only shown when modules are assigned
             # and cache is not used (fresh build)
-            assert "Module Distribution" in result.output or "Database Statistics" in result.output
+            assert (
+                "Module Distribution" in result.output
+                or "Database Statistics" in result.output
+            )
 
 
 class TestListFunctionsCommand:
@@ -331,14 +419,18 @@ class TestSearchFunctionsCommand:
     def test_search_shows_location(self, demo_dir):
         """Test that --search shows file and line number."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["--source-dir", str(demo_dir), "--search", "Demo_Init"])
+        result = runner.invoke(
+            cli, ["--source-dir", str(demo_dir), "--search", "Demo_Init"]
+        )
         assert result.exit_code == 0
         assert "demo.c" in result.output
 
     def test_empty_search_results(self, demo_dir):
         """Test that --search handles empty results."""
         runner = CliRunner()
-        result = runner.invoke(cli, ["--source-dir", str(demo_dir), "--search", "NonExistent"])
+        result = runner.invoke(
+            cli, ["--source-dir", str(demo_dir), "--search", "NonExistent"]
+        )
         assert result.exit_code == 0
         assert "No functions found" in result.output
 
@@ -387,7 +479,13 @@ class TestModuleConfigurationOptions:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--use-module-names"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--use-module-names",
+                ],
             )
             assert result.exit_code == 0
             assert "requires --module-config" in result.output
@@ -432,7 +530,13 @@ class TestRTEAbbreviationControl:
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
-                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init", "--no-abbreviate-rte"],
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--no-abbreviate-rte",
+                ],
             )
             assert result.exit_code == 0
 

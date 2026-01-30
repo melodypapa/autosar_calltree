@@ -105,10 +105,10 @@ class TestTreeBuilding:
         assert isinstance(result.errors, list)
 
         # Statistics should have all fields
-        assert hasattr(result.statistics, 'total_functions')
-        assert hasattr(result.statistics, 'max_depth_reached')
-        assert hasattr(result.statistics, 'circular_dependencies_found')
-        assert hasattr(result.statistics, 'unique_functions')
+        assert hasattr(result.statistics, "total_functions")
+        assert hasattr(result.statistics, "max_depth_reached")
+        assert hasattr(result.statistics, "circular_dependencies_found")
+        assert hasattr(result.statistics, "unique_functions")
 
     def test_SWUT_ANALYZER_00015_error_result_missing_function(self):
         """Test error result when function not found (SWR_ANALYZER_00015)."""
@@ -136,18 +136,22 @@ class TestCycleDetection:
             temp_path = Path(temp_dir)
 
             # func_a calls func_b
-            (temp_path / "func_a.c").write_text("""
+            (temp_path / "func_a.c").write_text(
+                """
 void func_a(void) {
     func_b();
 }
-""")
+"""
+            )
 
             # func_b calls func_a (circular)
-            (temp_path / "func_b.c").write_text("""
+            (temp_path / "func_b.c").write_text(
+                """
 void func_b(void) {
     func_a();
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -168,17 +172,21 @@ void func_b(void) {
             temp_path = Path(temp_dir)
 
             # Create circular call
-            (temp_path / "func_a.c").write_text("""
+            (temp_path / "func_a.c").write_text(
+                """
 void func_a(void) {
     func_b();
 }
-""")
+"""
+            )
 
-            (temp_path / "func_b.c").write_text("""
+            (temp_path / "func_b.c").write_text(
+                """
 void func_b(void) {
     func_a();
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -208,11 +216,13 @@ void func_b(void) {
             temp_path = Path(temp_dir)
 
             # Function that calls itself
-            (temp_path / "recursive.c").write_text("""
+            (temp_path / "recursive.c").write_text(
+                """
 void recursive_func(void) {
     recursive_func();
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -286,12 +296,14 @@ class TestErrorHandling:
             temp_path = Path(temp_dir)
 
             # Create function that calls non-existent functions
-            (temp_path / "caller.c").write_text("""
+            (temp_path / "caller.c").write_text(
+                """
 void caller(void) {
     nonexistent_function();
     another_missing();
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -376,7 +388,7 @@ class TestQualifiedName:
             line_number=10,
             is_static=False,
             function_type=FunctionType.TRADITIONAL_C,
-            calls=[]
+            calls=[],
         )
 
         builder = CallTreeBuilder(db)
@@ -415,17 +427,21 @@ class TestUtilityMethods:
             temp_path = Path(temp_dir)
 
             # Create circular call
-            (temp_path / "func_a.c").write_text("""
+            (temp_path / "func_a.c").write_text(
+                """
 void func_a(void) {
     func_b();
 }
-""")
+"""
+            )
 
-            (temp_path / "func_b.c").write_text("""
+            (temp_path / "func_b.c").write_text(
+                """
 void func_b(void) {
     func_a();
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -459,11 +475,13 @@ void func_b(void) {
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
-            (temp_path / "leaf.c").write_text("""
+            (temp_path / "leaf.c").write_text(
+                """
 void leaf(void) {
     return;
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -536,11 +554,13 @@ void leaf(void) {
             temp_path = Path(temp_dir)
 
             # Create self-recursive function
-            (temp_path / "recursive.c").write_text("""
+            (temp_path / "recursive.c").write_text(
+                """
 void recursive_func(void) {
     recursive_func();
 }
-""")
+"""
+            )
 
             db = FunctionDatabase(source_dir=temp_dir)
             db.build_database(use_cache=False, verbose=False)
@@ -619,7 +639,7 @@ class TestMultipleDefinitions:
             line_number=10,
             is_static=False,
             function_type=FunctionType.TRADITIONAL_C,
-            calls=[]
+            calls=[],
         )
 
         func2 = FunctionInfo(
@@ -629,7 +649,7 @@ class TestMultipleDefinitions:
             line_number=20,
             is_static=False,
             function_type=FunctionType.TRADITIONAL_C,
-            calls=[]
+            calls=[],
         )
 
         db.functions["DuplicateFunc"] = [func1, func2]
@@ -665,7 +685,7 @@ class TestMultipleDefinitions:
             line_number=10,
             is_static=False,
             function_type=FunctionType.TRADITIONAL_C,
-            calls=[]
+            calls=[],
         )
 
         func2 = FunctionInfo(
@@ -675,7 +695,7 @@ class TestMultipleDefinitions:
             line_number=20,
             is_static=False,
             function_type=FunctionType.TRADITIONAL_C,
-            calls=[]
+            calls=[],
         )
 
         db.functions["SomeFunc"] = [func1, func2]
