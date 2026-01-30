@@ -558,7 +558,7 @@ class TestRichConsoleOutput:
 
     def test_progress_spinners(self, demo_dir):
         """Test that progress indicators are shown."""
-        runner = CliRunner(mix_stderr=False)
+        runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
                 cli,
