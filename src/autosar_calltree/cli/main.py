@@ -152,12 +152,10 @@ def cli(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
-            transient=True,
+            transient=False,
         ) as progress:
             # Build database
-            task = progress.add_task(
-                f"Building function database from {source_dir}...", total=None
-            )
+            task = progress.add_task("", total=None)
 
             db = FunctionDatabase(source_dir, cache_dir=cache_dir, module_config=config)
             db.build_database(
@@ -199,6 +197,7 @@ def cli(
 
         # Handle search
         if search:
+            console.print()
             console.print(f"[bold]Search Results for '{search}':[/bold]\n")
             results = db.search_functions(search)
             if results:

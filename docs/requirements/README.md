@@ -8,14 +8,14 @@ This directory contains all software requirements for the AUTOSAR Call Tree Anal
 |--------|---------------------|-------|--------|----------|
 | Models | SWR_MODEL_00001-00025 | 25 | ✅ Complete | 100% |
 | AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 | 15 | ✅ Complete | 97% |
-| C Parser | SWR_PARSER_C_00001-00018 | 18 | ✅ Complete | 86% |
+| C Parser | SWR_PARSER_C_00001-00020 | 20 | ✅ Complete | 90% |
 | Database | SWR_DB_00001-00024 | 24 | ✅ Complete | 80% |
 | Analyzers | SWR_ANALYZER_00001-00020 | 20 | ✅ Complete | 94% |
 | Config | SWR_CONFIG_00001-00010 | 10 | ✅ Complete | 97% |
 | Generators | SWR_GENERATOR_00001-00020 | 20 | ✅ Complete | 96% |
 | CLI | SWR_CLI_00001-00014 | 14 | ✅ Complete | ~90% |
 | End-to-End | SWR_E2E_00001-00025 | 25 | ✅ Complete | ~90% |
-| **Total** | | **181** | **✅ 100% Traceable** | **94%** |
+| **Total** | | **183** | **✅ 100% Traceable** | **93%** |
 
 ## Requirement Documents
 
@@ -129,3 +129,4 @@ Business or technical rationale...
 | Date | Version | Author | Change Description |
 |------|---------|--------|-------------------|
 | 2026-01-30 | 1.0 | Claude | Initial requirements index with all modules |
+| 2026-01-30 | 1.1 | Claude | Added C Parser requirements for line-by-line processing (SWR_PARSER_C_00019-00020) to prevent catastrophic backtracking |

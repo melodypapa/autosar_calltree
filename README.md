@@ -32,7 +32,7 @@ pip install autosar-calltree
 For development:
 
 ```bash
-git clone https://github.com/yourusername/autosar-calltree.git
+git clone https://github.com/melodypapa/autosar-calltree.git
 cd autosar-calltree
 pip install -e ".[dev]"
 ```
@@ -427,9 +427,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/autosar-calltree/issues)
+- **Issues**: [GitHub Issues](https://github.com/melodypapa/autosar-calltree/issues)
 - **Documentation**: [Read the Docs](https://autosar-calltree.readthedocs.io)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/autosar-calltree/discussions)
+- **Discussions**: [GitHub Discussions](https://github.com/melodypapa/autosar-calltree/discussions)
 
 ---
 

@@ -592,3 +592,205 @@ class TestCParserWithFixtures:
         assert rte_func is not None
         assert "Rte_Call_StartOperation" in rte_func.calls
         assert "Rte_Write_Parameter_1" in rte_func.calls
+
+
+class TestCParserLineByLineProcessing:
+    """Test line-by-line processing to avoid catastrophic backtracking (SWR_PARSER_C_00019)."""
+
+    # SWUT_PARSER_C_00019: Line-by-Line Processing
+    def test_SWUT_PARSER_C_00019_line_by_line_processing(self):
+        """Test that parser processes content line-by-line to avoid catastrophic backtracking."""
+        parser = CParser()
+
+        # Create content with multiple functions on different lines
+        content = """void func1(void) {
+    return;
+}
+
+static uint32 func2(uint8 value) {
+    return value * 2;
+}
+
+inline void func3(void) {
+    func1();
+}
+"""
+
+        # Parse should handle each line independently
+        # Create a temporary file
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
+            f.write(content)
+            temp_path = Path(f.name)
+
+        try:
+            functions = parser.parse_file(temp_path)
+
+            # Should find all three functions
+            assert len(functions) >= 3
+            func_names = [f.name for f in functions]
+            assert "func1" in func_names
+            assert "func2" in func_names
+            assert "func3" in func_names
+        finally:
+            temp_path.unlink()
+
+    def test_SWUT_PARSER_C_00019_filters_non_function_lines(self):
+        """Test that line-by-line processing filters lines without function patterns."""
+        parser = CParser()
+
+        # Content with lines that don't look like functions
+        content = """#include <stdio.h>
+#define MACRO(x) ((x) * 2)
+
+void actual_function(void) {
+    return;
+}
+
+int variable = 42;
+"""
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
+            f.write(content)
+            temp_path = Path(f.name)
+
+        try:
+            functions = parser.parse_file(temp_path)
+
+            # Should only find actual_function, not macros or variables
+            func_names = [f.name for f in functions]
+            assert "actual_function" in func_names
+            # MACRO and variable should not be detected as functions
+            assert "MACRO" not in func_names
+            assert "variable" not in func_names
+        finally:
+            temp_path.unlink()
+
+    def test_SWUT_PARSER_C_00019_tracks_position_offsets(self):
+        """Test that AdjustedMatch correctly tracks position offsets."""
+        parser = CParser()
+
+        # Multi-line content to test offset tracking
+        content = """// Comment line 1
+// Comment line 2
+// Comment line 3
+void test_function(void) {
+    return;
+}
+"""
+
+        import tempfile
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
+            f.write(content)
+            temp_path = Path(f.name)
+
+        try:
+            functions = parser.parse_file(temp_path)
+
+            # Should find the function on line 4
+            assert len(functions) >= 1
+            func = functions[0]
+            assert func.name == "test_function"
+            # Line number should be 4 (after 3 comment lines)
+            assert func.line_number == 4
+        finally:
+            temp_path.unlink()
+
+
+class TestCParserRegexOptimization:
+    """Test regex optimization with length limits (SWR_PARSER_C_00020)."""
+
+    # SWUT_PARSER_C_00020: Regex Optimization with Length Limits
+    def test_SWUT_PARSER_C_00020_regex_optimization_length_limits(self):
+        """Test that regex patterns have length limits to prevent catastrophic backtracking."""
+        parser = CParser()
+
+        # Test that pattern matches valid function declarations
+        valid_lines = [
+            "void simple_func(void)",
+            "uint32 complex_name_with_underscores(void)",
+            "static int func(uint8 param1, uint16 param2)",
+            "inline void very_long_function_name_that_is_valid(void)",
+        ]
+
+        for line in valid_lines:
+            match = parser.function_pattern.match(line)
+            assert match is not None, f"Should match: {line}"
+
+    def test_SWUT_PARSER_C_00020_rejects_extremely_long_identifiers(self):
+        """Test that pattern rejects identifiers beyond reasonable length."""
+        parser = CParser()
+
+        # Create an identifier longer than the pattern limit (50 chars)
+        long_identifier = "a" * 100  # 100 characters, exceeds the 50 char limit
+        line = f"void {long_identifier}(void)"
+
+        match = parser.function_pattern.match(line)
+
+        # The pattern should NOT match because the identifier is too long
+        # (function_name pattern is limited to {1,50} characters)
+        assert match is None
+
+    def test_SWUT_PARSER_C_00020_rejects_extremely_long_return_types(self):
+        """Test that pattern rejects return types beyond reasonable length."""
+        parser = CParser()
+
+        # Create a return type longer than the pattern limit (100 chars)
+        long_return_type = "const " * 30  # Creates a very long type
+        line = f"{long_return_type} func(void)"
+
+        match = parser.function_pattern.match(line)
+
+        # The pattern should NOT match because the return type is too long
+        # (return_type pattern is limited to {1,100} characters)
+        assert match is None
+
+    def test_SWUT_PARSER_C_00020_handles_complex_parameters(self):
+        """Test that pattern handles complex parameter lists within limits."""
+        parser = CParser()
+
+        # Test with complex but valid parameters
+        line = "void func(uint8 param1, const uint16* param2, uint32 param3)"
+        match = parser.function_pattern.match(line)
+
+        # Should match - parameters are within the 500 char limit
+        assert match is not None
+        assert match.group("function_name") == "func"
+
+    def test_SWUT_PARSER_C_00020_no_catastrophic_backtracking(self):
+        """Test that parser doesn't exhibit catastrophic backtracking on large files."""
+        import tempfile
+        import time
+
+        parser = CParser()
+
+        # Create a file with 1000 simple functions (proper multi-line format)
+        lines = []
+        for i in range(1000):
+            lines.append(f"void func{i:04d}(void)")
+            lines.append("{")
+            lines.append("    return;")
+            lines.append("}")
+
+        content = "\n".join(lines)
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
+            f.write(content)
+            temp_path = Path(f.name)
+
+        try:
+            # Time the parsing
+            start = time.time()
+            functions = parser.parse_file(temp_path)
+            elapsed = time.time() - start
+
+            # Should complete in reasonable time (< 5 seconds)
+            # and find all functions
+            assert elapsed < 5.0, f"Parsing took too long: {elapsed:.2f}s"
+            assert len(functions) == 1000
+        finally:
+            temp_path.unlink()
