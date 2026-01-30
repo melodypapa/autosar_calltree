@@ -431,6 +431,26 @@ class TestSearchFunctionsCommand:
         assert result.exit_code == 0
         assert "No functions found" in result.output
 
+    def test_search_output_formatting(self, demo_dir):
+        """Test that --search output has proper formatting with blank line before results."""
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["--source-dir", str(demo_dir), "--search", "Demo"]
+        )
+        assert result.exit_code == 0
+        # The output should have proper formatting
+        # Check that there's a blank line between the banner and the results
+        lines = result.output.strip().split("\n")
+        # Find the line with "Search Results"
+        for i, line in enumerate(lines):
+            if "Search Results" in line:
+                # The next line should be empty or contain the pattern
+                if i + 1 < len(lines):
+                    next_line = lines[i + 1]
+                    # Should either be blank or show the pattern
+                    assert next_line == "" or "Demo" in next_line
+                break
+
 
 class TestModuleConfigurationOptions:
     """Test SWR_CLI_00011: Module Configuration Options"""

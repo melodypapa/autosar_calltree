@@ -85,13 +85,14 @@ class CParser:
 
         # Pattern for traditional C function declarations/definitions
         # Matches: [static] [inline] return_type function_name(params)
+        # Optimized to avoid catastrophic backtracking with length limits
         self.function_pattern = re.compile(
             r"^\s*"  # Start of line with optional whitespace
             r"(?P<static>static\s+)?"  # Optional static keyword
             r"(?P<inline>inline|__inline__|__inline\s+)?"  # Optional inline
-            r"(?P<return_type>[\w\s\*]+?)\s+"  # Return type (can include spaces, pointers)
-            r"(?P<function_name>[a-zA-Z_][a-zA-Z0-9_]*)\s*"  # Function name
-            r"\((?P<params>[^)]*)\)",  # Parameters in parentheses
+            r"(?P<return_type>[\w\s\*]{1,101}?)\s+"  # Return type (1-101 chars, non-greedy)
+            r"(?P<function_name>[a-zA-Z_][a-zA-Z0-9_]{1,50})\s*"  # Function name (1-50 chars)
+            r"\((?P<params>[^()]{0,500}(?:\([^()]{0,100}\)[^()]{0,500})*)\)",  # Parameters (limited length)
             re.MULTILINE,
         )
 
@@ -156,16 +157,46 @@ class CParser:
                         functions.append(autosar_func)
 
         # Then, parse traditional C functions
-        for match in self.function_pattern.finditer(content):
-            func_info = self._parse_function_match(match, content, file_path)
-            if func_info:
-                # Check if this function was already found as AUTOSAR
-                is_duplicate = any(
-                    f.name == func_info.name and f.line_number == func_info.line_number
-                    for f in functions
-                )
-                if not is_duplicate:
-                    functions.append(func_info)
+        # Use line-by-line matching to avoid catastrophic backtracking on large files
+        lines = content.split("\n")
+        current_pos = 0
+        for line_num, line in enumerate(lines, 1):
+            line_length = len(line) + 1  # +1 for newline
+            # Skip empty lines and lines that don't look like function declarations
+            if not line or "(" not in line or ";" in line:
+                current_pos += line_length
+                continue
+
+            # Check if line matches function pattern
+            match = self.function_pattern.match(line)
+            if match:
+                # Adjust match positions to be relative to full content
+                class AdjustedMatch:
+                    def __init__(self, original_match, offset):
+                        self._match = original_match
+                        self._offset = offset
+
+                    def group(self, name):
+                        return self._match.group(name)
+
+                    def start(self):
+                        return self._offset + self._match.start()
+
+                    def end(self):
+                        return self._offset + self._match.end()
+
+                adjusted_match = AdjustedMatch(match, current_pos)
+                func_info = self._parse_function_match(adjusted_match, content, file_path)  # type: ignore[arg-type]
+                if func_info:
+                    # Check if this function was already found as AUTOSAR
+                    is_duplicate = any(
+                        f.name == func_info.name and f.line_number == func_info.line_number
+                        for f in functions
+                    )
+                    if not is_duplicate:
+                        functions.append(func_info)
+
+            current_pos += line_length
 
         return functions
 

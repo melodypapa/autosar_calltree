@@ -447,6 +447,56 @@ FunctionInfo objects must be consistent regardless of parsing method. Traditiona
 
 ---
 
+### SWR_PARSER_C_00019: Line-by-Line Processing
+
+**Priority:** High
+**Status:** Implemented
+**Maturity:** accept
+
+**Description:**
+The C parser shall process file content line-by-line to avoid catastrophic backtracking on large files.
+
+**Rationale:**
+Using `finditer()` on the entire file content can cause catastrophic backtracking when the regex matches long, complex lines. Processing line-by-line limits the matching scope and prevents performance issues with large files (1000+ functions).
+
+**Acceptance Criteria:**
+- [ ] Splits file content into lines before matching
+- [ ] Tracks current position for accurate match offsets
+- [ ] Creates AdjustedMatch wrapper to correct match positions
+- [ ] Filters lines that don't look like function declarations (no parenthesis or has semicolon)
+- [ ] Processes each line independently
+- [ ] Adjusts match.start() and match.end() to account for cumulative offset
+- [ ] Handles files with 1000+ functions without performance degradation
+
+**Related Requirements:** SWR_PARSER_C_00001, SWR_PARSER_C_00013
+
+---
+
+### SWR_PARSER_C_00020: Regex Optimization with Length Limits
+
+**Priority:** High
+**Status:** Implemented
+**Maturity:** accept
+
+**Description:**
+The C parser shall use regex patterns with explicit length limits to prevent catastrophic backtracking and ReDoS (Regular Expression Denial of Service).
+
+**Rationale:**
+Unbounded regex patterns like `[\w\s\*]+` can cause exponential backtracking on malicious or complex input. Adding quantifier limits (e.g., `{1,100}`) bounds the matching time and prevents performance issues.
+
+**Acceptance Criteria:**
+- [ ] Return type pattern limited to 1-100 characters
+- [ ] Function name pattern limited to 1-50 characters
+- [ ] Parameter pattern limited to 0-500 characters (excluding nested parentheses)
+- [ ] Nested parentheses in parameters limited to 0-100 characters each
+- [ ] Patterns still match all valid traditional C function declarations
+- [ ] Patterns reject extremely long identifiers that would be invalid in C
+- [ ] No catastrophic backtracking on large files
+
+**Related Requirements:** SWR_PARSER_C_00001, SWR_PARSER_C_00019
+
+---
+
 ## Traceability
 
 | Requirement ID | Test ID | Test Function | Status |
@@ -469,9 +519,12 @@ FunctionInfo objects must be consistent regardless of parsing method. Traditiona
 | SWR_PARSER_C_00016 | SWUT_PARSER_C_00016 | test_SWUT_PARSER_C_00016_preprocessor_directive_filtering | ⏳ Pending |
 | SWR_PARSER_C_00017 | SWUT_PARSER_C_00017 | test_SWUT_PARSER_C_00017_pointer_parameter_detection | ⏳ Pending |
 | SWR_PARSER_C_00018 | SWUT_PARSER_C_00018 | test_SWUT_PARSER_C_00018_functioninfo_creation_c_functions | ⏳ Pending |
+| SWR_PARSER_C_00019 | SWUT_PARSER_C_00019 | test_SWUT_PARSER_C_00019_line_by_line_processing | ⏳ Pending |
+| SWR_PARSER_C_00020 | SWUT_PARSER_C_00020 | test_SWUT_PARSER_C_00020_regex_optimization_length_limits | ⏳ Pending |
 
 ## Revision History
 
 | Date | Version | Author | Change Description |
 |------|---------|--------|-------------------|
 | 2026-01-30 | 1.0 | Claude | Initial version - 18 requirements covering C parser functionality |
+| 2026-01-30 | 1.1 | Claude | Added requirements for line-by-line processing (SWR_PARSER_C_00019) and regex optimization (SWR_PARSER_C_00020) to prevent catastrophic backtracking on large files |

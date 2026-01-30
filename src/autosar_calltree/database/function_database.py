@@ -127,12 +127,12 @@ class FunctionDatabase:
         if verbose:
             print(f"Found {len(c_files)} C source files")
 
+        # Print build progress message before processing files
+        print(f"Building function database from {self.source_dir}...")
+
         # Parse each file
         for idx, file_path in enumerate(c_files, 1):
-            if verbose:
-                # Count lines in the file
-                line_count = len(file_path.read_text(encoding='utf-8', errors='ignore').splitlines())
-                print(f"Processing: [{idx}/{len(c_files)}] {file_path.name} (line: {line_count})")
+            print(f"Processing: [{idx}/{len(c_files)}] {file_path.name}")
 
             try:
                 self._parse_file(file_path)
