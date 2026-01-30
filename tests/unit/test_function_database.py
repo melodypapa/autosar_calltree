@@ -187,8 +187,8 @@ class TestDatabaseBuilding:
 
     def test_SWUT_DB_00005_database_building(self):
         """Test database builds correctly from demo directory (SWR_DB_00005)."""
-        import tempfile
         import shutil
+        import tempfile
 
         # Create a temporary directory to avoid including large_scale demo files
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -601,8 +601,8 @@ class TestQueryMethods:
 
     def test_SWUT_DB_00015_function_search_pattern(self):
         """Test functions can be searched by pattern (SWR_DB_00019)."""
-        import tempfile
         import shutil
+        import tempfile
 
         # Create a temporary directory to avoid including large_scale demo files
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -645,8 +645,8 @@ class TestQueryMethods:
 
     def test_SWUT_DB_00016_database_statistics(self):
         """Test database returns accurate statistics (SWR_DB_00020)."""
-        import tempfile
         import shutil
+        import tempfile
 
         # Create a temporary directory to avoid including large_scale demo files
         with tempfile.TemporaryDirectory() as temp_dir:
