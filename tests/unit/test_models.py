@@ -3,7 +3,6 @@
 from datetime import datetime
 from pathlib import Path
 
-
 from autosar_calltree.database.models import (
     AnalysisResult,
     AnalysisStatistics,

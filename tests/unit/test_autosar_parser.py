@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 from autosar_calltree.database.models import FunctionType
 from autosar_calltree.parsers.autosar_parser import AutosarParser
 

@@ -8,7 +8,6 @@ caching, and query methods.
 import tempfile
 from pathlib import Path
 
-
 from autosar_calltree.config.module_config import ModuleConfig
 from autosar_calltree.database.function_database import (
     CacheMetadata,

@@ -8,7 +8,6 @@ and utility methods.
 import tempfile
 from pathlib import Path
 
-
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.database.function_database import FunctionDatabase
 from autosar_calltree.database.models import FunctionInfo, FunctionType
