@@ -32,14 +32,17 @@ class AutosarParser:
     )
 
     # Parameter patterns
-    VAR_PATTERN = re.compile(r"VAR\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s+(\w+)")
+    # Note: Order matters! More specific patterns (P2VAR, P2CONST) must be checked
+    # before less specific ones (VAR, CONST) to prevent false matches
     P2VAR_PATTERN = re.compile(
         r"P2VAR\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s+(\w+)"
     )
     P2CONST_PATTERN = re.compile(
         r"P2CONST\(\s*([^,]+?)\s*,\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s+(\w+)"
     )
-    CONST_PATTERN = re.compile(r"CONST\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s+(\w+)")
+    # Use negative lookbehind to prevent matching P2VAR or P2CONST as VAR/CONST
+    VAR_PATTERN = re.compile(r"(?<!P2)VAR\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s+(\w+)")
+    CONST_PATTERN = re.compile(r"(?<!P2)CONST\(\s*([^,]+?)\s*,\s*([^)]+?)\s*\)\s+(\w+)")
 
     def parse_function_declaration(
         self, line: str, file_path: Path, line_number: int
@@ -191,19 +194,7 @@ class AutosarParser:
 
     def _parse_single_parameter(self, param_str: str) -> Optional[Parameter]:
         """Parse a single parameter."""
-        # Try VAR pattern
-        match = self.VAR_PATTERN.search(param_str)
-        if match:
-            param_type, memory_class, name = match.groups()
-            return Parameter(
-                name=name,
-                param_type=param_type.strip(),
-                is_pointer=False,
-                is_const=False,
-                memory_class=memory_class.strip(),
-            )
-
-        # Try P2VAR pattern
+        # Try P2VAR pattern first (more specific)
         match = self.P2VAR_PATTERN.search(param_str)
         if match:
             param_type, ptr_class, memory_class, name = match.groups()
@@ -215,7 +206,7 @@ class AutosarParser:
                 memory_class=memory_class.strip(),
             )
 
-        # Try P2CONST pattern
+        # Try P2CONST pattern (more specific)
         match = self.P2CONST_PATTERN.search(param_str)
         if match:
             param_type, ptr_class, memory_class, name = match.groups()
@@ -227,7 +218,19 @@ class AutosarParser:
                 memory_class=memory_class.strip(),
             )
 
-        # Try CONST pattern
+        # Try VAR pattern (less specific)
+        match = self.VAR_PATTERN.search(param_str)
+        if match:
+            param_type, memory_class, name = match.groups()
+            return Parameter(
+                name=name,
+                param_type=param_type.strip(),
+                is_pointer=False,
+                is_const=False,
+                memory_class=memory_class.strip(),
+            )
+
+        # Try CONST pattern (less specific)
         match = self.CONST_PATTERN.search(param_str)
         if match:
             param_type, memory_class, name = match.groups()
