@@ -248,8 +248,37 @@ This document specifies requirements for the FunctionDatabase module, which mana
 
 ---
 
+### SWR_DB_00025: File Size Display in Processing
+**Priority:** Medium
+**Description:** When processing source files, display file size in human-readable format (bytes, KB, or MB).
+
+**Rationale:** Helps users understand which files are being processed and identify large files that may impact performance.
+
+**Functional Requirements:**
+- File size shall be displayed during database building: `Processing: [N/M] filename.c (Size: X.XXK)`
+- Files smaller than 1KB shall display raw bytes (e.g., `512`)
+- Files 1KB to 1MB shall display size with 2 decimal places in KB (e.g., `5.25K`)
+- Files 1MB and larger shall display size with 2 decimal places in MB (e.g., `2.50M`)
+- Size formatting shall use a helper function `_format_file_size(size_bytes: int) -> str`
+
+**Verification:** Processing messages show correctly formatted file sizes.
+
+**Implementation Notes:**
+- Helper function `_format_file_size()` in `function_database.py`
+- Uses `file_path.stat().st_size` to get file size in bytes
+- Formatting thresholds: >= 1MB for MB, >= 1KB for KB, otherwise bytes
+
+**Example Output:**
+```
+Processing: [1/4] small.c (Size: 512)
+Processing: [2/4] medium.c (Size: 5.25K)
+Processing: [3/4] large.c (Size: 2.50M)
+```
+
+---
+
 ## Summary
-- **Total Requirements:** 24
+- **Total Requirements:** 25
 - **High Priority:** 13
-- **Medium Priority:** 10
+- **Medium Priority:** 11
 - **Low Priority:** 1

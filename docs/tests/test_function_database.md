@@ -962,6 +962,79 @@ Cache file is removed.
 
 ---
 
+### SWUT_DB_00021: File Size Display in Processing
+
+**Requirement:** SWR_DB_00025
+**Priority:** Medium
+**Status:** Implemented
+
+**Description:**
+Verify that file sizes are displayed in human-readable format during database building.
+
+**Test Function:** `test_SWUT_DB_00021_file_size_*()`
+
+**Test Setup:**
+```python
+from autosar_calltree.database.function_database import _format_file_size, FunctionDatabase
+from pathlib import Path
+import tempfile
+```
+
+**Test Execution:**
+```python
+# Test bytes (< 1KB)
+assert _format_file_size(512) == "512"
+assert _format_file_size(0) == "0"
+assert _format_file_size(1023) == "1023"
+
+# Test kilobytes (1KB to 1MB)
+assert _format_file_size(1024) == "1.00K"
+assert _format_file_size(5120) == "5.00K"
+assert _format_file_size(5376) == "5.25K"
+
+# Test megabytes (>= 1MB)
+assert _format_file_size(1024 * 1024) == "1.00M"
+assert _format_file_size(2 * 1024 * 1024) == "2.00M"
+assert _format_file_size(2 * 1024 * 1024 + 512 * 1024) == "2.50M"
+```
+
+**Integration Test:**
+```python
+# Test file size is displayed during database building
+temp_dir = tempfile.mkdtemp()
+temp_path = Path(temp_dir)
+
+# Create files with specific sizes
+(temp_path / "small.c").write_text("// small")
+(temp_path / "large.c").write_text("// " + "x" * 2000)  # ~2KB
+
+db = FunctionDatabase(source_dir=str(temp_path))
+
+# Capture stdout and verify
+import sys
+from io import StringIO
+old_stdout = sys.stdout
+sys.stdout = StringIO()
+
+db.build_database(use_cache=False, verbose=False)
+
+output = sys.stdout.getvalue()
+sys.stdout = old_stdout
+
+assert "Processing:" in output
+assert "(Size:" in output
+```
+
+**Expected Result:**
+File sizes are formatted correctly with appropriate units (bytes, KB, MB) and 2 decimal places.
+
+**Edge Cases Covered:**
+- Zero bytes
+- Exact KB/MB boundaries
+- Large files (> 10MB)
+
+---
+
 ## Coverage Summary
 
 | Requirement ID | Test ID | Status | Coverage |
@@ -987,8 +1060,9 @@ Cache file is removed.
 | SWR_DB_00022 | SWUT_DB_00020 | ✅ Pass | Full |
 | SWR_DB_00023 | SWUT_DB_00017 | ✅ Pass | Full |
 | SWR_DB_00024 | SWUT_DB_00018 | ✅ Pass | Full |
+| SWR_DB_00025 | SWUT_DB_00021 | ✅ Pass | Full |
 
-**Total Test Cases:** 20
-**Coverage:** 20/24 requirements (83%)
+**Total Test Cases:** 21
+**Coverage:** 21/25 requirements (84%)
 - Note: Some requirements (SWR_DB_00007, SWR_DB_00008) are implicit in other tests
 - Low priority requirements may be omitted in initial implementation

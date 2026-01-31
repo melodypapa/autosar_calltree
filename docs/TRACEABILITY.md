@@ -9,7 +9,7 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | Models | SWR_MODEL_00001-00025 (25) | SWUT_MODEL_00001-00025 (25) | ✅ Complete (100% coverage) |
 | AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 (15) | SWUT_PARSER_AUTOSAR_00001-00015 (15) | ✅ Complete (97% coverage) |
 | C Parser | SWR_PARSER_C_00001-00018 (18) | SWUT_PARSER_C_00001-00018 (18) | ✅ Complete (86% coverage) |
-| Database | SWR_DB_00001-00024 (24) | SWUT_DB_00001-00020 (20) | ✅ Complete (80% coverage) |
+| Database | SWR_DB_00001-00025 (25) | SWUT_DB_00001-00021 (21) | ✅ Complete (80% coverage) |
 | Analyzers | SWR_ANALYZER_00001-00020 (20) | SWUT_ANALYZER_00001-00020 (20) | ✅ Complete (94% coverage) |
 | Config | SWR_CONFIG_00001-00010 (10) | SWUT_CONFIG_00001-00025 (25) | ✅ Complete (97% coverage) |
 | Generators | SWR_GENERATOR_00001-00020 (20) | SWUT_GENERATOR_00001-00031 (31) | ✅ Complete (96% coverage) |
@@ -124,6 +124,7 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | SWR_DB_00022 | SWUT_DB_00020 | test_SWUT_DB_00020_cache_clearing | ✅ Pass |
 | SWR_DB_00023 | SWUT_DB_00017 | test_SWUT_DB_00017_get_all_function_names | ✅ Pass |
 | SWR_DB_00024 | SWUT_DB_00018 | test_SWUT_DB_00018_get_functions_by_file | ✅ Pass |
+| SWR_DB_00025 | SWUT_DB_00021 | test_SWUT_DB_00021_file_size_display | ✅ Pass |
 
 ---
 
@@ -260,3 +261,4 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | 2026-01-30 | 1.2 | Claude | Added Database (24 req, 20 tests, 80% cov) and Analyzers (20 req, 20 tests, 94% cov) modules |
 | 2026-01-30 | 1.3 | Claude | Added Config (10 req, 25 tests, 97% cov) and Generators (20 req, 31 tests, 96% cov) modules |
 | 2026-01-30 | 1.4 | Claude | Added CLI (14 req, 14 tests) and E2E (18 req, 25 tests) integration tests |
+| 2026-01-31 | 1.5 | Claude | Added SWR_DB_00025 and SWUT_DB_00021 for file size display in processing (Database: 25 req, 21 tests) |
