@@ -58,6 +58,29 @@ class CParser:
         "_Generic",
     }
 
+    # AUTOSAR and standard C macros to exclude from function detection
+    # These macros look like function calls but should not be parsed as functions
+    AUTOSAR_MACROS = {
+        # Standard C integer literal macros (stdint.h)
+        "INT8_C",
+        "INT16_C",
+        "INT32_C",
+        "INT64_C",
+        "UINT8_C",
+        "UINT16_C",
+        "UINT32_C",
+        "UINT64_C",
+        "INTMAX_C",
+        "UINTMAX_C",
+        # AUTOSAR tool-specific macros
+        "TS_MAKEREF2CFG",
+        "TS_MAKENULLREF2CFG",
+        "TS_MAKEREFLIST2CFG",
+        # Common AUTOSAR configuration macros
+        "STD_ON",
+        "STD_OFF",
+    }
+
     # Common AUTOSAR types
     AUTOSAR_TYPES = {
         "uint8",
@@ -242,6 +265,16 @@ class CParser:
 
         # Skip if return type or function name is a C keyword (control structures)
         if return_type in self.C_KEYWORDS or function_name in self.C_KEYWORDS:
+            return None
+
+        # Skip AUTOSAR and standard C macros that look like function calls
+        # This prevents false positives on macros like UINT32_C(value), TS_MAKEREF2CFG(...)
+        if function_name in self.AUTOSAR_MACROS:
+            return None
+
+        # Skip standard C integer literal macros (those ending with _C)
+        # These are defined in stdint.h and look like: INT32_C(42), UINT64_C(100)
+        if function_name.endswith("_C"):
             return None
 
         # Skip common control structures

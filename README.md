@@ -209,7 +209,7 @@ default_module: "Other"
 
 **Usage**:
 ```bash
-calltree --start-function Demo_Init --module-config module_mapping.yaml --use-module-names --max-depth 3
+calltree --start-function Demo_Init --module-config demo/module_mapping.yaml --use-module-names --max-depth 3 --output demo/demo_sequence.md
 ```
 
 This generates diagrams with:
