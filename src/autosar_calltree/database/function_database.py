@@ -25,6 +25,16 @@ from ..parsers.c_parser import CParser
 from .models import FunctionInfo
 
 
+def _format_file_size(size_bytes: int) -> str:
+    """Format file size in human-readable format."""
+    if size_bytes >= 1024 * 1024:
+        return f"{size_bytes / (1024 * 1024):.2f}M"
+    elif size_bytes >= 1024:
+        return f"{size_bytes / 1024:.2f}K"
+    else:
+        return str(size_bytes)
+
+
 @dataclass
 class CacheMetadata:
     """Metadata for cache validation."""
@@ -132,7 +142,7 @@ class FunctionDatabase:
 
         # Parse each file
         for idx, file_path in enumerate(c_files, 1):
-            print(f"Processing: [{idx}/{len(c_files)}] {file_path.name}")
+            print(f"Processing: [{idx}/{len(c_files)}] {file_path.name} (Size: {_format_file_size(file_path.stat().st_size)})")
 
             try:
                 self._parse_file(file_path)

@@ -7,6 +7,7 @@ Automate the complete GitHub workflow for creating issues, feature branches, com
 When the user runs `/gh-workflow`, perform the following steps in order:
 
 ### 1. Quality Checks (Must Pass Before Proceeding)
+- Run import sorting: `isort --check-only src/ tests/`
 - Run linting: `ruff check src/ tests/`
 - Run type checking: `mypy src/`
 - Run unit tests: `pytest tests/ --cov=autosar_calltree`
@@ -19,6 +20,7 @@ When the user runs `/gh-workflow`, perform the following steps in order:
   ```
   Check        Status    Details
   ───────────────────────────────────
+  isort        ✅ Pass    No errors
   Ruff         ✅ Pass    No errors
   Mypy         ✅ Pass    No issues
   Pytest       ✅ Pass    278/278 tests, 94% coverage
@@ -126,6 +128,7 @@ User: /gh-workflow feat: Add support for primitive types
 System: [Step 1] Running quality checks...
         Check        Status    Details
         ───────────────────────────────────
+        isort        ✅ Pass    No errors
         Ruff         ✅ Pass    No errors
         Mypy         ✅ Pass    No issues
         Pytest       ✅ Pass    278/278 tests, 94% coverage

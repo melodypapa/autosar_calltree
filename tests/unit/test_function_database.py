@@ -12,6 +12,7 @@ from autosar_calltree.config.module_config import ModuleConfig
 from autosar_calltree.database.function_database import (
     CacheMetadata,
     FunctionDatabase,
+    _format_file_size,
 )
 from autosar_calltree.database.models import FunctionInfo, FunctionType
 
@@ -555,6 +556,65 @@ class TestCaching:
             db.clear_cache()
 
             assert not db.cache_file.exists()
+
+
+class TestFileSizeFormatting:
+    """Test file size formatting in processing messages (SWR_DB_00025)."""
+
+    def test_SWUT_DB_00021_file_size_bytes(self):
+        """Test file size formatting for bytes (< 1KB) (SWR_DB_00025)."""
+        # Files smaller than 1KB should display raw bytes
+        assert _format_file_size(512) == "512"
+        assert _format_file_size(0) == "0"
+        assert _format_file_size(1023) == "1023"
+
+    def test_SWUT_DB_00021_file_size_kilobytes(self):
+        """Test file size formatting for KB (1KB to 1MB) (SWR_DB_00025)."""
+        # Files 1KB to 1MB should display in KB with 2 decimal places
+        assert _format_file_size(1024) == "1.00K"
+        assert _format_file_size(5120) == "5.00K"  # 5 KB
+        assert _format_file_size(5376) == "5.25K"  # 5.25 KB
+        # Just under 1MB: 1048575 / 1024 = 1023.999... KB, rounds to 1024.00K
+        assert _format_file_size(1024 * 1024 - 1) == "1024.00K"
+
+    def test_SWUT_DB_00021_file_size_megabytes(self):
+        """Test file size formatting for MB (>= 1MB) (SWR_DB_00025)."""
+        # Files 1MB and larger should display in MB with 2 decimal places
+        assert _format_file_size(1024 * 1024) == "1.00M"
+        assert _format_file_size(2 * 1024 * 1024) == "2.00M"  # 2 MB
+        assert _format_file_size(2 * 1024 * 1024 + 512 * 1024) == "2.50M"  # 2.5 MB
+        # 10.5 MB (plus a small fraction): rounds to 10.51M due to binary units
+        assert _format_file_size(10 * 1024 * 1024 + 524 * 1024) == "10.51M"
+
+    def test_SWUT_DB_00021_file_size_display_in_processing(self):
+        """Test file size is displayed during database building (SWR_DB_00025)."""
+        import sys
+        import tempfile
+        from io import StringIO
+
+        # Create a temporary directory with test files
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+
+            # Create files with specific sizes
+            (temp_path / "small.c").write_text("// small")
+            (temp_path / "large.c").write_text("// " + "x" * 2000)  # ~2KB
+
+            db = FunctionDatabase(source_dir=str(temp_path))
+
+            # Capture stdout
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            db.build_database(use_cache=False, verbose=False)
+
+            output = sys.stdout.getvalue()
+            sys.stdout = old_stdout
+
+            # Check that processing messages include file sizes
+            # The output should contain "Processing:" and "(Size:"
+            assert "Processing:" in output
+            assert "(Size:" in output
 
 
 class TestQueryMethods:
