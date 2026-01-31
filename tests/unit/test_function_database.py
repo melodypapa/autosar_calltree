@@ -588,9 +588,9 @@ class TestFileSizeFormatting:
 
     def test_SWUT_DB_00021_file_size_display_in_processing(self):
         """Test file size is displayed during database building (SWR_DB_00025)."""
+        import sys
         import tempfile
         from io import StringIO
-        import sys
 
         # Create a temporary directory with test files
         with tempfile.TemporaryDirectory() as temp_dir:
