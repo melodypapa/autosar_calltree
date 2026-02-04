@@ -1025,3 +1025,217 @@ def test_mixed_modules_and_filenames() -> None:
     assert "Module3" in participants
     assert "file2" in participants  # Filename without extension
     assert len(participants) == 3
+
+
+# SWUT_GENERATOR_00032: Optional Call - Opt Block Generation
+def test_SWUT_GENERATOR_00032_opt_block_generation() -> None:
+    """Test that optional calls are wrapped in opt blocks."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    ("OptionalFunc", "optional.c", "OptionalMod", []),
+                ],
+            ),
+        ]
+    )
+
+    # Mark child as optional
+    root.children[0].is_optional = True
+
+    gen = MermaidGenerator(use_module_names=True)
+    diagram = gen._generate_mermaid_diagram(root)
+    lines = diagram.split("\n")
+
+    # Check for opt block
+    assert "    opt Optional call" in lines
+    assert "    end" in lines
+
+
+# SWUT_GENERATOR_00033: Optional Call - Multiple Optional Calls
+def test_SWUT_GENERATOR_00033_multiple_optional_calls() -> None:
+    """Test that multiple optional calls each get their own opt block."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    ("Optional1", "opt1.c", "Opt1Mod", []),
+                    ("Optional2", "opt2.c", "Opt2Mod", []),
+                ],
+            ),
+        ]
+    )
+
+    # Mark both children as optional
+    root.children[0].is_optional = True
+    root.children[1].is_optional = True
+
+    gen = MermaidGenerator(use_module_names=True)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have two opt blocks
+    opt_count = diagram.count("    opt Optional call")
+    assert opt_count == 2
+    # Should have matching end statements
+    end_count = diagram.count("    end")
+    assert end_count == 2
+
+
+# SWUT_GENERATOR_00034: Optional Call - Mixed Optional and Regular
+def test_SWUT_GENERATOR_00034_mixed_optional_and_regular() -> None:
+    """Test diagram with both optional and regular calls."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    ("RegularFunc", "regular.c", "RegularMod", []),
+                    ("OptionalFunc", "optional.c", "OptionalMod", []),
+                    ("AnotherRegular", "another.c", "AnotherMod", []),
+                ],
+            ),
+        ]
+    )
+
+    # Mark only middle child as optional
+    root.children[1].is_optional = True
+
+    gen = MermaidGenerator(use_module_names=True)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have exactly one opt block
+    assert diagram.count("    opt Optional call") == 1
+    # Should have call to regular function before opt block
+    assert "MainMod->>RegularMod: RegularFunc" in diagram
+    # Should have opt block with optional call
+    assert "    opt Optional call" in diagram
+    assert "    MainMod->>OptionalMod: OptionalFunc" in diagram
+    # Should have call to another regular after opt block
+    assert "MainMod->>AnotherMod: AnotherRegular" in diagram
+
+
+# SWUT_GENERATOR_00035: Optional Call - Nested Optional
+def test_SWUT_GENERATOR_00035_nested_optional() -> None:
+    """Test that optional calls in nested levels also get opt blocks."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    (
+                        "Parent",
+                        "parent.c",
+                        "ParentMod",
+                        [
+                            ("ChildOptional", "child.c", "ChildMod", []),
+                        ],
+                    ),
+                ],
+            ),
+        ]
+    )
+
+    # Mark grandchild as optional
+    root.children[0].children[0].is_optional = True
+
+    gen = MermaidGenerator(use_module_names=True)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have opt block for the grandchild
+    assert "    opt Optional call" in diagram
+    assert "    ParentMod->>ChildMod: ChildOptional" in diagram
+
+
+# SWUT_GENERATOR_00036: Optional Call - Recursive Not Optional
+def test_SWUT_GENERATOR_00036_recursive_not_opt() -> None:
+    """Test that recursive calls are not wrapped in opt blocks unless marked."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    ("RecursiveFunc", "recursive.c", "RecursiveMod", []),
+                ],
+            ),
+        ]
+    )
+
+    # Mark child as recursive but not optional
+    root.children[0].is_recursive = True
+    root.children[0].is_optional = False
+
+    gen = MermaidGenerator(use_module_names=True)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should not have opt block
+    assert "    opt" not in diagram
+    # Should have recursive arrow syntax
+    assert "-->>x" in diagram
+
+
+# SWUT_GENERATOR_00037: Optional Call - Optional with Returns
+def test_SWUT_GENERATOR_00037_optional_with_returns() -> None:
+    """Test optional calls with return statements."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                "MainMod",
+                [
+                    ("OptionalFunc", "optional.c", "OptionalMod", []),
+                ],
+            ),
+        ]
+    )
+
+    root.children[0].is_optional = True
+
+    gen = MermaidGenerator(use_module_names=True, include_returns=True)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have opt block with call and return
+    assert "    opt Optional call" in diagram
+    assert "    end" in diagram
+    # Return should be inside opt block (or after end depending on implementation)
+    # Current implementation puts return after end of opt block
+
+
+# SWUT_GENERATOR_00038: Optional Call - Function Mode
+def test_SWUT_GENERATOR_00038_optional_function_mode() -> None:
+    """Test optional calls work in function mode (not module mode)."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                None,
+                [
+                    ("OptionalFunc", "optional.c", None, []),
+                ],
+            ),
+        ]
+    )
+
+    root.children[0].is_optional = True
+
+    gen = MermaidGenerator(use_module_names=False)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have opt block
+    assert "    opt Optional call" in diagram
+    assert "    end" in diagram
+    # Should use function names as participants
+    assert "Main->>OptionalFunc: call" in diagram

@@ -28,7 +28,11 @@ FUNC(void, RTE_CODE) Demo_MainFunction(void)
     HW_ReadSensor(0x01);
     SW_ProcessData((uint8*)0x20001000, 0x64);
     COM_SendCANMessage(0x123, (uint8*)0x20002000);
-    Demo_Update(0x05);
+
+    /* Optional call based on mode */
+    if (0x05 > 0x00) {
+        Demo_Update(0x05);
+    }
 
     return;
 }
@@ -37,6 +41,11 @@ FUNC(void, RTE_CODE) Demo_Update(VAR(uint32, AUTOMATIC) update_mode)
 {
     /* Update state with mode */
     SW_UpdateState(update_mode);
+
+    /* Optional LIN message based on update mode */
+    if (update_mode == 0x05) {
+        COM_SendLINMessage(0x456, (uint8*)0x20003000);
+    }
 
     return;
 }

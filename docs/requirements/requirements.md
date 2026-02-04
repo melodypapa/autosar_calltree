@@ -15,11 +15,32 @@ Requirements are marked with maturity levels:
 
 ### Model Requirements
 
-**Document**: [Model Requirements](models.md) (not yet created)
+**Document**: [Model Requirements](models.md)
 
-**ID Range**: SWR_MODEL_00001 - SWR_MODEL_00027
+**ID Range**: SWR_MODEL_00001 - SWR_MODEL_00025
 
 Core data models and structures used throughout the application.
+
+**Key Areas**:
+- FunctionType enum for function classification
+- Parameter dataclass for function parameters
+- FunctionInfo dataclass for function metadata
+- CallTreeNode dataclass for call tree structure
+- CircularDependency dataclass for cycle tracking
+- AnalysisStatistics and AnalysisResult dataclasses
+
+### FunctionCall Model Requirements
+
+**Document**: [FunctionCall Requirements](function_call.md)
+
+**ID Range**: SWR_MODEL_00026 - SWR_MODEL_00028
+
+Function call tracking with conditional status.
+
+**Key Areas**:
+- FunctionCall dataclass with conditional flag
+- Condition text extraction from if/else statements
+- Optional call tracking in CallTreeNode
 
 ### Parser Requirements
 
@@ -72,6 +93,34 @@ Module-aware Mermaid diagram generation.
 - Module column in function tables
 - Fallback behavior for unmapped files
 
+### Mermaid Opt Blocks Requirements
+
+**Document**: [Mermaid Opt Blocks Requirements](requirements_mermaid_opt_blocks.md)
+
+**ID Range**: SWR_MERMAID_00004
+
+Automatic conditional call detection and opt block generation.
+
+**Key Areas**:
+- Automatic if/else detection
+- Condition text extraction
+- Opt block generation with actual conditions
+- Nested conditional support
+
+### XMI Generator Requirements
+
+**Document**: [XMI Generator Requirements](requirements_xmi.md)
+
+**ID Range**: SWR_XMI_00001 - SWR_XMI_00003
+
+XMI 2.5 compliant UML sequence diagram generation.
+
+**Key Areas**:
+- XMI 2.5 compliance and namespaces
+- Sequence diagram representation with lifelines and messages
+- Opt block support using UML combined fragments
+- Module-aware participant support
+
 ### Parameter Display Requirements
 
 **Document**: [Parameter Display Requirements](requirements_parameters.md)
@@ -112,18 +161,22 @@ Python packaging and distribution.
 
 | Component | Document | ID Range | Status |
 |-----------|----------|----------|--------|
-| Model | models.md | SWR_MODEL_00001-00027 | Not Created |
+| Model | models.md | SWR_MODEL_00001-00025 | ✅ Complete |
+| FunctionCall | function_call.md | SWR_MODEL_00026-00028 | ✅ Complete |
 | Parser | parsers.md | SWR_PARSER_00001-00032 | Not Created |
 | Writer | writers.md | SWR_WRITER_00001-00008 | Not Created |
 | CLI | cli.md | SWR_CLI_00001-00014 | Not Created |
 | Configuration | requirements_module_config.md | SWR_CONFIG_00001-00003 | ✅ Complete |
 | Mermaid | requirements_mermaid_modules.md | SWR_MERMAID_00001-00003 | ✅ Complete |
+| Opt Blocks | requirements_mermaid_opt_blocks.md | SWR_MERMAID_00004 | ✅ Complete |
+| XMI | requirements_xmi.md | SWR_XMI_00001-00003 | ✅ Complete |
 | Parameter Display | requirements_parameters.md | SWR_PARAMS_00001-00003 | ✅ Complete |
 | Cache | requirements_cache_progress.md | SWR_CACHE_00001-00004 | ✅ Complete |
 | Package | package.md | SWR_PACKAGE_00001-00003 | Not Created |
 
 ## Version History
 
+- **2026-02-04**: Added FunctionCall model requirements, Mermaid opt blocks requirements, and XMI generator requirements
 - **2026-01-29**: Added Configuration, Mermaid, Cache, and Parameter Display requirements
 - Initial version created
 
@@ -140,3 +193,4 @@ Each component requirements document follows this structure:
 7. **Error Handling**: Error conditions and handling
 8. **Implementation Notes**: Technical implementation details
 9. **Examples**: Usage examples (when applicable)
+10. **Traceability**: Mapping to test cases

@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import List, Optional
 
-from ..database.models import FunctionInfo, FunctionType, Parameter
+from ..database.models import FunctionCall, FunctionInfo, FunctionType, Parameter
 
 
 class CParser:
@@ -429,7 +429,7 @@ class CParser:
 
         return None
 
-    def _extract_function_calls(self, function_body: str) -> List[str]:
+    def _extract_function_calls(self, function_body: str) -> List[FunctionCall]:
         """
         Extract function calls from a function body.
 
@@ -437,30 +437,117 @@ class CParser:
             function_body: Function body text
 
         Returns:
-            List of called function names
+            List of FunctionCall objects with conditional status and condition text
         """
-        called_functions = set()
+        called_functions: List[FunctionCall] = []
 
-        # Find all potential function calls
-        for match in self.function_call_pattern.finditer(function_body):
-            function_name = match.group(1)
+        # Analyze function body to track if/else context
+        # We'll parse line by line to detect if/else blocks
+        lines = function_body.split("\n")
+        in_if_block = False
+        in_else_block = False
+        current_condition = None
+        brace_depth = 0
 
-            # Skip C keywords
-            if function_name in self.C_KEYWORDS:
-                continue
+        for line in lines:
+            stripped = line.strip()
 
-            # Skip AUTOSAR types (might be casts)
-            if function_name in self.AUTOSAR_TYPES:
-                continue
+            # Track if/else block entry and extract condition
+            if stripped.startswith("if ") or stripped.startswith("if("):
+                in_if_block = True
+                # Extract condition from if statement
+                # Handle both "if (condition)" and "if(condition)" formats
+                if_match = re.match(r'if\s*\(\s*(.+?)\s*\)', stripped)
+                if if_match:
+                    current_condition = if_match.group(1).strip()
+                else:
+                    # Fallback: try to extract everything between "if" and the first '{'
+                    if_start = stripped.find("if")
+                    brace_pos = stripped.find("{")
+                    if brace_pos != -1:
+                        condition_part = stripped[if_start+2:brace_pos].strip()
+                        # Remove leading/trailing parentheses
+                        condition_part = condition_part.lstrip("(").rstrip(")").strip()
+                        current_condition = condition_part
+                    else:
+                        current_condition = "condition"
+            elif stripped.startswith("else if") or stripped.startswith("else if("):
+                in_if_block = True
+                # Extract condition from else if statement
+                elif_match = re.match(r'else\s+if\s*\(\s*(.+?)\s*\)', stripped)
+                if elif_match:
+                    current_condition = f"else if {elif_match.group(1).strip()}"
+                else:
+                    current_condition = "else if condition"
+            elif stripped.startswith("else") and not stripped.startswith("else if"):
+                in_else_block = True
+                current_condition = "else"
 
-            called_functions.add(function_name)
+            # Track brace depth for nested blocks
+            brace_depth += stripped.count("{")
+            brace_depth -= stripped.count("}")
 
-        # Also extract RTE calls explicitly
-        for match in self.rte_call_pattern.finditer(function_body):
-            rte_function = match.group(0).rstrip("(").strip()
-            called_functions.add(rte_function)
+            # Find function calls in this line
+            for match in self.function_call_pattern.finditer(line):
+                function_name = match.group(1)
 
-        return sorted(list(called_functions))
+                # Skip C keywords
+                if function_name in self.C_KEYWORDS:
+                    continue
+
+                # Skip AUTOSAR types (might be casts)
+                if function_name in self.AUTOSAR_TYPES:
+                    continue
+
+                # Check if this call is inside an if/else block
+                is_conditional = (in_if_block or in_else_block) and brace_depth > 0
+
+                # Add to called functions if not already present
+                existing = next((fc for fc in called_functions if fc.name == function_name), None)
+                if existing:
+                    # Update conditional status if this occurrence is conditional
+                    if is_conditional:
+                        existing.is_conditional = True
+                        if current_condition and not existing.condition:
+                            existing.condition = current_condition
+                else:
+                    called_functions.append(
+                        FunctionCall(
+                            name=function_name,
+                            is_conditional=is_conditional,
+                            condition=current_condition if is_conditional else None
+                        )
+                    )
+
+            # Also extract RTE calls explicitly
+            for match in self.rte_call_pattern.finditer(line):
+                rte_function = match.group(0).rstrip("(").strip()
+
+                is_conditional = (in_if_block or in_else_block) and brace_depth > 0
+
+                existing = next((fc for fc in called_functions if fc.name == rte_function), None)
+                if existing:
+                    if is_conditional:
+                        existing.is_conditional = True
+                        if current_condition and not existing.condition:
+                            existing.condition = current_condition
+                else:
+                    called_functions.append(
+                        FunctionCall(
+                            name=rte_function,
+                            is_conditional=is_conditional,
+                            condition=current_condition if is_conditional else None
+                        )
+                    )
+
+            # Exit if/else block when we close the brace
+            if brace_depth == 0:
+                in_if_block = False
+                in_else_block = False
+                current_condition = None
+
+        # Sort by name for consistent output
+        return sorted(called_functions, key=lambda fc: fc.name)
 
     def parse_function_declaration(self, declaration: str) -> Optional[FunctionInfo]:
         """

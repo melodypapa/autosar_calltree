@@ -231,7 +231,16 @@ class MermaidGenerator:
 
         # Generate calls to children
         for child in node.children:
+            # Start opt block for optional calls
+            if child.is_optional:
+                condition_text = child.condition if child.condition else "Optional call"
+                lines.append(f"    opt {condition_text}")
+
             self._generate_sequence_calls(child, lines, current_participant)
+
+            # End opt block for optional calls
+            if child.is_optional:
+                lines.append("    end")
 
         # Generate return from current to caller (only if include_returns is True)
         if caller and not node.is_recursive and self.include_returns:
