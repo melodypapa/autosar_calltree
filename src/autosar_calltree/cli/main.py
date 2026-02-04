@@ -17,6 +17,7 @@ from ..analyzers.call_tree_builder import CallTreeBuilder
 from ..config.module_config import ModuleConfig
 from ..database.function_database import FunctionDatabase
 from ..generators.mermaid_generator import MermaidGenerator
+from ..generators.xmi_generator import XmiGenerator
 from ..version import __version__
 
 console = Console(record=True)
@@ -295,11 +296,47 @@ def cli(
             )
 
         if format == "xmi":
-            console.print("[yellow]Warning:[/yellow] XMI format not yet implemented")
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+                transient=True,
+            ) as progress:
+                task = progress.add_task("Generating XMI document...", total=None)
+
+                xmi_output = output_path.with_suffix(".xmi") if output_path.suffix != ".xmi" else output_path
+
+                xmi_generator = XmiGenerator(
+                    use_module_names=use_module_names,
+                )
+                xmi_generator.generate(result, str(xmi_output))
+
+                progress.update(task, completed=True)
+
+            console.print(
+                f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]"
+            )
 
         if format == "both":
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+                transient=True,
+            ) as progress:
+                task = progress.add_task("Generating XMI document...", total=None)
+
+                xmi_output = output_path.with_suffix(".xmi")
+
+                xmi_generator = XmiGenerator(
+                    use_module_names=use_module_names,
+                )
+                xmi_generator.generate(result, str(xmi_output))
+
+                progress.update(task, completed=True)
+
             console.print(
-                "[yellow]Warning:[/yellow] XMI format not yet implemented (only Mermaid generated)"
+                f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]"
             )
 
         # Print warnings for circular dependencies
