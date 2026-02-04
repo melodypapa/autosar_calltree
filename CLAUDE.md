@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR codebases to generate function call trees. It parses automotive embedded code (with AUTOSAR macros like `FUNC`, `VAR`, `P2VAR`) and outputs Mermaid sequence diagrams.
+AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR codebases to generate function call trees. It parses automotive embedded code (with AUTOSAR macros like `FUNC`, `VAR`, `P2VAR`) and outputs Mermaid sequence diagrams and XMI/UML 2.5 documents.
 
 **Key capability**: Handles AUTOSAR's proprietary macros that traditional C parsers cannot understand. Use this when working with automotive embedded systems code.
+
+**Latest feature (v0.5.0)**: Automatic conditional function call detection with `opt`/`alt`/`else` block generation in both Mermaid and XMI formats.
 
 ## Development Commands
 
@@ -18,10 +20,10 @@ pip install -e ".[dev]"
 pytest
 
 # Run specific test module
-pytest tests/test_parser.py
+pytest tests/unit/test_c_parser.py
 
 # Run specific test case
-pytest tests/test_parser.py::TestParser::test_function_detection
+pytest tests/unit/test_c_parser.py::TestCParser::test_function_detection
 
 # Verbose test output with live stdout
 pytest -vv -s tests/
@@ -32,12 +34,14 @@ pytest --cov=autosar_calltree --cov-report=html --cov-report=term
 # Type checking (mypy configured for strict mode)
 mypy src/
 
-# Code formatting
+# Code formatting (use both for consistency)
 black src tests
 isort src tests
 
-# Linting
-flake8 src tests
+# Linting (CI uses ruff, isort, flake8, mypy)
+ruff check src/ tests/
+isort --check-only src/ tests/
+flake8 src/ tests/
 
 # Build package
 python -m build
@@ -46,6 +50,9 @@ python -m build
 calltree --help
 # or
 python -m autosar_calltree.cli --help
+
+# Check requirements traceability
+python scripts/check_traceability.py
 ```
 
 ## CLI Usage Examples
@@ -88,14 +95,14 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
 
 1. **Parsers** (`src/autosar_calltree/parsers/`)
    - `AutosarParser`: Handles AUTOSAR-specific macros (`FUNC`, `FUNC_P2VAR`, `FUNC_P2CONST`, `VAR`, `P2VAR`, `P2CONST`, etc.)
-   - `CParser`: Fallback for traditional C function declarations
+   - `CParser`: Fallback for traditional C function declarations; also extracts function calls with conditional context (if/else blocks)
    - Both extract: function signatures, parameters, return types, and function calls within bodies
    - **Progressive Enhancement**: Try AUTOSAR parser first, fall back to C parser
 
 2. **Database** (`src/autosar_calltree/database/`)
    - `FunctionDatabase`: Scans source directory, parses all files, builds in-memory index
    - Caching layer: Pickle-based (`.cache/function_db.pkl`) with metadata validation for fast reloads
-   - `models.py`: Core dataclasses (`FunctionInfo`, `Parameter`, `AnalysisResult`)
+   - `models.py`: Core dataclasses (`FunctionInfo`, `Parameter`, `FunctionCall`, `AnalysisResult`)
    - **Smart Function Lookup**: Critical for resolving multiple function definitions (see below)
 
 3. **Analyzer** (`src/autosar_calltree/analyzers/`)
@@ -104,7 +111,8 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
    - Respects `max_depth` limits, tracks statistics
 
 4. **Generators** (`src/autosar_calltree/generators/`)
-   - `MermaidGenerator`: Creates Markdown with Mermaid sequence diagrams
+   - `MermaidGenerator`: Creates Markdown with Mermaid sequence diagrams; supports opt/alt/else blocks
+   - `XMIGenerator`: Creates XMI/UML 2.5 documents with combined fragments (opt/alt/else)
    - Supports both function-level and module-level diagrams
    - Includes metadata, function tables, text-based trees
 
@@ -142,6 +150,41 @@ generator.generate(result, output_path="call_tree.md")
 ```
 
 ## Critical Implementation Details
+
+### Conditional Function Call Tracking (v0.5.0)
+
+**Feature**: Automatically detects function calls inside `if`/`else` blocks and generates `opt`/`alt`/`else` blocks in output.
+
+**Implementation**:
+1. `CParser._extract_function_calls_with_conditional_context()` parses function bodies line-by-line to track if/else nesting
+2. Extracts condition text (e.g., `"update_mode == 0x05"`) from if statements
+3. `FunctionCall` model has `is_conditional` and `condition` fields
+4. `CallTreeNode` has `is_optional` and `condition` fields for opt block generation
+5. `MermaidGenerator` and `XMIGenerator` use these fields to generate conditional blocks
+
+**Example**:
+```c
+// Source code
+if (update_mode == 0x05) {
+    COM_SendLINMessage(0x456, (uint8*)0x20003000);
+}
+```
+
+**Generated Mermaid**:
+```mermaid
+opt update_mode == 0x05
+  Demo_Update->>COM_SendLINMessage: call(msg_id, data)
+end
+```
+
+**Generated XMI**:
+```xml
+<uml:fragment name="opt" interactionOperator="opt">
+  <uml:operand name="update_mode == 0x05">
+    <uml:message name="COM_SendLINMessage" ... />
+  </uml:operand>
+</uml:fragment>
+```
 
 ### Smart Function Lookup Strategy (CRITICAL)
 
@@ -184,7 +227,7 @@ default_module: "Other"
 
 **Integration**:
 - Functions get `sw_module` field set during database building
-- MermaidGenerator can use module names as participants instead of function names
+- Generators can use module names as participants instead of function names
 - CLI option `--use-module-names` enables module-level diagrams
 - Function tables include module column
 
@@ -251,8 +294,8 @@ CONST(uint16, AUTOMATIC) constant
 
 ## Code Conventions
 
-- **Type annotations**: Required everywhere (`disallow_untyped_defs = true` in mypy)
-- **Dataclasses**: Use for data models (`FunctionInfo`, `Parameter`, etc.)
+- **Type annotations**: Required where practicable (`disallow_untyped_defs = false` in mypy, but aim for full coverage)
+- **Dataclasses**: Use for data models (`FunctionInfo`, `Parameter`, `FunctionCall`, etc.)
 - **Imports**: Standard library → third-party → local (absolute imports preferred)
 - **Line length**: 88 characters (Black default)
 - **Paths**: Use `pathlib.Path` objects, convert to `str` only at I/O boundaries
@@ -276,18 +319,60 @@ CONST(uint16, AUTOMATIC) constant
   - `VAR(uint32, AUTOMATIC) var`, `P2VAR(uint8, AUTOMATIC, APPL_DATA) ptr`
   - `CONST(uint16, AUTOMATIC) constant`
 
-## Known Limitations
+## CI/CD Quality Gates
 
-- XMI output format is not yet implemented (CLI shows warning)
-- No test files exist yet in `tests/` directory
-- Large source trees (thousands of files) may need performance optimization
+The CI workflow (`.github/workflows/ci.yml`) runs these checks in sequence:
+
+1. **Quality Checks** (must pass before tests):
+   - `ruff check` - Fast Python linting
+   - `isort --check-only` - Import sorting verification
+   - `flake8` - Style guide enforcement (checks for newlines at EOF, etc.)
+   - `mypy` - Static type checking
+
+2. **Tests** (matrix: Python 3.8-3.12):
+   - `pytest` with coverage reporting
+   - Uploads coverage to Codecov
+
+3. **Requirements Traceability**:
+   - Validates all requirements have corresponding tests
+
+**Common CI Issues**:
+- Flake8 W292: Missing newline at end of file → Add final newline
+- Flake8 W391: Blank line at end of file → Remove trailing blank lines
+- Mypy var-annotated: Missing type annotation → Add `: TypeHint` to variable declarations
+
+## Test Structure
+
+```
+tests/
+├── unit/                    # Unit tests for individual modules
+│   ├── test_autosar_parser.py
+│   ├── test_c_parser.py
+│   ├── test_call_tree_builder.py
+│   ├── test_function_database.py
+│   ├── test_mermaid_generator.py
+│   ├── test_models.py
+│   └── test_module_config.py
+├── integration/             # End-to-end CLI tests
+│   └── test_cli.py
+└── conftest.py              # Shared pytest fixtures
+```
+
+**Test coverage**: 89% overall (298 tests). See README.md for module-by-module breakdown.
 
 ## File Locations
 
 - Source code: `src/autosar_calltree/`
-- Tests: `tests/` (currently empty)
+- Tests: `tests/`
 - Cache: `.cache/function_db.pkl` (in source directory)
 - Demo sources: `demo/`
 - Module configs: `demo/module_mapping.yaml`
 - Requirements: `docs/requirements/`
 - Traceability: `docs/TRACEABILITY.md`
+- Scripts: `scripts/` (traceability checking, etc.)
+
+## Version History
+
+- **v0.5.0** (2026-02-04): Conditional function call tracking with opt/alt/else blocks
+- **v0.4.0**: XMI/UML 2.5 output format implementation
+- **v0.3.0**: SW module configuration system
