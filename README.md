@@ -12,16 +12,71 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 - 🔍 **Static Analysis**: Analyzes C source code without compilation
 - 📊 **Multiple Output Formats**:
   - Mermaid sequence diagrams (Markdown)
-  - XMI/UML 2.5 (importable to Enterprise Architect, MagicDraw, etc.) - *planned*
+  - XMI/UML 2.5 (importable to Enterprise Architect, Visual Paradigm, etc.)
   - JSON (for custom processing) - *planned*
 - 🏗️ **SW Module Support**: Map C files to SW modules via YAML configuration for architecture-level diagrams
 - 📈 **Module-Aware Diagrams**: Generate diagrams with SW module names as participants
 - 🎯 **Parameter Display**: Function parameters shown in sequence diagram calls for better visibility
+- 🔄 **Automatic Conditional Detection**: Automatically detects `if`/`else` statements and generates `opt` blocks with actual conditions (Mermaid and XMI)
 - 🚀 **Performance**: Intelligent caching for fast repeated analysis with file-by-file progress reporting
 - 🎯 **Depth Control**: Configurable call tree depth
 - 🔄 **Circular Dependency Detection**: Identifies recursive calls and cycles
 - 📊 **Statistics**: Detailed analysis statistics including module distribution
 - 📝 **Clean Diagrams**: Return statements omitted by default for cleaner sequence diagrams (configurable)
+
+## What's New
+
+### Version 0.4.0 (2026-02-04)
+
+**New Feature: Automatic Conditional Call Detection**
+
+The tool now automatically detects function calls inside `if`/`else` statements and displays them in `opt` blocks with the actual condition text. This feature is supported in both Mermaid and XMI output formats.
+
+**Mermaid Example**:
+
+**Source Code**:
+```c
+FUNC(void, RTE_CODE) Demo_Update(VAR(uint32, AUTOMATIC) update_mode)
+{
+    SW_UpdateState(update_mode);
+
+    if (update_mode == 0x05) {
+        COM_SendLINMessage(0x456, (uint8*)0x20003000);
+    }
+}
+```
+
+**Generated Mermaid Diagram**:
+```mermaid
+sequenceDiagram
+    participant Demo_Update
+    participant COM_SendLINMessage
+    participant SW_UpdateState
+
+    Demo_Update->>SW_UpdateState: call(new_state)
+    opt update_mode == 0x05
+    Demo_Update->>COM_SendLINMessage: call(msg_id, data)
+    end
+```
+
+**XMI Example**:
+```xml
+<uml:fragment name="opt" interactionOperator="opt">
+  <uml:operand name="update_mode == 0x05">
+    <uml:message name="COM_SendLINMessage" signature="COM_SendLINMessage(msg_id, data)">
+      <!-- message events -->
+    </uml:message>
+  </uml:operand>
+</uml:fragment>
+```
+
+**Benefits**:
+- No manual configuration required - automatic detection
+- Shows actual condition text for better understanding
+- Supports nested conditionals
+- Handles `if`, `else if`, and `else` statements
+- Works with both Mermaid and XMI output formats
+- XMI uses UML combined fragments (standard UML 2.5 representation)
 
 ## Installation
 
@@ -50,6 +105,9 @@ calltree --start-function Demo_Init --source-dir demo --module-config demo/modul
 
 # Specify depth and output
 calltree --start-function Demo_Init --max-depth 2 -o output.md
+
+# Generate XMI format (with opt block support)
+calltree --start-function Demo_MainFunction --source-dir demo --format xmi --output demo/demo.xmi
 
 # Verbose mode with detailed statistics and cache progress
 calltree --start-function Demo_Init --verbose
@@ -112,7 +170,7 @@ Options:
 
 ## Output Examples
 
-### Mermaid Sequence Diagram
+### Mermaid Sequence Diagram with Opt Blocks
 
 ```mermaid
 sequenceDiagram
@@ -122,31 +180,55 @@ sequenceDiagram
     participant SoftwareModule
 
     DemoModule->>CommunicationModule: COM_InitCommunication(baud_rate, buffer_size)
-    CommunicationModule->>CommunicationModule: COM_InitCAN
-    CommunicationModule->>CommunicationModule: COM_InitEthernet
-    CommunicationModule->>CommunicationModule: COM_InitLIN
-    DemoModule->>DemoModule: Demo_InitVariables(config_mode)
-    DemoModule->>HardwareModule: HW_InitHardware(clock_freq, gpio_mask)
-    HardwareModule->>HardwareModule: HW_InitADC
-    HardwareModule->>HardwareModule: HW_InitClock
-    HardwareModule->>HardwareModule: HW_InitGPIO
-    HardwareModule->>HardwareModule: HW_InitPWM
-    DemoModule->>SoftwareModule: SW_InitSoftware(state, config)
-    SoftwareModule->>SoftwareModule: SW_InitConfig
-    SoftwareModule->>SoftwareModule: SW_InitState
+    opt mode > 0x00
+    DemoModule->>DemoModule: Demo_Update(mode)
+    opt mode == 0x05
+    DemoModule->>CommunicationModule: COM_SendLINMessage(msg_id, data)
+    end
+    DemoModule->>SoftwareModule: SW_UpdateState(new_state)
+    end
+    DemoModule->>HardwareModule: HW_ReadSensor(sensor_id)
+    DemoModule->>SoftwareModule: SW_ProcessData(data, length)
 ```
 
 **Key Features**:
-- Participants appear in the order they are first encountered in the call tree
-- Function parameters are displayed in the call arrows (e.g., `COM_InitCommunication(baud_rate, buffer_size)`)
+- Conditional calls are automatically wrapped in `opt` blocks
+- Shows actual condition text from source code (e.g., `mode > 0x00`, `mode == 0x05`)
+- Supports nested conditionals
+- Participants appear in the order they are first encountered
+- Function parameters are displayed in the call arrows
 - Return statements are omitted by default for cleaner visualization
 - Module names are used as participants when `--use-module-names` is enabled
+
+### XMI Output with Opt Blocks
+
+The XMI output also supports opt blocks using UML combined fragments:
+
+```xml
+<uml:fragment name="opt" interactionOperator="opt">
+  <uml:operand name="update_mode == 0x05">
+    <uml:message name="COM_SendLINMessage" 
+                 signature="COM_SendLINMessage(msg_id, data)"
+                 messageSort="synchCall">
+      <uml:sendEvent xmi:id="calltree_22"/>
+      <uml:receiveEvent xmi:id="calltree_23"/>
+    </uml:message>
+  </uml:operand>
+</uml:fragment>
+```
+
+**XMI Features**:
+- UML 2.5 compliant XMI documents
+- Combined fragments with `opt` interaction operator
+- Operand elements display the condition text
+- Can be imported into UML tools like Enterprise Architect, Visual Paradigm, MagicDraw
+- Proper XML structure with correct namespaces
 
 ### Generated Markdown Structure
 
 The tool generates comprehensive Markdown files with:
 - Metadata header (timestamp, settings, statistics)
-- Mermaid sequence diagram with function parameters
+- Mermaid sequence diagram with function parameters and opt blocks
 - Function details table with parameter information
 - Text-based call tree
 - Circular dependency warnings
@@ -215,6 +297,7 @@ calltree --start-function Demo_Init --module-config demo/module_mapping.yaml --u
 This generates diagrams with:
 - **Participants**: SW module names (HardwareModule, SoftwareModule, etc.) in the order they are first encountered
 - **Arrows**: Function names with parameters being called between modules
+- **Opt Blocks**: Conditional calls wrapped with actual condition text
 - **Function Table**: Includes module column showing each function's SW module
 - **Clean Visualization**: Return statements omitted by default
 
@@ -238,7 +321,7 @@ autosar-calltree/
 │   ├── parsers/          # Code parsers (AUTOSAR, C)
 │   ├── analyzers/        # Analysis logic (call tree, dependencies)
 │   ├── database/         # Data models and caching
-│   ├── generators/       # Output generators (Mermaid)
+│   ├── generators/       # Output generators (Mermaid, XMI)
 │   └── utils/            # Utilities (empty, for future use)
 ├── test_demo/            # Demo AUTOSAR C files for testing
 │   ├── demo.c
@@ -256,7 +339,7 @@ autosar-calltree/
 
 ### Running Tests
 
-The project has **comprehensive test coverage** with 278 tests across all modules:
+The project has **comprehensive test coverage** with 298 tests across all modules:
 
 ```bash
 # Run all tests
@@ -290,20 +373,20 @@ pytest --cov=autosar_calltree --cov-report=html --cov-report=term --omit=tests/
 
 ### Test Coverage
 
-The project maintains **94% code coverage** across all modules:
+The project maintains **89% code coverage** across all modules:
 
 | Module | Coverage | Tests |
 |--------|----------|-------|
-| Models | 100% | 25 |
+| Models | 97% | 28 |
 | AUTOSAR Parser | 97% | 15 |
 | C Parser | 86% | 18 |
-| Database | 80% | 20 |
-| Analyzers | 94% | 20 |
+| Database | 83% | 20 |
+| Analyzers | 95% | 20 |
 | Config | 97% | 25 |
-| Generators | 96% | 31 |
-| CLI (Integration) | ~90% | 14 |
-| End-to-End | ~90% | 110 |
-| **Total** | **94%** | **278** |
+| Generators | 89% | 45 |
+| CLI (Integration) | 90% | 14 |
+| End-to-End | ~90% | 120 |
+| **Total** | **89%** | **298** |
 
 ### Code Quality
 
@@ -423,7 +506,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [ ] Multi-threading for large codebases
 - [ ] Function complexity metrics
 - [ ] Dead code detection
-- [ ] XMI/UML 2.5 output format
+- [x] XMI/UML 2.5 output format with opt block support
+- [x] Automatic conditional call detection with opt blocks
 
 ## Support
 

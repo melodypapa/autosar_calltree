@@ -23,6 +23,22 @@ class FunctionType(Enum):
 
 
 @dataclass
+class FunctionCall:
+    """Represents a function call with its conditional status."""
+
+    name: str  # Name of the called function
+    is_conditional: bool = False  # True if called inside if/else block
+    condition: Optional[str] = None  # The if/else condition (e.g., "update_mode == 0x05")
+
+    def __str__(self) -> str:
+        """String representation."""
+        if self.condition:
+            return f"{self.name} [{self.condition}]"
+        conditional_str = " [conditional]" if self.is_conditional else ""
+        return f"{self.name}{conditional_str}"
+
+
+@dataclass
 class Parameter:
     """Function parameter information."""
 
@@ -53,7 +69,7 @@ class FunctionInfo:
     function_type: FunctionType
     memory_class: Optional[str] = None  # AUTOSAR memory class (RTE_CODE, etc.)
     parameters: List[Parameter] = field(default_factory=list)
-    calls: List[str] = field(default_factory=list)  # Functions called within
+    calls: List[FunctionCall] = field(default_factory=list)  # Functions called within
     called_by: Set[str] = field(default_factory=set)  # Functions that call this
 
     # AUTOSAR specific
@@ -102,6 +118,8 @@ class CallTreeNode:
     is_recursive: bool = False  # True if function already in call stack
     is_truncated: bool = False  # True if depth limit reached
     call_count: int = 1  # Number of times this function is called
+    is_optional: bool = False  # True if this call is conditional (for opt blocks)
+    condition: Optional[str] = None  # The if/else condition (e.g., "update_mode == 0x05")
 
     def add_child(self, child: "CallTreeNode") -> None:
         """Add a child node."""

@@ -203,7 +203,10 @@ class CallTreeBuilder:
         # Build children nodes
         children = []
 
-        for called_func_name in func_info.calls:
+        for func_call in func_info.calls:
+            called_func_name = func_call.name
+            is_conditional = func_call.is_conditional
+
             # Lookup called function
             called_funcs = self.function_db.lookup_function(
                 called_func_name, context_file=str(func_info.file_path)
@@ -227,6 +230,11 @@ class CallTreeBuilder:
                 max_depth=max_depth,
                 verbose=verbose,
             )
+
+            # Mark as optional if it's conditional
+            if is_conditional:
+                child_node.is_optional = True
+                child_node.condition = func_call.condition
 
             children.append(child_node)
 

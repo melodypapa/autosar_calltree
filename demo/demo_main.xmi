@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<ns0:XMI xmlns:ns0="http://www.omg.org/spec/XMI/20131001" xmlns:ns1="http://www.eclipse.org/uml2/5.0.0/UML" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" ns0:version="4.0">
+  <ns1:Model ns0:id="calltree_1" name="CallTree_Demo_MainFunction" visibility="public">
+    <ns1:packagedElement ns0:id="calltree_2" name="Sequence_Demo_MainFunction" visibility="public">
+      <ns1:packagedElement ns0:id="calltree_3" name="CallSequence_Demo_MainFunction" visibility="public" isReentrant="false">
+        <ns1:ownedAttribute ns0:id="calltree_4" name="interactionType" visibility="public" type="Interaction"/>
+        <ns1:lifeline ns0:id="calltree_5" name="Demo_MainFunction" visibility="public">
+          <ns1:represents ns0:id="calltree_6" name="Demo_MainFunction"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="calltree_7" name="COM_SendCANMessage" visibility="public">
+          <ns1:represents ns0:id="calltree_8" name="COM_SendCANMessage"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="calltree_9" name="Demo_Update" visibility="public">
+          <ns1:represents ns0:id="calltree_10" name="Demo_Update"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="calltree_11" name="COM_SendLINMessage" visibility="public">
+          <ns1:represents ns0:id="calltree_12" name="COM_SendLINMessage"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="calltree_13" name="SW_UpdateState" visibility="public">
+          <ns1:represents ns0:id="calltree_14" name="SW_UpdateState"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="calltree_15" name="HW_ReadSensor" visibility="public">
+          <ns1:represents ns0:id="calltree_16" name="HW_ReadSensor"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="calltree_17" name="SW_ProcessData" visibility="public">
+          <ns1:represents ns0:id="calltree_18" name="SW_ProcessData"/>
+        </ns1:lifeline>
+        <ns1:fragment ns0:id="calltree_19" name="opt" visibility="public" interactionOperator="opt">
+          <ns1:operand ns0:id="calltree_20" name="update_mode == 0x05" visibility="public">
+            <ns1:message ns0:id="calltree_21" name="COM_SendLINMessage" visibility="public" messageSort="synchCall" signature="COM_SendLINMessage(msg_id, data)" sendEvent="{http://www.omg.org/spec/XMI/20131001}calltree_9" receiveEvent="{http://www.omg.org/spec/XMI/20131001}calltree_11">
+              <ns1:sendEvent ns0:id="calltree_22"/>
+              <ns1:receiveEvent ns0:id="calltree_23"/>
+            </ns1:message>
+          </ns1:operand>
+        </ns1:fragment>
+        <ns1:message ns0:id="calltree_24" name="SW_UpdateState" visibility="public" messageSort="synchCall" signature="SW_UpdateState(new_state)" sendEvent="{http://www.omg.org/spec/XMI/20131001}calltree_9" receiveEvent="{http://www.omg.org/spec/XMI/20131001}calltree_13">
+          <ns1:sendEvent ns0:id="calltree_25"/>
+          <ns1:receiveEvent ns0:id="calltree_26"/>
+        </ns1:message>
+      </ns1:packagedElement>
+    </ns1:packagedElement>
+  </ns1:Model>
+</ns0:XMI>

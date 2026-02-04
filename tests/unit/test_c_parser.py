@@ -287,8 +287,9 @@ class TestCParserParsing:
         # Test simple function calls
         body = "void test(void) {\n    helper1();\n    helper2();\n}"
         calls = parser._extract_function_calls(body)
-        assert "helper1" in calls
-        assert "helper2" in calls
+        call_names = [call.name for call in calls]
+        assert "helper1" in call_names
+        assert "helper2" in call_names
 
         # Test that C keywords are filtered
         body = """void test(void) {
@@ -301,30 +302,34 @@ class TestCParserParsing:
     helper();
 }"""
         calls = parser._extract_function_calls(body)
-        assert "helper" in calls
-        assert "if" not in calls
-        assert "return" not in calls
-        assert "while" not in calls
-        assert "break" not in calls
+        call_names = [call.name for call in calls]
+        assert "helper" in call_names
+        assert "if" not in call_names
+        assert "return" not in call_names
+        assert "while" not in call_names
+        assert "break" not in call_names
 
         # Test that AUTOSAR types are filtered
         body = (
             "void test(void) {\n    uint8* buffer = (uint8*)0x2000;\n    helper();\n}"
         )
         calls = parser._extract_function_calls(body)
-        assert "helper" in calls
-        assert "uint8" not in calls
+        call_names = [call.name for call in calls]
+        assert "helper" in call_names
+        assert "uint8" not in call_names
 
         # Test RTE calls
         body = "void test(void) {\n    Rte_Call_StartOperation();\n    helper();\n}"
         calls = parser._extract_function_calls(body)
-        assert "Rte_Call_StartOperation" in calls
-        assert "helper" in calls
+        call_names = [call.name for call in calls]
+        assert "Rte_Call_StartOperation" in call_names
+        assert "helper" in call_names
 
         # Test deduplication
         body = "void test(void) {\n    helper();\n    helper();\n    helper();\n}"
         calls = parser._extract_function_calls(body)
-        assert calls.count("helper") == 1  # Should be deduplicated
+        call_names = [call.name for call in calls]
+        assert call_names.count("helper") == 1  # Should be deduplicated
 
     # SWUT_PARSER_C_00010: Function Match Parsing
     def test_SWUT_PARSER_C_00010_function_match_parsing(self):
@@ -573,25 +578,28 @@ class TestCParserWithFixtures:
         # Check that function calls are extracted
         caller = next((f for f in functions if f.name == "caller_function"), None)
         assert caller is not None
-        assert "helper1" in caller.calls
-        assert "helper2" in caller.calls
-        assert "helper3" in caller.calls
+        caller_call_names = [call.name for call in caller.calls]
+        assert "helper1" in caller_call_names
+        assert "helper2" in caller_call_names
+        assert "helper3" in caller_call_names
 
         # Check that C keywords are not in calls
         control = next((f for f in functions if f.name == "control_structures"), None)
         assert control is not None
-        assert "if" not in control.calls
-        assert "for" not in control.calls
-        assert "while" not in control.calls
-        assert "switch" not in control.calls
+        control_call_names = [call.name for call in control.calls]
+        assert "if" not in control_call_names
+        assert "for" not in control_call_names
+        assert "while" not in control_call_names
+        assert "switch" not in control_call_names
 
         # Check RTE calls
         rte_func = next(
             (f for f in functions if f.name == "function_with_rte_calls"), None
         )
         assert rte_func is not None
-        assert "Rte_Call_StartOperation" in rte_func.calls
-        assert "Rte_Write_Parameter_1" in rte_func.calls
+        rte_call_names = [call.name for call in rte_func.calls]
+        assert "Rte_Call_StartOperation" in rte_call_names
+        assert "Rte_Write_Parameter_1" in rte_call_names
 
 
 class TestCParserLineByLineProcessing:

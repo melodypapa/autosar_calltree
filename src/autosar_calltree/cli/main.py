@@ -234,7 +234,9 @@ def cli(
 
             builder = CallTreeBuilder(db)
             result = builder.build_tree(
-                start_function=start_function, max_depth=max_depth, verbose=verbose
+                start_function=start_function,
+                max_depth=max_depth,
+                verbose=verbose,
             )
 
             progress.update(task, completed=True)

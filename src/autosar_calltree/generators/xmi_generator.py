@@ -8,6 +8,7 @@ into UML tools like Enterprise Architect, Visual Paradigm, etc.
 Requirements:
 - SWR_XMI_00001: XMI 2.5 Compliance
 - SWR_XMI_00002: Sequence Diagram Representation
+- SWR_XMI_00003: Opt Block Support (Combined Fragments)
 """
 
 from pathlib import Path
@@ -111,7 +112,7 @@ class XmiGenerator:
         participants = self._collect_participants(call_tree)
         lifeline_elements = self._create_lifelines(interaction, participants)
 
-        # Create messages (function calls)
+        # Create messages (function calls) with opt block support
         self._create_messages(call_tree, lifeline_elements, interaction)
 
         return root
@@ -218,7 +219,7 @@ class XmiGenerator:
         interaction: Element,
     ) -> None:
         """
-        Create UML messages (function calls) between lifelines.
+        Create UML messages (function calls) between lifelines with opt block support.
 
         Args:
             root: Root node of call tree
@@ -275,9 +276,67 @@ class XmiGenerator:
                 if node.is_recursive:
                     message.set("messageSort", "reply")
 
-            # Traverse children
+            # Traverse children with opt block support
             for child in node.children:
-                traverse(child, current_participant)
+                if child.is_optional:
+                    # Create UML combined fragment for opt block
+                    combined_fragment = SubElement(interaction, f"{{{self.UML_NAMESPACE}}}fragment")
+                    combined_fragment.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                    combined_fragment.set("name", "opt")
+                    combined_fragment.set("visibility", "public")
+                    combined_fragment.set("interactionOperator", "opt")
+
+                    # Add interaction operand
+                    operand = SubElement(combined_fragment, f"{{{self.UML_NAMESPACE}}}operand")
+                    operand.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                    operand.set("name", child.condition or "condition")
+                    operand.set("visibility", "public")
+
+                    # Traverse children inside the opt block
+                    def traverse_opt(opt_node: CallTreeNode, opt_parent: Optional[str] = None):
+                        nonlocal message_counter
+
+                        if self.use_module_names:
+                            opt_participant = (
+                                opt_node.function_info.sw_module
+                                or Path(opt_node.function_info.file_path).stem
+                            )
+                        else:
+                            opt_participant = opt_node.function_info.name
+
+                        if opt_parent:
+                            opt_message = SubElement(operand, f"{{{self.UML_NAMESPACE}}}message")
+                            opt_message.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                            opt_message.set("name", opt_node.function_info.name)
+                            opt_message.set("visibility", "public")
+                            opt_message.set("messageSort", "synchCall")
+
+                            opt_signature = self._format_message_signature(opt_node)
+                            opt_message.set("signature", opt_signature)
+
+                            opt_send_event = SubElement(opt_message, f"{{{self.UML_NAMESPACE}}}sendEvent")
+                            opt_send_event.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+
+                            opt_receive_event = SubElement(opt_message, f"{{{self.UML_NAMESPACE}}}receiveEvent")
+                            opt_receive_event.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+
+                            opt_message.set(
+                                "sendEvent",
+                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(opt_parent, '')}"
+                            )
+                            opt_message.set(
+                                "receiveEvent",
+                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(opt_participant, '')}"
+                            )
+
+                            message_counter += 1
+
+                        for opt_child in opt_node.children:
+                            traverse_opt(opt_child, opt_participant)
+
+                    traverse_opt(child, current_participant)
+                else:
+                    traverse(child, current_participant)
 
         # Start traversal from root's children
         for child in root.children:

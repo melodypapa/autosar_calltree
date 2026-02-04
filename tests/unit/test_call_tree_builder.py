@@ -703,3 +703,6 @@ class TestMultipleDefinitions:
         # Should use first match
         assert result.call_tree is not None
         assert result.call_tree.function_info == func1
+
+
+

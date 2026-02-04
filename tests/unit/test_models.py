@@ -8,6 +8,7 @@ from autosar_calltree.database.models import (
     AnalysisStatistics,
     CallTreeNode,
     CircularDependency,
+    FunctionCall,
     FunctionDict,
     FunctionInfo,
     FunctionType,
@@ -182,7 +183,7 @@ def test_SWUT_MODEL_00006_function_info_call_relationships():
             Parameter(name="param1", param_type="uint32"),
             Parameter(name="param2", param_type="uint8"),
         ],
-        calls=["Helper_Function1", "Helper_Function2"],
+        calls=[FunctionCall("Helper_Function1", False), FunctionCall("Helper_Function2", False)],
     )
 
     # Verify parameters list
@@ -192,8 +193,9 @@ def test_SWUT_MODEL_00006_function_info_call_relationships():
 
     # Verify calls list
     assert len(func.calls) == 2
-    assert "Helper_Function1" in func.calls
-    assert "Helper_Function2" in func.calls
+    call_names = [call.name for call in func.calls]
+    assert "Helper_Function1" in call_names
+    assert "Helper_Function2" in call_names
 
     # Verify called_by set (empty initially)
     assert len(func.called_by) == 0
