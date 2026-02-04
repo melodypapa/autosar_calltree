@@ -225,7 +225,7 @@ class TestOutputFormatOption:
             assert "```mermaid" in content
 
     def test_format_xmi_warning(self, demo_dir):
-        """Test that --format xmi shows warning."""
+        """Test that --format xmi generates XMI file."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
@@ -240,10 +240,14 @@ class TestOutputFormatOption:
                 ],
             )
             assert result.exit_code == 0
-            assert "XMI format not yet implemented" in result.output
+            assert Path("call_tree.xmi").exists()
+            # Verify XMI file contains expected XML content
+            xmi_content = Path("call_tree.xmi").read_text()
+            assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
+            assert "Demo_Init" in xmi_content
 
     def test_format_both(self, demo_dir):
-        """Test that --format both generates Mermaid and warns about XMI."""
+        """Test that --format both generates Mermaid and XMI files."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
@@ -259,7 +263,11 @@ class TestOutputFormatOption:
             )
             assert result.exit_code == 0
             assert Path("call_tree.mermaid.md").exists()
-            assert "XMI format not yet implemented" in result.output
+            assert Path("call_tree.xmi").exists()
+            # Verify both files contain expected content
+            xmi_content = Path("call_tree.xmi").read_text()
+            assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
+            assert "Demo_Init" in xmi_content
 
 
 class TestCacheOptions:
