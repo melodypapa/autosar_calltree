@@ -26,11 +26,11 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 
 ## What's New
 
-### Version 0.4.0 (2026-02-04)
+### Version 0.5.0 (2026-02-04)
 
-**New Feature: Automatic Conditional Call Detection**
+**🎉 Major Feature: Automatic Conditional Call Detection with Opt/Alt/Else Blocks**
 
-The tool now automatically detects function calls inside `if`/`else` statements and displays them in `opt` blocks with the actual condition text. This feature is supported in both Mermaid and XMI output formats.
+This release adds intelligent parsing of conditional function calls, automatically detecting `if`/`else` blocks in your C code and representing them as `opt`/`alt`/`else` blocks in both Mermaid and XMI output formats.
 
 **Mermaid Example**:
 
@@ -71,12 +71,121 @@ sequenceDiagram
 ```
 
 **Benefits**:
-- No manual configuration required - automatic detection
-- Shows actual condition text for better understanding
-- Supports nested conditionals
-- Handles `if`, `else if`, and `else` statements
-- Works with both Mermaid and XMI output formats
-- XMI uses UML combined fragments (standard UML 2.5 representation)
+- ✅ No manual configuration required - automatic detection
+- ✅ Shows actual condition text for better understanding
+- ✅ Supports nested conditionals
+- ✅ Handles `if`, `else if`, and `else` statements
+- ✅ Works with both Mermaid and XMI output formats
+- ✅ XMI uses UML combined fragments (standard UML 2.5 representation)
+
+**Technical Changes**:
+- `FunctionCall` model extended with `is_conditional` and `condition` fields
+- `CallTreeNode` extended with `is_optional` and `condition` fields
+- `CParser` enhanced with line-by-line conditional context tracking
+- `MermaidGenerator` supports `opt`, `alt`, and `else` blocks
+- `XMIGenerator` supports UML combined fragments
+- 298 tests passing with 89% code coverage
+
+## Changelog
+
+### [0.5.0] - 2026-02-04
+
+#### Added
+- **Conditional function call tracking**: Automatic detection of `if`/`else` blocks with condition text extraction
+- **Mermaid opt/alt/else blocks**: Generate `opt`, `alt`, and `else` blocks for conditional calls
+- **XMI combined fragments**: UML 2.5 compliant `opt`/`alt`/`else` fragment generation
+- **FunctionCall model**: Extended with `is_conditional` and `condition` fields
+- **CallTreeNode model**: Extended with `is_optional` and `condition` fields
+- **CParser enhancements**: Line-by-line parsing to track conditional context
+- Requirements documentation for conditional call tracking (SWR_MODEL_00026-00028)
+
+#### Fixed
+- Linting errors (flake8 W292, W391) for proper file endings
+- Type annotations in `c_parser.py:442` for mypy compliance
+
+#### Technical
+- 298 tests passing, 89% code coverage
+- All CI quality checks passing (ruff, isort, flake8, mypy)
+- Python 3.8-3.12 test matrix
+
+---
+
+### [0.4.0] - 2026-02-03
+
+#### Added
+- **XMI/UML 2.5 output format**: Complete XMI generation with UML 2.5 compliance
+- **XMIGenerator**: New generator class for XMI document creation
+- **CLI `--format xmi` option**: Support for XMI output format
+- **CLI `--format both` option**: Generate both Mermaid and XMI simultaneously
+- **XMI requirements documentation**: `docs/requirements/requirements_xmi.md`
+- **UML combined fragments**: Support for `opt`, `alt`, `else` interactions
+- **XMI demo output**: `demo/demo_main.xmi` example file
+
+#### Technical
+- XMI documents importable into Enterprise Architect, Visual Paradigm, MagicDraw
+- Proper XML namespaces and structure (UML 2.5, XMI 2.5)
+- Message events with sendEvent and receiveEvent elements
+
+---
+
+### [0.3.3] - 2026-02-02
+
+#### Fixed
+- **AUTOSAR macro false positives**: Performance degradation caused by incorrect macro matching
+- Parser optimization to reduce false positive detections
+- Improved AUTOSAR pattern matching accuracy
+
+---
+
+### [0.3.2] - 2026-02-01
+
+#### Added
+- **File size display**: Show file sizes during processing in verbose mode
+- Enhanced progress reporting with line counts and file sizes
+- Improved user feedback for large file processing
+
+---
+
+### [0.3.1] - 2026-01-31
+
+#### Added
+- **Verbose file progress**: File-by-file progress display during database building
+- **Line count reporting**: Show number of lines processed per file
+- **Enhanced cache loading**: File-by-file progress when loading from cache
+- **C parser line-by-line tests**: Comprehensive testing for line-by-line processing
+
+#### Fixed
+- Import sorting to pass isort checks
+- Minor documentation updates
+
+---
+
+### [0.3.0] - 2026-01-30
+
+#### Added
+- **SW Module Configuration System**: YAML-based file-to-module mapping
+- **Module-aware diagrams**: Generate diagrams with SW module names as participants
+- **Comprehensive test suite**: 298 tests across all modules (89% coverage)
+- **Requirements traceability**: Complete traceability matrix between requirements and tests
+- **Integration tests**: End-to-end CLI testing
+- **PyPI publishing workflow**: Automated PyPI releases with OIDC trusted publishing
+- **ModuleConfig class**: Load, validate, and perform module lookups
+- **Module assignment**: Functions tagged with SW module information
+- **FunctionDatabase integration**: Module assignments preserved in cache
+- **CLI `--use-module-names` option**: Enable module-level diagrams
+- **CLI `--module-config` option**: Specify module mapping YAML file
+
+#### Technical
+- Glob pattern support for file mappings (e.g., `hw_*.c`)
+- Default module fallback for unmapped files
+- Module lookup caching for performance
+- Cache preserves module assignments across runs
+
+---
+
+### Earlier Versions
+
+**0.2.x** - Initial development releases with basic AUTOSAR parsing and Mermaid output
 
 ## Installation
 
