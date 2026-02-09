@@ -913,3 +913,155 @@ class TestCParserMultiLine:
         # Should capture the full condition with nested parentheses
         assert "mode" in complex_call.condition
         assert "length" in complex_call.condition
+
+
+class TestCParserLoopSupport:
+    """Test C parser loop detection and extraction.
+
+    SWR_PARSER_C_00023: Loop Detection
+    SWUT_PARSER_C_00023: test_loop_detection_for
+    SWUT_PARSER_C_00024: test_loop_detection_while
+    SWUT_PARSER_C_00025: test_loop_multiple_calls
+    SWUT_PARSER_C_00026: test_loop_with_condition
+    """
+
+    def test_loop_detection_for(self):
+        """Test that for loops are correctly detected.
+
+        SWUT_PARSER_C_00023: Test loop detection for for loops
+        """
+        parser = CParser()
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "loop_functions.c"
+        )
+
+        functions = parser.parse_file(fixture_path)
+
+        # Get Process_Array function
+        func = next((f for f in functions if f.name == "Process_Array"), None)
+        assert func is not None
+
+        # Check that Process_Element is called inside a loop
+        process_elem_call = next(
+            (fc for fc in func.calls if fc.name == "Process_Element"), None
+        )
+        assert process_elem_call is not None
+        assert process_elem_call.is_loop is True
+        assert process_elem_call.loop_condition == "i < length"
+
+        def test_loop_detection_while(self):
+            """Test that while loops are correctly detected.
+
+
+
+            SWUT_PARSER_C_00024: Test loop detection for while loops
+
+            """
+
+            parser = CParser()
+
+            fixture_path = (
+                Path(__file__).parent.parent
+                / "fixtures"
+                / "traditional_c"
+                / "loop_functions.c"
+            )
+
+            functions = parser.parse_file(fixture_path)
+
+            # Get Process_While function
+
+            func = next((f for f in functions if f.name == "Process_While"), None)
+
+            assert func is not None
+
+            # Check that Process_Element is called inside a loop
+
+            process_elem_call = next(
+                (fc for fc in func.calls if fc.name == "Process_Element"), None
+            )
+
+            assert process_elem_call is not None
+
+            assert process_elem_call.is_loop is True
+
+            assert process_elem_call.loop_condition == "i < length"
+
+        def test_loop_multiple_calls(self):
+            """Test that multiple calls inside a loop are all marked as loop calls.
+
+
+
+            SWUT_PARSER_C_00025: Test multiple calls inside a loop
+
+            """
+
+            parser = CParser()
+
+            fixture_path = (
+                Path(__file__).parent.parent
+                / "fixtures"
+                / "traditional_c"
+                / "loop_functions.c"
+            )
+
+            functions = parser.parse_file(fixture_path)
+
+            # Get Process_Multiple function
+
+            func = next((f for f in functions if f.name == "Process_Multiple"), None)
+
+            assert func is not None
+
+            # Check that all three calls are marked as loop calls
+
+            calls = [fc for fc in func.calls if fc.name == "Process_Element"]
+
+            assert len(calls) == 3
+
+            for call in calls:
+
+                assert call.is_loop is True
+
+                assert call.loop_condition == "i < length"
+
+        def test_loop_with_condition(self):
+            """Test that loop conditions are correctly extracted.
+
+
+
+            SWUT_PARSER_C_00026: Test loop condition extraction
+
+            """
+
+            parser = CParser()
+
+            fixture_path = (
+                Path(__file__).parent.parent
+                / "fixtures"
+                / "traditional_c"
+                / "loop_functions.c"
+            )
+
+            functions = parser.parse_file(fixture_path)
+
+            # Get Process_Array function
+
+            func = next((f for f in functions if f.name == "Process_Array"), None)
+
+            assert func is not None
+
+            # Check that Process_Element is called inside a loop
+
+            process_elem_call = next(
+                (fc for fc in func.calls if fc.name == "Process_Element"), None
+            )
+
+            assert process_elem_call is not None
+
+            assert process_elem_call.is_loop is True
+
+            assert process_elem_call.loop_condition == "i < length"

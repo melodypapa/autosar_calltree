@@ -8,11 +8,11 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 |--------|-------------|-------|--------|
 | Models | SWR_MODEL_00001-00028 (28) | SWUT_MODEL_00001-00028 (28) | ✅ Complete (100% coverage) |
 | AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 (15) | SWUT_PARSER_AUTOSAR_00001-00015 (15) | ✅ Complete (97% coverage) |
-| C Parser | SWR_PARSER_C_00001-00022 (22) | SWUT_PARSER_C_00001-00022 (22) | ✅ Complete (86% coverage) |
+| C Parser | SWR_PARSER_C_00001-00023 (23) | SWUT_PARSER_C_00001-00026 (26) | ✅ Complete (86% coverage) |
 | Database | SWR_DB_00001-00025 (25) | SWUT_DB_00001-00021 (21) | ✅ Complete (80% coverage) |
 | Analyzers | SWR_ANALYZER_00001-00020 (20) | SWUT_ANALYZER_00001-00020 (20) | ✅ Complete (94% coverage) |
 | Config | SWR_CONFIG_00001-00010 (10) | SWUT_CONFIG_00001-00025 (25) | ✅ Complete (97% coverage) |
-| Generators | SWR_GENERATOR_00001-00045 (45) | SWUT_GENERATOR_00001-00045 (45) | ✅ Complete (89% coverage) |
+| Generators | SWR_GENERATOR_00001-00048 (48) | SWUT_GENERATOR_00001-00048 (48) | ✅ Complete (89% coverage) |
 | CLI | SWR_CLI_00001-00014 (14) | SWUT_CLI_00001-00014 (14) | ✅ Complete (integration tests) |
 | E2E | SWR_E2E_00001-00018 (18) | SWUT_E2E_00001-00018 (18) | ✅ Complete (integration tests) |
 | XMI | SWR_XMI_00001-00003 (3) | SWUT_XMI_00001-00003 (3) | ✅ Complete (70% coverage) |
@@ -58,8 +58,19 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 
 | Requirement ID | Test ID | Test Function | Status |
 |----------------|---------|---------------|--------|
-| SWR_PARSER_C_00021 | SWUT_PARSER_C_00021 | test_SWUT_PARSER_C_00021_multiline_function_prototype | ⏳ Pending |
-| SWR_PARSER_C_00022 | SWUT_PARSER_C_00022 | test_SWUT_PARSER_C_00022_multiline_if_condition | ⏳ Pending |
+| SWR_PARSER_C_00021 | SWUT_PARSER_C_00021 | test_SWUT_PARSER_C_00021_multiline_function_prototype | ✅ Pass |
+| SWR_PARSER_C_00022 | SWUT_PARSER_C_00022 | test_SWUT_PARSER_C_00022_multiline_if_condition | ✅ Pass |
+
+---
+
+## C Parser Loop Support Module
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_PARSER_C_00023 | SWUT_PARSER_C_00023 | test_loop_detection_for | ✅ Pass |
+| SWR_PARSER_C_00023 | SWUT_PARSER_C_00024 | test_loop_detection_while | ✅ Pass |
+| SWR_PARSER_C_00023 | SWUT_PARSER_C_00025 | test_loop_multiple_calls | ✅ Pass |
+| SWR_PARSER_C_00023 | SWUT_PARSER_C_00026 | test_loop_with_condition | ✅ Pass |
 
 ---
 
@@ -74,6 +85,16 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | SWR_MERMAID_00004 | SWUT_GENERATOR_00036 | test_SWUT_GENERATOR_00036_recursive_not_opt | ✅ Pass |
 | SWR_MERMAID_00004 | SWUT_GENERATOR_00037 | test_SWUT_GENERATOR_00037_optional_with_returns | ✅ Pass |
 | SWR_MERMAID_00004 | SWUT_GENERATOR_00038 | test_SWUT_GENERATOR_00038_optional_function_mode | ✅ Pass |
+
+---
+
+## Mermaid Loop Blocks Module
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_MERMAID_00005 | SWUT_GENERATOR_00039 | test_SWUT_GENERATOR_00039_loop_block_generation | ✅ Pass |
+| SWR_MERMAID_00005 | SWUT_GENERATOR_00040 | test_SWUT_GENERATOR_00040_multiple_loop_calls | ✅ Pass |
+| SWR_MERMAID_00005 | SWUT_GENERATOR_00041 | test_SWUT_GENERATOR_00041_mixed_loop_and_optional | ✅ Pass |
 
 ---
 
@@ -127,10 +148,20 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 
 ## Summary
 
-- **Total Requirements**: 169 requirements across 10 modules
-- **Total Tests**: 300 tests
-- **Overall Coverage**: 89%
-- **Passing Tests**: 300/300 (100%)
+- **Total Requirements**: 173 requirements across 10 modules
+- **Total Tests**: 307 tests
+- **Overall Coverage**: 86%
+- **Passing Tests**: 307/307 (100%)
+
+## Recent Updates
+
+- **2026-02-09**: Added loop detection requirements (SWR_PARSER_C_00023) with 4 tests
+- **2026-02-09**: Added loop block generation requirements (SWR_MERMAID_00005) with 3 tests
+- **2026-02-04**: Added FunctionCall model requirements (SWR_MODEL_00026-00028)
+- **2026-02-04**: Added Mermaid opt blocks requirements (SWR_MERMAID_00004)
+- **2026-02-04**: Added XMI generator requirements (SWR_XMI_00001-00003) with opt block support
+- **2026-02-04**: Added 7 new tests for opt block generation (SWUT_GENERATOR_00032-00038)
+- **2026-02-04**: Added 3 new tests for XMI generation (SWUT_XMI_00001-00003)
 
 ## Recent Updates
 

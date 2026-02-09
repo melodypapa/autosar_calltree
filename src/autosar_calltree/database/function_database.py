@@ -142,7 +142,9 @@ class FunctionDatabase:
 
         # Parse each file
         for idx, file_path in enumerate(c_files, 1):
-            print(f"Processing: [{idx}/{len(c_files)}] {file_path.name} (Size: {_format_file_size(file_path.stat().st_size)})")
+            print(
+                f"Processing: [{idx}/{len(c_files)}] {file_path.name} (Size: {_format_file_size(file_path.stat().st_size)})"
+            )
 
             try:
                 self._parse_file(file_path)

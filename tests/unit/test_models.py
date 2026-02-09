@@ -183,7 +183,10 @@ def test_SWUT_MODEL_00006_function_info_call_relationships():
             Parameter(name="param1", param_type="uint32"),
             Parameter(name="param2", param_type="uint8"),
         ],
-        calls=[FunctionCall("Helper_Function1", False), FunctionCall("Helper_Function2", False)],
+        calls=[
+            FunctionCall("Helper_Function1", False),
+            FunctionCall("Helper_Function2", False),
+        ],
     )
 
     # Verify parameters list

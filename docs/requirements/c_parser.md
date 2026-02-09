@@ -497,6 +497,57 @@ Unbounded regex patterns like `[\w\s\*]+` can cause exponential backtracking on 
 
 ---
 
+### SWR_PARSER_C_00021: Loop Detection
+
+**Priority:** High
+**Status:** Implemented
+**Maturity:** accept
+
+**Description:**
+The C parser shall detect for and while loops in function bodies and mark function calls inside loops as loop calls.
+
+**Rationale:**
+Loops are common control structures in C code where the same function is called repeatedly. Distinguishing loop calls from regular calls allows for better visualization in sequence diagrams using loop blocks.
+
+**Acceptance Criteria:**
+- [ ] Detects `for` loops with syntax `for (init; condition; increment)`
+- [ ] Detects `while` loops with syntax `while (condition)`
+- [ ] Extracts loop condition from for statements (middle part between semicolons)
+- [ ] Extracts loop condition from while statements (content inside parentheses)
+- [ ] Sets `is_loop=True` on FunctionCall objects for calls inside loops
+- [ ] Stores loop condition in `loop_condition` field
+- [ ] Tracks loop context using brace depth to handle nested blocks
+- [ ] Resets loop context when exiting the loop block
+
+**Related Requirements:** SWR_MODEL_00026, SWR_PARSER_C_00022
+
+---
+
+### SWR_PARSER_C_00022: Multi-line If Condition Extraction
+
+**Priority:** High
+**Status:** Implemented
+**Maturity:** accept
+
+**Description:**
+The C parser shall extract complete conditions from multi-line if/else statements.
+
+**Rationale:**
+AUTOSAR code often uses multi-line conditions with logical operators (&&, ||) and nested parentheses. The parser must capture the complete condition across multiple lines for accurate opt block generation.
+
+**Acceptance Criteria:**
+- [ ] Detects incomplete regex matches (unbalanced parentheses) in if conditions
+- [ ] Falls back to multi-line condition collection when regex match is incomplete
+- [ ] Tracks parenthesis depth to find matching closing parenthesis
+- [ ] Extracts complete condition including nested parentheses
+- [ ] Handles multi-line conditions with && and || operators
+- [ ] Handles multi-line conditions with complex nested parentheses
+- [ ] Stores complete condition string in `condition` field
+
+**Related Requirements:** SWR_MODEL_00026, SWR_PARSER_C_00021
+
+---
+
 ## Traceability
 
 | Requirement ID | Test ID | Test Function | Status |
@@ -521,6 +572,12 @@ Unbounded regex patterns like `[\w\s\*]+` can cause exponential backtracking on 
 | SWR_PARSER_C_00018 | SWUT_PARSER_C_00018 | test_SWUT_PARSER_C_00018_functioninfo_creation_c_functions | ⏳ Pending |
 | SWR_PARSER_C_00019 | SWUT_PARSER_C_00019 | test_SWUT_PARSER_C_00019_line_by_line_processing | ⏳ Pending |
 | SWR_PARSER_C_00020 | SWUT_PARSER_C_00020 | test_SWUT_PARSER_C_00020_regex_optimization_length_limits | ⏳ Pending |
+| SWR_PARSER_C_00021 | SWUT_PARSER_C_00023 | test_loop_detection_for | ✅ Pass |
+| SWR_PARSER_C_00021 | SWUT_PARSER_C_00024 | test_loop_detection_while | ✅ Pass |
+| SWR_PARSER_C_00021 | SWUT_PARSER_C_00025 | test_loop_multiple_calls | ✅ Pass |
+| SWR_PARSER_C_00021 | SWUT_PARSER_C_00026 | test_loop_with_condition | ✅ Pass |
+| SWR_PARSER_C_00022 | SWUT_PARSER_C_00021 | test_SWUT_PARSER_C_00021_multiline_function_prototype | ✅ Pass |
+| SWR_PARSER_C_00022 | SWUT_PARSER_C_00022 | test_SWUT_PARSER_C_00022_multiline_if_condition | ✅ Pass |
 
 ## Revision History
 
@@ -528,3 +585,5 @@ Unbounded regex patterns like `[\w\s\*]+` can cause exponential backtracking on 
 |------|---------|--------|-------------------|
 | 2026-01-30 | 1.0 | Claude | Initial version - 18 requirements covering C parser functionality |
 | 2026-01-30 | 1.1 | Claude | Added requirements for line-by-line processing (SWR_PARSER_C_00019) and regex optimization (SWR_PARSER_C_00020) to prevent catastrophic backtracking on large files |
+| 2026-02-09 | 1.2 | Claude | Added requirements for multi-line function prototypes (SWR_PARSER_C_00021) and multi-line if condition extraction (SWR_PARSER_C_00022) |
+| 2026-02-09 | 1.3 | Claude | Added requirement for loop detection (SWR_PARSER_C_00021) with 4 tests |

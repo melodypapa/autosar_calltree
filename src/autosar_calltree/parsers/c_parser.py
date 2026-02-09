@@ -619,10 +619,14 @@ class CParser:
 
         # Analyze function body to track if/else context
         # We'll parse line by line to detect if/else blocks
+        # SWR_PARSER_C_00022: Multi-line If Condition Extraction
+        # SWR_PARSER_C_00023: Loop Detection
         lines = function_body.split("\n")
         in_if_block = False
         in_else_block = False
         current_condition = None
+        in_loop_block = False
+        current_loop_condition = None
         brace_depth = 0
         collecting_multiline_condition = False
         multiline_condition_buffer = ""
@@ -764,6 +768,47 @@ class CParser:
                 in_else_block = True
                 current_condition = "else"
 
+            # Track for/while loop blocks - SWR_PARSER_C_00023: Loop Detection
+            elif stripped.startswith("for ") or stripped.startswith("for("):
+                in_loop_block = True
+                # Extract condition from for statement
+                # Handle both "for (init; cond; inc)" and "for(init; cond; inc)" formats
+                for_match = re.match(r"for\s*\(\s*[^;]*;\s*(.+?)\s*;\s*", stripped)
+                if for_match:
+                    current_loop_condition = for_match.group(1).strip()
+                else:
+                    # Fallback: extract everything between "for" and first ')'
+                    for_start = stripped.find("for")
+                    paren_end = stripped.find(")")
+                    if paren_end != -1:
+                        loop_part = stripped[for_start + 3 : paren_end].strip()
+                        # Split by semicolons and take the middle part (condition)
+                        parts = loop_part.split(";")
+                        if len(parts) >= 2:
+                            current_loop_condition = parts[1].strip()
+                        else:
+                            current_loop_condition = "condition"
+                    else:
+                        current_loop_condition = "condition"
+
+            elif stripped.startswith("while ") or stripped.startswith("while("):
+                in_loop_block = True
+                # Extract condition from while statement
+                while_match = re.match(r"while\s*\(\s*(.+?)\s*\)", stripped)
+                if while_match:
+                    current_loop_condition = while_match.group(1).strip()
+                else:
+                    # Fallback: extract everything between "while" and first ')'
+                    while_start = stripped.find("while")
+                    paren_end = stripped.find(")")
+                    if paren_end != -1:
+                        condition_part = stripped[while_start + 5 : paren_end].strip()
+                        current_loop_condition = (
+                            condition_part.lstrip("(").rstrip(")").strip()
+                        )
+                    else:
+                        current_loop_condition = "condition"
+
             # Track brace depth for nested blocks
             brace_depth += stripped.count("{")
             brace_depth -= stripped.count("}")
@@ -780,8 +825,11 @@ class CParser:
                 if function_name in self.AUTOSAR_TYPES:
                     continue
 
-                # Check if this call is inside an if/else block
+                # Check if this call is inside an if/else block - SWR_PARSER_C_00022
                 is_conditional = (in_if_block or in_else_block) and brace_depth > 0
+
+                # Check if this call is inside a loop block - SWR_PARSER_C_00023
+                is_loop = in_loop_block and brace_depth > 0
 
                 # Add to called functions if not already present
                 existing = next(
@@ -793,12 +841,19 @@ class CParser:
                         existing.is_conditional = True
                         if current_condition and not existing.condition:
                             existing.condition = current_condition
+                    # Update loop status if this occurrence is in a loop - SWR_PARSER_C_00023
+                    if is_loop:
+                        existing.is_loop = True
+                        if current_loop_condition and not existing.loop_condition:
+                            existing.loop_condition = current_loop_condition
                 else:
                     called_functions.append(
                         FunctionCall(
                             name=function_name,
                             is_conditional=is_conditional,
                             condition=current_condition if is_conditional else None,
+                            is_loop=is_loop,
+                            loop_condition=current_loop_condition if is_loop else None,
                         )
                     )
 
@@ -808,6 +863,8 @@ class CParser:
 
                 is_conditional = (in_if_block or in_else_block) and brace_depth > 0
 
+                is_loop = in_loop_block and brace_depth > 0
+
                 existing = next(
                     (fc for fc in called_functions if fc.name == rte_function), None
                 )
@@ -816,12 +873,18 @@ class CParser:
                         existing.is_conditional = True
                         if current_condition and not existing.condition:
                             existing.condition = current_condition
+                    if is_loop:
+                        existing.is_loop = True
+                        if current_loop_condition and not existing.loop_condition:
+                            existing.loop_condition = current_loop_condition
                 else:
                     called_functions.append(
                         FunctionCall(
                             name=rte_function,
                             is_conditional=is_conditional,
                             condition=current_condition if is_conditional else None,
+                            is_loop=is_loop,
+                            loop_condition=current_loop_condition if is_loop else None,
                         )
                     )
 
@@ -830,6 +893,8 @@ class CParser:
                 in_if_block = False
                 in_else_block = False
                 current_condition = None
+                in_loop_block = False
+                current_loop_condition = None
 
         # Sort by name for consistent output
         return sorted(called_functions, key=lambda fc: fc.name)

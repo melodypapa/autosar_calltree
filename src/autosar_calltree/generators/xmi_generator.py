@@ -71,7 +71,9 @@ class XmiGenerator:
         output_file.parent.mkdir(parents=True, exist_ok=True)
         output_file.write_text(xml_str, encoding="utf-8")
 
-    def _generate_xmi_document(self, result: AnalysisResult, call_tree: CallTreeNode) -> Element:
+    def _generate_xmi_document(
+        self, result: AnalysisResult, call_tree: CallTreeNode
+    ) -> Element:
         """
         Generate XMI root element with complete document structure.
 
@@ -93,11 +95,15 @@ class XmiGenerator:
         )
 
         # Create UML model
-        model = SubElement(root, f"{{{self.UML_NAMESPACE}}}Model", attrib={
-            f"{{{self.XMI_NAMESPACE}}}id": self._generate_id(),
-            "name": f"CallTree_{result.root_function}",
-            "visibility": "public",
-        })
+        model = SubElement(
+            root,
+            f"{{{self.UML_NAMESPACE}}}Model",
+            attrib={
+                f"{{{self.XMI_NAMESPACE}}}id": self._generate_id(),
+                "name": f"CallTree_{result.root_function}",
+                "visibility": "public",
+            },
+        )
 
         # Package the model
         packaged_element = SubElement(model, f"{{{self.UML_NAMESPACE}}}packagedElement")
@@ -117,9 +123,7 @@ class XmiGenerator:
 
         return root
 
-    def _create_interaction(
-        self, parent: Element, result: AnalysisResult
-    ) -> Element:
+    def _create_interaction(self, parent: Element, result: AnalysisResult) -> Element:
         """
         Create UML interaction element (sequence diagram container).
 
@@ -137,7 +141,9 @@ class XmiGenerator:
         interaction.set("isReentrant", "false")
 
         # Set type to Interaction
-        interaction_type = SubElement(interaction, f"{{{self.UML_NAMESPACE}}}ownedAttribute")
+        interaction_type = SubElement(
+            interaction, f"{{{self.UML_NAMESPACE}}}ownedAttribute"
+        )
         interaction_type.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
         interaction_type.set("name", "interactionType")
         interaction_type.set("visibility", "public")
@@ -257,17 +263,19 @@ class XmiGenerator:
                 send_event = SubElement(message, f"{{{self.UML_NAMESPACE}}}sendEvent")
                 send_event.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
 
-                receive_event = SubElement(message, f"{{{self.UML_NAMESPACE}}}receiveEvent")
+                receive_event = SubElement(
+                    message, f"{{{self.UML_NAMESPACE}}}receiveEvent"
+                )
                 receive_event.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
 
                 # Set source and target
                 message.set(
                     "sendEvent",
-                    f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(parent_participant, '')}"
+                    f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(parent_participant, '')}",
                 )
                 message.set(
                     "receiveEvent",
-                    f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(current_participant, '')}"
+                    f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(current_participant, '')}",
                 )
 
                 message_counter += 1
@@ -276,24 +284,109 @@ class XmiGenerator:
                 if node.is_recursive:
                     message.set("messageSort", "reply")
 
-            # Traverse children with opt block support
+            # Traverse children with opt and loop block support
             for child in node.children:
-                if child.is_optional:
+                if child.is_loop:
+                    # Create UML combined fragment for loop block - SWR_XMI_00004: Loop Fragment Support
+                    combined_fragment = SubElement(
+                        interaction, f"{{{self.UML_NAMESPACE}}}fragment"
+                    )
+                    combined_fragment.set(
+                        f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                    )
+                    combined_fragment.set("name", "loop")
+                    combined_fragment.set("visibility", "public")
+                    combined_fragment.set("interactionOperator", "loop")
+
+                    # Add interaction operand
+                    operand = SubElement(
+                        combined_fragment, f"{{{self.UML_NAMESPACE}}}operand"
+                    )
+                    operand.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                    operand.set("name", child.loop_condition or "condition")
+                    operand.set("visibility", "public")
+
+                    # Traverse children inside the loop block
+                    def traverse_loop(
+                        loop_node: CallTreeNode, loop_parent: Optional[str] = None
+                    ):
+                        nonlocal message_counter
+
+                        if self.use_module_names:
+                            loop_participant = (
+                                loop_node.function_info.sw_module
+                                or Path(loop_node.function_info.file_path).stem
+                            )
+                        else:
+                            loop_participant = loop_node.function_info.name
+
+                        if loop_parent:
+                            loop_message = SubElement(
+                                operand, f"{{{self.UML_NAMESPACE}}}message"
+                            )
+                            loop_message.set(
+                                f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                            )
+                            loop_message.set("name", loop_node.function_info.name)
+                            loop_message.set("visibility", "public")
+                            loop_message.set("messageSort", "synchCall")
+
+                            loop_signature = self._format_message_signature(loop_node)
+                            loop_message.set("signature", loop_signature)
+
+                            loop_send_event = SubElement(
+                                loop_message, f"{{{self.UML_NAMESPACE}}}sendEvent"
+                            )
+                            loop_send_event.set(
+                                f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                            )
+
+                            loop_receive_event = SubElement(
+                                loop_message, f"{{{self.UML_NAMESPACE}}}receiveEvent"
+                            )
+                            loop_receive_event.set(
+                                f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                            )
+
+                            loop_message.set(
+                                "sendEvent",
+                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(loop_parent, '')}",
+                            )
+                            loop_message.set(
+                                "receiveEvent",
+                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(loop_participant, '')}",
+                            )
+
+                            message_counter += 1
+
+                        for loop_child in loop_node.children:
+                            traverse_loop(loop_child, loop_participant)
+
+                    traverse_loop(child, current_participant)
+                elif child.is_optional:
                     # Create UML combined fragment for opt block
-                    combined_fragment = SubElement(interaction, f"{{{self.UML_NAMESPACE}}}fragment")
-                    combined_fragment.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                    combined_fragment = SubElement(
+                        interaction, f"{{{self.UML_NAMESPACE}}}fragment"
+                    )
+                    combined_fragment.set(
+                        f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                    )
                     combined_fragment.set("name", "opt")
                     combined_fragment.set("visibility", "public")
                     combined_fragment.set("interactionOperator", "opt")
 
                     # Add interaction operand
-                    operand = SubElement(combined_fragment, f"{{{self.UML_NAMESPACE}}}operand")
+                    operand = SubElement(
+                        combined_fragment, f"{{{self.UML_NAMESPACE}}}operand"
+                    )
                     operand.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
                     operand.set("name", child.condition or "condition")
                     operand.set("visibility", "public")
 
                     # Traverse children inside the opt block
-                    def traverse_opt(opt_node: CallTreeNode, opt_parent: Optional[str] = None):
+                    def traverse_opt(
+                        opt_node: CallTreeNode, opt_parent: Optional[str] = None
+                    ):
                         nonlocal message_counter
 
                         if self.use_module_names:
@@ -305,8 +398,12 @@ class XmiGenerator:
                             opt_participant = opt_node.function_info.name
 
                         if opt_parent:
-                            opt_message = SubElement(operand, f"{{{self.UML_NAMESPACE}}}message")
-                            opt_message.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                            opt_message = SubElement(
+                                operand, f"{{{self.UML_NAMESPACE}}}message"
+                            )
+                            opt_message.set(
+                                f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                            )
                             opt_message.set("name", opt_node.function_info.name)
                             opt_message.set("visibility", "public")
                             opt_message.set("messageSort", "synchCall")
@@ -314,19 +411,27 @@ class XmiGenerator:
                             opt_signature = self._format_message_signature(opt_node)
                             opt_message.set("signature", opt_signature)
 
-                            opt_send_event = SubElement(opt_message, f"{{{self.UML_NAMESPACE}}}sendEvent")
-                            opt_send_event.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                            opt_send_event = SubElement(
+                                opt_message, f"{{{self.UML_NAMESPACE}}}sendEvent"
+                            )
+                            opt_send_event.set(
+                                f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                            )
 
-                            opt_receive_event = SubElement(opt_message, f"{{{self.UML_NAMESPACE}}}receiveEvent")
-                            opt_receive_event.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                            opt_receive_event = SubElement(
+                                opt_message, f"{{{self.UML_NAMESPACE}}}receiveEvent"
+                            )
+                            opt_receive_event.set(
+                                f"{{{self.XMI_NAMESPACE}}}id", self._generate_id()
+                            )
 
                             opt_message.set(
                                 "sendEvent",
-                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(opt_parent, '')}"
+                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(opt_parent, '')}",
                             )
                             opt_message.set(
                                 "receiveEvent",
-                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(opt_participant, '')}"
+                                f"{{{self.XMI_NAMESPACE}}}{self.participant_map.get(opt_participant, '')}",
                             )
 
                             message_counter += 1
@@ -394,10 +499,10 @@ class XmiGenerator:
         pretty_xml = reparsed.toprettyxml(indent="  ")
 
         # Add XML declaration and comments
-        lines = pretty_xml.split('\n')
+        lines = pretty_xml.split("\n")
         filtered_lines = [line for line in lines if line.strip()]
 
-        return '\n'.join(filtered_lines)
+        return "\n".join(filtered_lines)
 
     def generate_to_string(self, result: AnalysisResult) -> str:
         """
