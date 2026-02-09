@@ -90,7 +90,7 @@ jobs:
         run: python scripts/check_traceability.py
 
   status-report:
-    name: CI Status
+    name: CI
     runs-on: ubuntu-latest
     needs: [quality-check, test, requirements-check]
     if: always()
