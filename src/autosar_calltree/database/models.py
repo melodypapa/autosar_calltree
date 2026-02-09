@@ -24,18 +24,31 @@ class FunctionType(Enum):
 
 @dataclass
 class FunctionCall:
-    """Represents a function call with its conditional status."""
+    """Represents a function call with its conditional status.
+
+    SWR_MODEL_00026: FunctionCall conditional tracking
+    SWR_MODEL_00026: FunctionCall loop tracking
+    """
 
     name: str  # Name of the called function
     is_conditional: bool = False  # True if called inside if/else block
-    condition: Optional[str] = None  # The if/else condition (e.g., "update_mode == 0x05")
+    condition: Optional[str] = (
+        None  # The if/else condition (e.g., "update_mode == 0x05")
+    )
+    is_loop: bool = False  # True if called inside for/while loop
+    loop_condition: Optional[str] = (
+        None  # The for/while loop condition (e.g., "i < 10")
+    )
 
     def __str__(self) -> str:
         """String representation."""
+        if self.loop_condition:
+            return f"{self.name} [loop: {self.loop_condition}]"
         if self.condition:
             return f"{self.name} [{self.condition}]"
         conditional_str = " [conditional]" if self.is_conditional else ""
-        return f"{self.name}{conditional_str}"
+        loop_str = " [loop]" if self.is_loop else ""
+        return f"{self.name}{conditional_str}{loop_str}"
 
 
 @dataclass
@@ -109,7 +122,11 @@ class FunctionInfo:
 
 @dataclass
 class CallTreeNode:
-    """Node in the function call tree."""
+    """Node in the function call tree.
+
+    SWR_MODEL_00028: CallTreeNode optional tracking
+    SWR_MODEL_00028: CallTreeNode loop tracking
+    """
 
     function_info: FunctionInfo
     depth: int
@@ -119,7 +136,11 @@ class CallTreeNode:
     is_truncated: bool = False  # True if depth limit reached
     call_count: int = 1  # Number of times this function is called
     is_optional: bool = False  # True if this call is conditional (for opt blocks)
-    condition: Optional[str] = None  # The if/else condition (e.g., "update_mode == 0x05")
+    condition: Optional[str] = (
+        None  # The if/else condition (e.g., "update_mode == 0x05")
+    )
+    is_loop: bool = False  # True if this call is inside a loop (for/while)
+    loop_condition: Optional[str] = None  # The loop condition (e.g., "i < 10")
 
     def add_child(self, child: "CallTreeNode") -> None:
         """Add a child node."""

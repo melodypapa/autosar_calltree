@@ -231,15 +231,24 @@ class MermaidGenerator:
 
         # Generate calls to children
         for child in node.children:
-            # Start opt block for optional calls
+            # Start loop block for loop calls - SWR_MERMAID_00005: Loop Block Generation
+            if child.is_loop:
+                loop_text = child.loop_condition if child.loop_condition else "Loop"
+                lines.append(f"    loop {loop_text}")
+
+            # Start opt block for optional calls - SWR_MERMAID_00004: Opt Block Generation
             if child.is_optional:
                 condition_text = child.condition if child.condition else "Optional call"
                 lines.append(f"    opt {condition_text}")
 
             self._generate_sequence_calls(child, lines, current_participant)
 
-            # End opt block for optional calls
+            # End opt block for optional calls - SWR_MERMAID_00004
             if child.is_optional:
+                lines.append("    end")
+
+            # End loop block for loop calls - SWR_MERMAID_00005
+            if child.is_loop:
                 lines.append("    end")
 
         # Generate return from current to caller (only if include_returns is True)

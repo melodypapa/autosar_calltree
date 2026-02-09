@@ -206,6 +206,7 @@ class CallTreeBuilder:
         for func_call in func_info.calls:
             called_func_name = func_call.name
             is_conditional = func_call.is_conditional
+            is_loop = func_call.is_loop
 
             # Lookup called function
             called_funcs = self.function_db.lookup_function(
@@ -231,10 +232,15 @@ class CallTreeBuilder:
                 verbose=verbose,
             )
 
-            # Mark as optional if it's conditional
+            # Mark as optional if it's conditional - SWR_MERMAID_00004: Opt Block Support
             if is_conditional:
                 child_node.is_optional = True
                 child_node.condition = func_call.condition
+
+            # Mark as loop if it's in a loop - SWR_MERMAID_00005 / SWR_XMI_00004: Loop Block Support
+            if is_loop:
+                child_node.is_loop = True
+                child_node.loop_condition = func_call.loop_condition
 
             children.append(child_node)
 

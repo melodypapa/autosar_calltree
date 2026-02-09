@@ -306,7 +306,11 @@ def cli(
             ) as progress:
                 task = progress.add_task("Generating XMI document...", total=None)
 
-                xmi_output = output_path.with_suffix(".xmi") if output_path.suffix != ".xmi" else output_path
+                xmi_output = (
+                    output_path.with_suffix(".xmi")
+                    if output_path.suffix != ".xmi"
+                    else output_path
+                )
 
                 xmi_generator = XmiGenerator(
                     use_module_names=use_module_names,

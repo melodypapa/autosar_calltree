@@ -1238,4 +1238,102 @@ def test_SWUT_GENERATOR_00038_optional_function_mode() -> None:
     assert "    opt Optional call" in diagram
     assert "    end" in diagram
     # Should use function names as participants
+
+
+# SWUT_GENERATOR_00039: Loop Block Generation
+def test_SWUT_GENERATOR_00039_loop_block_generation() -> None:
+    """Test that loop calls are wrapped in loop blocks.
+
+    SWR_MERMAID_00005: Loop Block Generation
+    """
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                None,
+                [
+                    ("LoopFunc", "loop.c", None, []),
+                ],
+            ),
+        ]
+    )
+
+    root.children[0].is_loop = True
+    root.children[0].loop_condition = "i < 10"
+
+    gen = MermaidGenerator(use_module_names=False)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have loop block
+    assert "    loop i < 10" in diagram
+    assert "    end" in diagram
+
+
+# SWUT_GENERATOR_00040: Multiple Loop Calls
+def test_SWUT_GENERATOR_00040_multiple_loop_calls() -> None:
+    """Test that multiple loop calls each get their own loop block.
+
+    SWR_MERMAID_00005: Multiple Loop Calls
+    """
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                None,
+                [
+                    ("LoopFunc1", "loop1.c", None, []),
+                    ("LoopFunc2", "loop2.c", None, []),
+                ],
+            ),
+        ]
+    )
+
+    root.children[0].is_loop = True
+    root.children[0].loop_condition = "i < 10"
+    root.children[1].is_loop = True
+    root.children[1].loop_condition = "j < 20"
+
+    gen = MermaidGenerator(use_module_names=False)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have two loop blocks
+    assert diagram.count("    loop") == 2
+    assert "    loop i < 10" in diagram
+    assert "    loop j < 20" in diagram
+
+
+# SWUT_GENERATOR_00041: Mixed Loop and Optional
+def test_SWUT_GENERATOR_00041_mixed_loop_and_optional() -> None:
+    """Test diagram with both loop and optional calls.
+
+    SWR_MERMAID_00005: Mixed Loop and Optional
+    """
+    root = create_mock_call_tree(
+        [
+            (
+                "Main",
+                "main.c",
+                None,
+                [
+                    ("LoopFunc", "loop.c", None, []),
+                    ("OptionalFunc", "optional.c", None, []),
+                ],
+            ),
+        ]
+    )
+
+    root.children[0].is_loop = True
+    root.children[0].loop_condition = "i < 10"
+    root.children[1].is_optional = True
+    root.children[1].condition = "condition"
+
+    gen = MermaidGenerator(use_module_names=False)
+    diagram = gen._generate_mermaid_diagram(root)
+
+    # Should have both loop and opt blocks
+    assert "    loop i < 10" in diagram
+    assert "    opt condition" in diagram
+    assert diagram.count("    end") >= 2
     assert "Main->>OptionalFunc: call" in diagram

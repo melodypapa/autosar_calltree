@@ -442,9 +442,7 @@ class TestSearchFunctionsCommand:
     def test_search_output_formatting(self, demo_dir):
         """Test that --search output has proper formatting with blank line before results."""
         runner = CliRunner()
-        result = runner.invoke(
-            cli, ["--source-dir", str(demo_dir), "--search", "Demo"]
-        )
+        result = runner.invoke(cli, ["--source-dir", str(demo_dir), "--search", "Demo"])
         assert result.exit_code == 0
         # The output should have proper formatting
         # Check that there's a blank line between the banner and the results
