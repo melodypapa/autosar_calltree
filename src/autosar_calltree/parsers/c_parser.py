@@ -183,14 +183,19 @@ class CParser:
         # Use line-by-line matching to avoid catastrophic backtracking on large files
         lines = content.split("\n")
         current_pos = 0
-        for line_num, line in enumerate(lines, 1):
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            line_num = i + 1
             line_length = len(line) + 1  # +1 for newline
+
             # Skip empty lines and lines that don't look like function declarations
             if not line or "(" not in line or ";" in line:
                 current_pos += line_length
+                i += 1
                 continue
 
-            # Check if line matches function pattern
+            # First, try to match single-line function pattern
             match = self.function_pattern.match(line)
             if match:
                 # Adjust match positions to be relative to full content
@@ -213,15 +218,186 @@ class CParser:
                 if func_info:
                     # Check if this function was already found as AUTOSAR
                     is_duplicate = any(
-                        f.name == func_info.name and f.line_number == func_info.line_number
+                        f.name == func_info.name
+                        and f.line_number == func_info.line_number
                         for f in functions
                     )
                     if not is_duplicate:
                         functions.append(func_info)
-
-            current_pos += line_length
+                current_pos += line_length
+                i += 1
+            else:
+                # Try to parse multi-line function prototype
+                multiline_func = self._try_parse_multiline_function(
+                    lines, i, content, current_pos, file_path
+                )
+                if multiline_func:
+                    # Check for duplicates
+                    is_duplicate = any(
+                        f.name == multiline_func.name
+                        and f.line_number == multiline_func.line_number
+                        for f in functions
+                    )
+                    if not is_duplicate:
+                        functions.append(multiline_func)
+                    # Advance past the multiline function
+                    # Find the line where closing ) is
+                    lines_consumed = self._count_multiline_lines(lines[i:])
+                    current_pos += sum(
+                        len(lines[j]) + 1 for j in range(i, i + lines_consumed)
+                    )
+                    i += lines_consumed
+                else:
+                    current_pos += line_length
+                    i += 1
 
         return functions
+
+    def _count_multiline_lines(self, lines: List[str]) -> int:
+        """
+        Count how many lines a multi-line function prototype spans.
+
+        Args:
+            lines: List of lines starting from the first line of the prototype
+
+        Returns:
+            Number of lines consumed
+        """
+        paren_count = 0
+        line_count = 0
+
+        for line in lines:
+            line_count += 1
+            for char in line:
+                if char == "(":
+                    paren_count += 1
+                elif char == ")":
+                    paren_count -= 1
+                    if paren_count == 0:
+                        return line_count
+
+        return line_count
+
+    def _try_parse_multiline_function(
+        self,
+        lines: List[str],
+        start_line_idx: int,
+        content: str,
+        start_pos: int,
+        file_path: Path,
+    ) -> Optional[FunctionInfo]:
+        """
+        Try to parse a multi-line function prototype.
+
+        Args:
+            lines: List of all lines in the file
+            start_line_idx: Index of the first line to start parsing
+            content: Full file content
+            start_pos: Position of the first line in the content
+            file_path: Path to the source file
+
+        Returns:
+            FunctionInfo object or None if not a multi-line function
+        """
+        # Combine lines until we find the closing parenthesis
+        # We need to track the original combined string for position calculation
+        # and a normalized string for matching (with spaces between lines)
+        combined_lines = []
+        paren_count = 0
+        line_count = 0
+        current_pos = start_pos
+
+        # Look backwards to find the return type
+        # The function might start with just the return type on a separate line
+        actual_start_idx = start_line_idx
+        while actual_start_idx > 0:
+            prev_line = lines[actual_start_idx - 1].strip()
+            # If the previous line looks like a return type (no parenthesis, not empty, not a comment)
+            if (
+                prev_line
+                and "(" not in prev_line
+                and not prev_line.startswith("//")
+                and not prev_line.startswith("/*")
+            ):
+                # Check if it looks like a type (contains word characters, possibly with *)
+                if re.match(r"^[\w\s\*]+$", prev_line):
+                    actual_start_idx -= 1
+                else:
+                    break
+            else:
+                break
+
+        # Recalculate start_pos based on actual_start_idx
+        actual_start_pos = start_pos
+        for i in range(actual_start_idx, start_line_idx):
+            actual_start_pos -= len(lines[i]) + 1
+
+        for i in range(actual_start_idx, len(lines)):
+            line = lines[i]
+            combined_lines.append(line)
+            line_count += 1
+
+            for char in line:
+                if char == "(":
+                    paren_count += 1
+                elif char == ")":
+                    paren_count -= 1
+                    if paren_count == 0:
+                        # Found the closing parenthesis, try to parse
+                        # Join lines with spaces for pattern matching
+                        combined = " ".join(combined_lines)
+                        match = self.function_pattern.search(combined)
+                        if match:
+                            # Calculate the actual position in the content
+                            # The match.start() is in the combined string with spaces
+                            # We need to map this back to the original content
+                            # For simplicity, use the position where the function name appears
+                            func_name = match.group("function_name")
+                            func_name_pos = combined.find(func_name, match.start())
+
+                            # Calculate offset in original content
+                            # Start from actual_start_pos and count characters until we reach func_name_pos
+                            chars_seen = 0
+                            func_start_pos = actual_start_pos
+                            for line_idx, orig_line in enumerate(combined_lines):
+                                line_in_combined = orig_line
+                                if line_idx > 0:
+                                    # Account for space we added
+                                    chars_seen += 1
+                                if chars_seen + len(line_in_combined) >= func_name_pos:
+                                    # Found the line containing the function name
+                                    func_start_pos = actual_start_pos + (
+                                        func_name_pos - chars_seen
+                                    )
+                                    break
+                                chars_seen += len(line_in_combined)
+
+                            # Create a match object with correct positions
+                            class AdjustedMatch:
+                                def __init__(self, original_match, offset):
+                                    self._match = original_match
+                                    self._offset = offset
+
+                                def group(self, name):
+                                    return self._match.group(name)
+
+                                def start(self):
+                                    return self._offset + self._match.start()
+
+                                def end(self):
+                                    return self._offset + self._match.end()
+
+                            # Use func_start_pos as the base offset
+                            adjusted_match = AdjustedMatch(
+                                match, func_start_pos - match.start()
+                            )
+                            return self._parse_function_match(adjusted_match, content, file_path)  # type: ignore[arg-type]
+
+                        return None
+
+            current_pos += len(line) + 1  # +1 for newline
+
+        return None
 
     def _remove_comments(self, content: str) -> str:
         """
@@ -448,37 +624,142 @@ class CParser:
         in_else_block = False
         current_condition = None
         brace_depth = 0
+        collecting_multiline_condition = False
+        multiline_condition_buffer = ""
+        multiline_paren_depth = 0
 
         for line in lines:
             stripped = line.strip()
+
+            # Check if we're collecting a multi-line condition
+            if collecting_multiline_condition:
+                multiline_condition_buffer += " " + stripped
+                # Track parentheses in the condition using a stack
+                for char in stripped:
+                    if char == "(":
+                        multiline_paren_depth += 1
+                    elif char == ")":
+                        multiline_paren_depth -= 1
+                        if multiline_paren_depth == 0:
+                            # Found the closing parenthesis
+                            # Extract condition from the buffer
+                            # Find the opening '(' after 'if' or 'else if'
+                            if "if" in multiline_condition_buffer:
+                                # Find the position after "if"
+                                if_pos = multiline_condition_buffer.find("if")
+                                # Find the first '(' after "if"
+                                paren_start = multiline_condition_buffer.find(
+                                    "(", if_pos
+                                )
+                                if paren_start != -1:
+                                    # Find the position of this closing ')' in the buffer
+                                    closing_paren_pos = (
+                                        multiline_condition_buffer.rfind(")")
+                                    )
+                                    if closing_paren_pos != -1:
+                                        condition_part = multiline_condition_buffer[
+                                            paren_start + 1 : closing_paren_pos
+                                        ]
+                                        current_condition = condition_part.strip()
+                            collecting_multiline_condition = False
+                            multiline_condition_buffer = ""
+                            multiline_paren_depth = 0
+                            break
+                # Continue to next line if still collecting
+                if collecting_multiline_condition:
+                    continue
 
             # Track if/else block entry and extract condition
             if stripped.startswith("if ") or stripped.startswith("if("):
                 in_if_block = True
                 # Extract condition from if statement
                 # Handle both "if (condition)" and "if(condition)" formats
-                if_match = re.match(r'if\s*\(\s*(.+?)\s*\)', stripped)
+                if_match = re.match(r"if\s*\(\s*(.+?)\s*\)", stripped)
                 if if_match:
-                    current_condition = if_match.group(1).strip()
-                else:
-                    # Fallback: try to extract everything between "if" and the first '{'
-                    if_start = stripped.find("if")
-                    brace_pos = stripped.find("{")
-                    if brace_pos != -1:
-                        condition_part = stripped[if_start+2:brace_pos].strip()
-                        # Remove leading/trailing parentheses
-                        condition_part = condition_part.lstrip("(").rstrip(")").strip()
-                        current_condition = condition_part
+                    condition_candidate = if_match.group(1).strip()
+                    # Check if the condition has unbalanced parentheses
+                    # This indicates a multi-line condition
+                    if condition_candidate.count("(") != condition_candidate.count(")"):
+                        # Fall back to multi-line collection
+                        collecting_multiline_condition = True
+                        multiline_condition_buffer = stripped
+                        # Count all opening parentheses in this line
+                        multiline_paren_depth = stripped.count("(") - stripped.count(
+                            ")"
+                        )
+                        # Extract partial condition after the first '('
+                        paren_start = stripped.find("(")
+                        if paren_start != -1:
+                            partial_condition = stripped[paren_start + 1 :].strip()
+                            current_condition = partial_condition
                     else:
-                        current_condition = "condition"
+                        current_condition = condition_candidate
+                else:
+                    # Check if the line has an opening '(' but no closing ')'
+                    # This indicates a multi-line condition
+                    if "(" in stripped and ")" not in stripped:
+                        collecting_multiline_condition = True
+                        multiline_condition_buffer = stripped
+                        # Count all opening parentheses in this line
+                        multiline_paren_depth = stripped.count("(") - stripped.count(
+                            ")"
+                        )
+                        # Extract partial condition after the first '('
+                        paren_start = stripped.find("(")
+                        if paren_start != -1:
+                            partial_condition = stripped[paren_start + 1 :].strip()
+                            current_condition = partial_condition
+                    else:
+                        # Fallback: try to extract everything between "if" and the first '{'
+                        if_start = stripped.find("if")
+                        brace_pos = stripped.find("{")
+                        if brace_pos != -1:
+                            condition_part = stripped[if_start + 2 : brace_pos].strip()
+                            # Remove leading/trailing parentheses
+                            condition_part = (
+                                condition_part.lstrip("(").rstrip(")").strip()
+                            )
+                            current_condition = condition_part
+                        else:
+                            current_condition = "condition"
             elif stripped.startswith("else if") or stripped.startswith("else if("):
                 in_if_block = True
                 # Extract condition from else if statement
-                elif_match = re.match(r'else\s+if\s*\(\s*(.+?)\s*\)', stripped)
+                elif_match = re.match(r"else\s+if\s*\(\s*(.+?)\s*\)", stripped)
                 if elif_match:
-                    current_condition = f"else if {elif_match.group(1).strip()}"
+                    condition_candidate = elif_match.group(1).strip()
+                    # Check if the condition has unbalanced parentheses
+                    if condition_candidate.count("(") != condition_candidate.count(")"):
+                        # Fall back to multi-line collection
+                        collecting_multiline_condition = True
+                        multiline_condition_buffer = stripped
+                        # Count all opening parentheses in this line
+                        multiline_paren_depth = stripped.count("(") - stripped.count(
+                            ")"
+                        )
+                        # Extract partial condition after the first '('
+                        paren_start = stripped.find("(")
+                        if paren_start != -1:
+                            partial_condition = stripped[paren_start + 1 :].strip()
+                            current_condition = partial_condition
+                    else:
+                        current_condition = f"else if {condition_candidate}"
                 else:
-                    current_condition = "else if condition"
+                    # Check for multi-line else if condition
+                    if "(" in stripped and ")" not in stripped:
+                        collecting_multiline_condition = True
+                        multiline_condition_buffer = stripped
+                        # Count all opening parentheses in this line
+                        multiline_paren_depth = stripped.count("(") - stripped.count(
+                            ")"
+                        )
+                        # Extract partial condition before the '('
+                        paren_start = stripped.find("(")
+                        if paren_start != -1:
+                            partial_condition = stripped[paren_start + 1 :].strip()
+                            current_condition = partial_condition
+                    else:
+                        current_condition = "else if condition"
             elif stripped.startswith("else") and not stripped.startswith("else if"):
                 in_else_block = True
                 current_condition = "else"
@@ -503,7 +784,9 @@ class CParser:
                 is_conditional = (in_if_block or in_else_block) and brace_depth > 0
 
                 # Add to called functions if not already present
-                existing = next((fc for fc in called_functions if fc.name == function_name), None)
+                existing = next(
+                    (fc for fc in called_functions if fc.name == function_name), None
+                )
                 if existing:
                     # Update conditional status if this occurrence is conditional
                     if is_conditional:
@@ -515,7 +798,7 @@ class CParser:
                         FunctionCall(
                             name=function_name,
                             is_conditional=is_conditional,
-                            condition=current_condition if is_conditional else None
+                            condition=current_condition if is_conditional else None,
                         )
                     )
 
@@ -525,7 +808,9 @@ class CParser:
 
                 is_conditional = (in_if_block or in_else_block) and brace_depth > 0
 
-                existing = next((fc for fc in called_functions if fc.name == rte_function), None)
+                existing = next(
+                    (fc for fc in called_functions if fc.name == rte_function), None
+                )
                 if existing:
                     if is_conditional:
                         existing.is_conditional = True
@@ -536,7 +821,7 @@ class CParser:
                         FunctionCall(
                             name=rte_function,
                             is_conditional=is_conditional,
-                            condition=current_condition if is_conditional else None
+                            condition=current_condition if is_conditional else None,
                         )
                     )
 

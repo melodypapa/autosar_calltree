@@ -8,7 +8,7 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 |--------|-------------|-------|--------|
 | Models | SWR_MODEL_00001-00028 (28) | SWUT_MODEL_00001-00028 (28) | ✅ Complete (100% coverage) |
 | AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 (15) | SWUT_PARSER_AUTOSAR_00001-00015 (15) | ✅ Complete (97% coverage) |
-| C Parser | SWR_PARSER_C_00001-00018 (18) | SWUT_PARSER_C_00001-00018 (18) | ✅ Complete (86% coverage) |
+| C Parser | SWR_PARSER_C_00001-00022 (22) | SWUT_PARSER_C_00001-00022 (22) | ✅ Complete (86% coverage) |
 | Database | SWR_DB_00001-00025 (25) | SWUT_DB_00001-00021 (21) | ✅ Complete (80% coverage) |
 | Analyzers | SWR_ANALYZER_00001-00020 (20) | SWUT_ANALYZER_00001-00020 (20) | ✅ Complete (94% coverage) |
 | Config | SWR_CONFIG_00001-00010 (10) | SWUT_CONFIG_00001-00025 (25) | ✅ Complete (97% coverage) |
@@ -51,6 +51,15 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 | SWR_MODEL_00026 | SWUT_MODEL_00026 | test_SWUT_MODEL_00026_function_call_conditional_tracking | ✅ Pass |
 | SWR_MODEL_00027 | SWUT_MODEL_00027 | test_SWUT_MODEL_00027_function_call_string_representation | ✅ Pass |
 | SWR_MODEL_00028 | SWUT_MODEL_00028 | test_SWUT_MODEL_00028_call_tree_node_optional_tracking | ✅ Pass |
+
+---
+
+## C Parser Multi-line Support Module
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_PARSER_C_00021 | SWUT_PARSER_C_00021 | test_SWUT_PARSER_C_00021_multiline_function_prototype | ⏳ Pending |
+| SWR_PARSER_C_00022 | SWUT_PARSER_C_00022 | test_SWUT_PARSER_C_00022_multiline_if_condition | ⏳ Pending |
 
 ---
 
@@ -118,13 +127,15 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 
 ## Summary
 
-- **Total Requirements**: 167 requirements across 10 modules
-- **Total Tests**: 298 tests
+- **Total Requirements**: 169 requirements across 10 modules
+- **Total Tests**: 300 tests
 - **Overall Coverage**: 89%
-- **Passing Tests**: 298/298 (100%)
+- **Passing Tests**: 300/300 (100%)
 
 ## Recent Updates
 
+- **2026-02-09**: Added multi-line support requirements (SWR_PARSER_C_00021-00022)
+- **2026-02-09**: Added 2 new tests for multi-line parsing (SWUT_PARSER_C_00021-00022)
 - **2026-02-04**: Added FunctionCall model requirements (SWR_MODEL_00026-00028)
 - **2026-02-04**: Added Mermaid opt blocks requirements (SWR_MERMAID_00004)
 - **2026-02-04**: Added XMI generator requirements (SWR_XMI_00001-00003) with opt block support

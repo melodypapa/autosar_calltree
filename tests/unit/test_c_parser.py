@@ -802,3 +802,114 @@ class TestCParserRegexOptimization:
             assert len(functions) == 1000
         finally:
             temp_path.unlink()
+
+
+class TestCParserMultiLine:
+    """Test C parser multi-line support."""
+
+    # SWUT_PARSER_C_00021: Multi-line Function Prototype Recognition
+    def test_SWUT_PARSER_C_00021_multiline_function_prototype(self):
+        """Test that multi-line function prototypes are correctly recognized."""
+        parser = CParser()
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "multiline_functions.c"
+        )
+
+        functions = parser.parse_file(fixture_path)
+
+        # Should find all functions including multi-line ones
+        assert len(functions) >= 4
+
+        # Check COM_SendMessage (return type on separate line)
+        com_send = next((f for f in functions if f.name == "COM_SendMessage"), None)
+        assert com_send is not None
+        assert com_send.return_type == "Std_ReturnType"
+        assert len(com_send.parameters) == 3
+        assert com_send.parameters[0].name == "messageId"
+        assert com_send.parameters[1].name == "data"
+        assert com_send.parameters[2].name == "length"
+
+        # Check Internal_GetValue (function name on separate line)
+        internal_get = next(
+            (f for f in functions if f.name == "Internal_GetValue"), None
+        )
+        assert internal_get is not None
+        assert internal_get.return_type == "uint8"
+        assert internal_get.is_static is True
+        assert len(internal_get.parameters) == 1
+
+        # Check Complex_Function_With_Many_Parameters (parameters spanning multiple lines)
+        complex_func = next(
+            (f for f in functions if f.name == "Complex_Function_With_Many_Parameters"),
+            None,
+        )
+        assert complex_func is not None
+        assert complex_func.return_type == "void"
+        assert len(complex_func.parameters) == 7
+
+        # Check Function_With_Multiline_Condition
+        multiline_cond = next(
+            (f for f in functions if f.name == "Function_With_Multiline_Condition"),
+            None,
+        )
+        assert multiline_cond is not None
+        assert len(multiline_cond.parameters) == 2
+
+    # SWUT_PARSER_C_00022: Multi-line If Condition Extraction
+    def test_SWUT_PARSER_C_00022_multiline_if_condition(self):
+        """Test that multi-line if conditions are correctly extracted."""
+        parser = CParser()
+        fixture_path = (
+            Path(__file__).parent.parent
+            / "fixtures"
+            / "traditional_c"
+            / "multiline_functions.c"
+        )
+
+        functions = parser.parse_file(fixture_path)
+
+        # Get Function_With_Multiline_Condition
+        func = next(
+            (f for f in functions if f.name == "Function_With_Multiline_Condition"),
+            None,
+        )
+        assert func is not None
+
+        # Check conditional calls
+        conditional_calls = [fc for fc in func.calls if fc.is_conditional]
+        assert len(conditional_calls) >= 3
+
+        # Check COM_SendMessage call (multi-line && condition)
+        com_send_call = next(
+            (fc for fc in conditional_calls if fc.name == "COM_SendMessage"), None
+        )
+        assert com_send_call is not None
+        # Should capture the full multi-line condition
+        assert "mode == 0x05" in com_send_call.condition
+        assert "length > 10" in com_send_call.condition
+
+        # Check Internal_GetValue call (multi-line || condition)
+        internal_call = next(
+            (fc for fc in conditional_calls if fc.name == "Internal_GetValue"), None
+        )
+        assert internal_call is not None
+        # Should capture the full multi-line condition
+        assert "mode == 0x10" in internal_call.condition
+        assert "mode == 0x20" in internal_call.condition
+
+        # Check Complex_Function_With_Many_Parameters call (nested parentheses)
+        complex_call = next(
+            (
+                fc
+                for fc in conditional_calls
+                if fc.name == "Complex_Function_With_Many_Parameters"
+            ),
+            None,
+        )
+        assert complex_call is not None
+        # Should capture the full condition with nested parentheses
+        assert "mode" in complex_call.condition
+        assert "length" in complex_call.condition

@@ -11,10 +11,14 @@ This document provides comprehensive project context for AI agents (Claude Code,
 **Core Capabilities**:
 - ✨ Complete AUTOSAR macro support (`FUNC`, `FUNC_P2VAR`, `FUNC_P2CONST`, `VAR`, `P2VAR`, `P2CONST`, etc.)
 - 🔍 Static analysis without compilation
-- 📊 Multiple output formats: Mermaid sequence diagrams (Markdown), XMI/UML 2.5 (planned), JSON (planned)
+- 📊 Multiple output formats:
+  - **Mermaid sequence diagrams** (Markdown)
+  - **XMI/UML 2.5** (importable to Enterprise Architect, Visual Paradigm, MagicDraw)
+  - JSON (planned)
 - 🏗️ SW module support: Map C files to SW modules via YAML configuration for architecture-level diagrams
 - 📈 Module-aware diagrams: Use SW module names as participants
 - 🎯 Parameter display: Show function parameters in sequence diagram calls
+- 🔄 **Automatic conditional detection**: Automatically detects `if`/`else` statements and generates `opt` blocks with actual conditions
 - 🚀 High performance: Intelligent caching for fast repeated analysis with file-by-file progress reporting
 - 🎯 Depth control: Configurable call tree depth
 - 🔄 Circular dependency detection: Identify recursive calls and cycles
@@ -62,15 +66,19 @@ autosar_calltree/
 │   │   ├── function_database.py  # Function database
 │   │   └── models.py     # Core data classes
 │   ├── generators/       # Output generators
-│   │   └── mermaid_generator.py  # Mermaid sequence diagram generator
-│   └── utils/            # Utility functions (empty, for future use)
+│   │   ├── mermaid_generator.py  # Mermaid sequence diagram generator
+│   │   └── xmi_generator.py      # XMI/UML 2.5 generator
+│   ├── utils/            # Utility functions (empty, for future use)
+│   └── version.py        # Version information
 ├── demo/                 # Demo AUTOSAR C files
 │   ├── demo.c
 │   ├── hardware.c
 │   ├── software.c
 │   ├── communication.c
 │   ├── CanTp_Cfg.c       # Large configuration file (13,334 lines, 95KB)
-│   └── module_mapping.yaml
+│   ├── module_mapping.yaml
+│   ├── demo.md           # Mermaid output example
+│   └── demo_main.xmi     # XMI output example
 ├── tests/                # Test suite
 │   ├── fixtures/         # Test data
 │   ├── integration/      # Integration tests
@@ -83,7 +91,8 @@ autosar_calltree/
 ├── scripts/              # Utility scripts
 │   ├── run_tests.sh      # Run tests
 │   ├── run_quality.sh    # Run quality checks
-│   └── check_traceability.py  # Check requirements traceability
+│   ├── check_traceability.py  # Check requirements traceability
+│   └── generate_large_demo.py # Generate large demo files
 ├── pyproject.toml        # Project configuration
 ├── requirements.txt      # Production dependencies
 ├── requirements-dev.txt  # Development dependencies
@@ -169,6 +178,14 @@ calltree --start-function Demo_Init --source-dir demo \
 # Control depth and output format
 calltree --start-function Demo_Init --max-depth 2 --format mermaid --output diagrams/demo.md
 
+# Generate XMI output (UML 2.5 compliant)
+calltree --start-function Demo_MainFunction --source-dir demo \
+         --format xmi --output demo/demo_main.xmi
+
+# Generate both Mermaid and XMI simultaneously
+calltree --start-function Demo_MainFunction --source-dir demo \
+         --format both --output demo/demo_main
+
 # List all available functions
 calltree --list-functions --source-dir ./demo
 
@@ -188,6 +205,7 @@ calltree --start-function Demo_Init --verbose
 from autosar_calltree.database.function_database import FunctionDatabase
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.generators.mermaid_generator import MermaidGenerator
+from autosar_calltree.generators.xmi_generator import XmiGenerator
 from autosar_calltree.config.module_config import ModuleConfig
 from pathlib import Path
 
@@ -205,9 +223,13 @@ result = builder.build_tree(
     max_depth=3
 )
 
-# 4. Generate output (using module names)
-generator = MermaidGenerator(use_module_names=True, include_returns=False)
-generator.generate(result, output_path="call_tree.md")
+# 4. Generate Mermaid output (using module names)
+mermaid_gen = MermaidGenerator(use_module_names=True, include_returns=False)
+mermaid_gen.generate(result, output_path="call_tree.md")
+
+# 5. Generate XMI output (UML 2.5 compliant)
+xmi_gen = XmiGenerator(use_module_names=True)
+xmi_gen.generate(result, output_path="call_tree.xmi")
 ```
 
 ---
@@ -242,6 +264,7 @@ The project follows clear commit message conventions:
   enhancement: Add line count to verbose file processing output
   fix: Sort imports alphabetically to pass isort check
   enhancement: Improve verbose output to show every file during database building
+  feat: Add conditional function call tracking and Mermaid XMI opt blocks
   ```
 
 ---
@@ -269,6 +292,7 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
 - Filters C keywords (auto, break, case, char, const, etc.) to avoid false positives
 - Supports nested parentheses in parameters (function pointers, etc.)
 - Extracts function declarations and function calls
+- **Conditional Tracking**: Line-by-line parsing to track `if`/`else` blocks and extract condition text
 
 **Performance Optimization Details**:
 - Regex patterns with length limits (return type 1-100 chars, function name 1-50 chars, parameters 500 chars)
@@ -307,6 +331,7 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
 - Detects circular dependencies/recursive calls
 - Respects `max_depth` limits
 - Tracks statistics (unique functions, call counts, depth, etc.)
+- **Optional Call Tracking**: Propagates conditional context through the call tree
 
 #### 4. Generator Layer (`generators/`)
 
@@ -317,6 +342,15 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
 - Supports module names as participants
 - Optional return statement display (disabled by default for cleaner diagrams)
 - Shows function parameters in call arrows
+- **Opt/Alt/Else Blocks**: Generates `opt`, `alt`, and `else` blocks for conditional calls with actual condition text
+
+**XmiGenerator** (NEW):
+- Generates XMI 2.5 compliant XML documents
+- Supports UML 2.5 sequence diagram specification
+- Creates proper XML namespaces and structure
+- Supports combined fragments (`opt`, `alt`, `else`)
+- Can be imported into Enterprise Architect, Visual Paradigm, MagicDraw, etc.
+- Uses lifelines, messages, and fragments to represent call tree
 
 #### 5. CLI Layer (`cli/`)
 
@@ -326,6 +360,7 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
 - Supports rich command-line options and configuration
 - **Progress Display Optimization**: Uses `transient=False` to preserve progress messages
 - Shows "Processing" messages for real-time feedback
+- **Multiple Output Formats**: Supports `--format mermaid`, `--format xmi`, and `--format both`
 
 ---
 
@@ -372,7 +407,7 @@ default_module: "Other"
 
 **Integration**:
 - Functions get `sw_module` field set during database building
-- MermaidGenerator can use module names as participants instead of function names
+- MermaidGenerator and XmiGenerator can use module names as participants instead of function names
 - CLI option `--use-module-names` enables module-level diagrams
 - Function tables include module column
 
@@ -408,6 +443,66 @@ default_module: "Other"
 - Processing 13,334-line file reduced from timeout (>120 seconds) to 0.00 seconds
 - Maintains 100% function detection accuracy
 - Supports nested parentheses in parameters (function pointers)
+
+### Conditional Function Call Tracking (NEW)
+
+**Purpose**: Automatically detect `if`/`else` blocks in C code and represent them as optional/alternative blocks in output diagrams.
+
+**Implementation**:
+- `CParser` enhanced with line-by-line conditional context tracking
+- `FunctionCall` model extended with `is_conditional` and `condition` fields
+- `CallTreeNode` extended with `is_optional` and `condition` fields
+- Tracks nesting level and condition text for each function call
+
+**Mermaid Output**:
+```mermaid
+sequenceDiagram
+    participant Demo_Update
+    participant COM_SendLINMessage
+    participant SW_UpdateState
+
+    Demo_Update->>SW_UpdateState: call(new_state)
+    opt update_mode == 0x05
+    Demo_Update->>COM_SendLINMessage: call(msg_id, data)
+    end
+```
+
+**XMI Output**:
+```xml
+<uml:fragment name="opt" interactionOperator="opt">
+  <uml:operand name="update_mode == 0x05">
+    <uml:message name="COM_SendLINMessage" signature="COM_SendLINMessage(msg_id, data)">
+      <!-- message events -->
+    </uml:message>
+  </uml:operand>
+</uml:fragment>
+```
+
+**Benefits**:
+- No manual configuration required - automatic detection
+- Shows actual condition text for better understanding
+- Supports nested conditionals
+- Handles `if`, `else if`, and `else` statements
+- Works with both Mermaid and XMI output formats
+- XMI uses UML combined fragments (standard UML 2.5 representation)
+
+### XMI/UML 2.5 Generation (NEW)
+
+**Purpose**: Generate UML 2.5 compliant XMI documents that can be imported into professional UML tools.
+
+**Implementation**:
+- `XmiGenerator` class generates XMI 2.5 XML documents
+- Uses proper XML namespaces (XMI 2.5, UML 2.5)
+- Creates sequence diagrams with lifelines, messages, and fragments
+- Supports combined fragments (`opt`, `alt`, `else`)
+- Follows Eclipse UML2 structure for maximum compatibility
+
+**Key Features**:
+- UML 2.5 compliant
+- Importable to Enterprise Architect, Visual Paradigm, MagicDraw
+- Supports both function-level and module-level diagrams
+- Proper XML structure with namespaces
+- Combined fragments for conditional calls
 
 ### AUTOSAR Macro Patterns
 
@@ -457,26 +552,27 @@ cat docs/tests/README.md
 - Each major feature has a requirement ID (e.g., `SWR_CONFIG_00001`)
 - Each requirement has a corresponding test ID (e.g., `SWUT_CONFIG_00001`)
 - All code comments reference relevant requirement IDs
-- Maintains 94% overall code coverage
+- Maintains 89% overall code coverage
 
 ---
 
 ## Test Coverage
 
-The project has **comprehensive test coverage** with 278 tests:
+The project has **comprehensive test coverage** with 298 tests:
 
 | Module | Requirements | Tests | Coverage | Status |
 |--------|-------------|-------|----------|--------|
-| Models | 25 | 25 | 100% | ✅ Complete |
+| Models | 28 | 28 | 100% | ✅ Complete |
 | AUTOSAR Parser | 15 | 15 | 97% | ✅ Complete |
 | C Parser | 18 | 18 | 86% | ✅ Complete |
-| Database | 24 | 20 | 80% | ✅ Complete |
+| Database | 25 | 21 | 80% | ✅ Complete |
 | Analyzers | 20 | 20 | 94% | ✅ Complete |
 | Config | 10 | 25 | 97% | ✅ Complete |
-| Generators | 20 | 31 | 96% | ✅ Complete |
+| Generators | 45 | 45 | 89% | ✅ Complete |
+| XMI | 3 | 3 | 70% | ✅ Complete |
 | CLI (Integration) | 14 | 14 | ~90% | ✅ Complete |
-| E2E | 18 | 110 | ~90% | ✅ Complete |
-| **Total** | **164** | **278** | **94%** | ✅ Complete |
+| E2E | 18 | 18 | ~90% | ✅ Complete |
+| **Total** | **196** | **298** | **89%** | ✅ Complete |
 
 ### Test Organization
 
@@ -492,7 +588,8 @@ tests/
 │   ├── test_database.py  # Database tests
 │   ├── test_analyzers.py # Analyzer tests
 │   ├── test_config.py    # Configuration tests
-│   └── test_generators.py # Generator tests
+│   ├── test_generators.py # Generator tests
+│   └── test_xmi.py       # XMI generator tests
 └── conftest.py            # pytest configuration and fixtures
 ```
 
@@ -500,10 +597,11 @@ tests/
 
 ## Known Limitations
 
-1. **XMI output format**: Not yet implemented (CLI shows warning)
+1. **JSON output format**: Not yet implemented (CLI shows warning)
 2. **Large source trees**: Thousands of files may need performance optimization (but individual large files are optimized)
 3. **C++ support**: C++ code is not currently supported
 4. **Preprocessor directives**: Limited support for complex macro definitions and conditional compilation
+5. **Complex condition expressions**: While basic `if`/`else` conditions are extracted, very complex expressions may not be perfectly captured
 
 ---
 
@@ -517,6 +615,8 @@ tests/
 - **Refactoring**: Identify tightly coupled components
 - **Architecture verification**: Verify architectural boundaries
 - **Large configuration file analysis**: Quickly process thousands of lines of AUTOSAR configuration files
+- **UML tool integration**: Import XMI files into Enterprise Architect, Visual Paradigm, MagicDraw for professional diagramming
+- **Conditional logic visualization**: See conditional call paths with actual conditions in diagrams
 
 ---
 
@@ -594,12 +694,17 @@ Contributions are welcome! Please follow these steps:
 
 ## Last Updated
 
-**Date**: 2026-01-30
-**Version**: 0.3.0
+**Date**: 2026-02-09
+**Version**: 0.5.0
 **Maintainer**: Melodypapa <melodypapa@outlook.com>
 
 **Recent Important Updates**:
+- ✅ Added XMI/UML 2.5 output format (2026-02-03)
+- ✅ Added automatic conditional function call tracking (2026-02-04)
+- ✅ Added Mermaid opt/alt/else block support (2026-02-04)
+- ✅ Added XMI combined fragments support (2026-02-04)
 - ✅ Optimized large file parsing performance (2026-01-30)
 - ✅ Removed transient mode from progress bars (2026-01-30)
 - ✅ Always show "Processing" messages (2026-01-30)
 - ✅ Added blank line separator before search results (2026-01-30)
+- ✅ 298 tests passing with 89% code coverage (2026-02-04)
