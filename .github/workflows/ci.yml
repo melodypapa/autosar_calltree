@@ -88,3 +88,21 @@ jobs:
 
       - name: Check requirements traceability
         run: python scripts/check_traceability.py
+
+  status-report:
+    name: CI
+    runs-on: ubuntu-latest
+    needs: [quality-check, test, requirements-check]
+    if: always()
+    steps:
+      - name: Check job status
+        run: |
+          if [[ "${{ needs.quality-check.result }}" == "failure" ]] || \
+             [[ "${{ needs.test.result }}" == "failure" ]] || \
+             [[ "${{ needs.requirements-check.result }}" == "failure" ]]; then
+            echo "CI jobs failed"
+            exit 1
+          else
+            echo "CI jobs passed"
+            exit 0
+          fi
