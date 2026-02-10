@@ -433,6 +433,34 @@ def test_SWUT_GENERATOR_00013_recursive_call_handling() -> None:
     assert "DemoModule-->>xHardwareModule: HW_Init [recursive]" in output
 
 
+# SWUT_GENERATOR_00052: Recursive Call Without Module Names (Line 227)
+def test_SWUT_GENERATOR_00052_recursive_call_without_module_names_line_227() -> None:
+    """Test recursive call with use_module_names=False (covers line 227)."""
+    root = create_mock_call_tree(
+        [
+            (
+                "Demo_Init",
+                "demo.c",
+                "DemoModule",
+                [
+                    ("HW_Init", "hw.c", "HardwareModule", []),
+                ],
+            ),
+        ]
+    )
+
+    # Mark child as recursive
+    root.children[0].is_recursive = True
+
+    gen = MermaidGenerator(use_module_names=False)
+    lines: List[str] = []
+    gen._generate_sequence_calls(root, lines)
+
+    output = "\n".join(lines)
+    # In function mode with recursion, should show special arrow and "recursive call" label (line 227)
+    assert "Demo_Init-->>xHW_Init: recursive call" in output
+
+
 # SWUT_GENERATOR_00014: Return Statement Generation
 def test_SWUT_GENERATOR_00014_return_statements() -> None:
     """Test that return statements are generated when include_returns=True."""
@@ -1337,3 +1365,201 @@ def test_SWUT_GENERATOR_00041_mixed_loop_and_optional() -> None:
     assert "    opt condition" in diagram
     assert diagram.count("    end") >= 2
     assert "Main->>OptionalFunc: call" in diagram
+
+
+class TestMermaidGeneratorMissingLinesCoverage:
+    """Tests to cover missing lines in mermaid_generator.py."""
+
+    def test_SWUT_GENERATOR_00042_rte_participant_abbreviation(self):
+        """Test RTE participant abbreviation in participant map (lines 143-145)."""
+        root = create_mock_call_tree(
+            [
+                (
+                    "Rte_Read_P_Voltage_Value",
+                    "rte.c",
+                    "RteModule",
+                    [
+                        ("Rte_Write_P_Current_Value", "rte.c", "RteModule", []),
+                    ],
+                ),
+            ]
+        )
+
+        gen = MermaidGenerator(abbreviate_rte=True, use_module_names=False)
+        diagram = gen._generate_mermaid_diagram(root)
+
+        # Should have abbreviated RTE names
+        assert "Rte_Read_PVV" in diagram
+        assert "Rte_Write_PCV" in diagram
+        # Participant map should be populated
+        assert "Rte_Read_P_Voltage_Value" in gen.participant_map
+        assert gen.participant_map["Rte_Read_P_Voltage_Value"] == "Rte_Read_PVV"
+
+    def test_SWUT_GENERATOR_00043_parameter_pointer_backtick(self):
+        """Test parameter formatting with pointer and backtick (line 374)."""
+        func = create_mock_function(
+            name="test_func",
+            file_path="test.c",
+            parameters=[
+                Parameter(name="buffer", param_type="uint8", is_pointer=True, is_const=False),
+            ],
+        )
+
+        gen = MermaidGenerator()
+        params = gen._format_parameters(func)
+
+        # Should have backtick around type with pointer
+        assert "`uint8* buffer`" in params
+
+    def test_SWUT_GENERATOR_00044_parameter_type_asterisk_for_diagram(self):
+        """Test parameter type with asterisk for diagram when no name (line 399)."""
+        func = create_mock_function(
+            name="test_func",
+            file_path="test.c",
+            parameters=[
+                Parameter(name="", param_type="uint8", is_pointer=True, is_const=False),
+            ],
+        )
+
+        gen = MermaidGenerator()
+        params = gen._format_parameters_for_diagram(func)
+
+        # Should have type with asterisk when no name
+        assert "uint8*" in params
+
+    def test_SWUT_GENERATOR_00045_generate_to_string_none_call_tree(self):
+        """Test generate_to_string raises ValueError for None call tree (line 479)."""
+        result = create_mock_analysis_result(has_tree=False)
+
+        gen = MermaidGenerator()
+
+        with pytest.raises(ValueError, match="call tree is None"):
+            gen.generate_to_string(result)
+
+    def test_SWUT_GENERATOR_00046_circular_deps_section_generation(self):
+        """Test circular dependencies section is generated (line 504)."""
+        from autosar_calltree.database.models import CircularDependency
+
+        result = create_mock_analysis_result()
+
+        # Add circular dependencies
+        circ_dep = CircularDependency(
+            cycle=["FuncA", "FuncB", "FuncA"], depth=2
+        )
+        result.circular_dependencies = [circ_dep]
+
+        gen = MermaidGenerator()
+        output = gen.generate_to_string(result)
+
+        # Should have circular dependencies section
+        assert "## Circular Dependencies" in output
+        assert "Found 1 circular dependencies" in output
+        assert "FuncA → FuncB → FuncA" in output
+
+    def test_SWUT_GENERATOR_00047_generate_non_recursive_call_with_params_line_227(self):
+        """Test generate non-recursive call with parameters (line 227)."""
+        root = create_mock_call_tree(
+            [
+                (
+                    "CallerFunc",
+                    "caller.c",
+                    "CallerModule",
+                    [
+                        ("CalleeFunc", "callee.c", "CalleeModule", []),
+                    ],
+                ),
+            ]
+        )
+
+        # Add parameters to the callee
+        root.children[0].function_info.parameters = [
+            Parameter(name="param1", param_type="int", is_pointer=False, is_const=False),
+            Parameter(name="param2", param_type="char", is_pointer=True, is_const=False),
+        ]
+
+        # Use the public generate method
+        result = create_mock_analysis_result()
+        result.call_tree = root
+
+        gen = MermaidGenerator(use_module_names=True)
+        output = gen.generate_to_string(result)
+
+        # Should have the non-recursive call with parameters (line 227)
+        assert "CallerModule->>CalleeModule:" in output
+
+    def test_SWUT_GENERATOR_00051_generate_non_recursive_call_without_modules_line_227(self):
+        """Test generate non-recursive call without module names (line 227)."""
+        root = create_mock_call_tree(
+            [
+                (
+                    "CallerFunc",
+                    "caller.c",
+                    None,
+                    [
+                        ("CalleeFunc", "callee.c", None, []),
+                    ],
+                ),
+            ]
+        )
+
+        # Use the public generate method
+        result = create_mock_analysis_result()
+        result.call_tree = root
+
+        gen = MermaidGenerator(use_module_names=False)
+        output = gen.generate_to_string(result)
+
+        # Should have the non-recursive call with "call" label (line 227)
+        assert "CallerFunc->>CalleeFunc: call" in output
+
+    def test_SWUT_GENERATOR_00048_format_parameters_adds_backtick_line_374(self):
+        """Test _format_parameters adds backtick when no param name (line 374)."""
+        func = create_mock_function(
+            name="test_func",
+            file_path="test.c",
+            parameters=[
+                Parameter(name="", param_type="uint8", is_pointer=True, is_const=False),
+            ],
+        )
+
+        gen = MermaidGenerator()
+        params = gen._format_parameters(func)
+
+        # Should have type with asterisk and backticks when no name (line 374)
+        assert "`uint8*`" in params
+
+    def test_SWUT_GENERATOR_00049_format_parameters_with_name(self):
+        """Test _format_parameters with parameter name."""
+        func = create_mock_function(
+            name="test_func",
+            file_path="test.c",
+            parameters=[
+                Parameter(name="value", param_type="uint32", is_pointer=False, is_const=False),
+            ],
+        )
+
+        gen = MermaidGenerator()
+        params = gen._format_parameters(func)
+
+        # Should have type and name with backticks
+        assert "`uint32 value`" in params
+
+    def test_SWUT_GENERATOR_00050_format_parameters_multiple_params(self):
+        """Test _format_parameters with multiple parameters."""
+        func = create_mock_function(
+            name="test_func",
+            file_path="test.c",
+            parameters=[
+                Parameter(name="id", param_type="uint32", is_pointer=False, is_const=False),
+                Parameter(name="data", param_type="uint8", is_pointer=True, is_const=False),
+            ],
+        )
+
+        gen = MermaidGenerator()
+        params = gen._format_parameters(func)
+
+        # Should have both parameters with backticks and line breaks
+        assert "`uint32 id`" in params
+        assert "`uint8* data`" in params
+        assert "<br>" in params
+

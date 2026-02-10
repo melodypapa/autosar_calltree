@@ -525,3 +525,33 @@ default_module: "Other"
     # Other extensions use default
     assert config.get_module_for_file(Path("demo.h")) == "Other"
     assert config.get_module_for_file(Path("hw_test.h")) == "Other"
+
+
+def test_non_string_pattern_mappings(tmp_path: Path) -> None:
+    """Test ValueError for non-string pattern mappings (covers line 94)."""
+    config_path = tmp_path / "non_string_pattern.yaml"
+    config_path.write_text(
+        """
+pattern_mappings:
+  "hw_*.c": 123
+  "sw_*.c": "SoftwareModule"
+"""
+    )
+
+    with pytest.raises(ValueError, match="Pattern mappings must be strings"):
+        ModuleConfig(config_path)
+
+
+def test_empty_module_name_in_pattern_mappings(tmp_path: Path) -> None:
+    """Test ValueError for empty module name in pattern mappings (covers line 96)."""
+    config_path = tmp_path / "empty_pattern_module.yaml"
+    config_path.write_text(
+        """
+pattern_mappings:
+  "hw_*.c": ""
+  "sw_*.c": "SoftwareModule"
+"""
+    )
+
+    with pytest.raises(ValueError, match="Module name cannot be empty for pattern"):
+        ModuleConfig(config_path)

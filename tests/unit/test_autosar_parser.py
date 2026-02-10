@@ -514,3 +514,41 @@ class TestAutosarParserWithFixtures:
 
         # Should find multiple functions including complex ones
         assert len(functions) >= 5
+
+
+class TestAutosarParserMissingLinesCoverage:
+    """Tests to cover missing lines in autosar_parser.py."""
+
+    def test_SWUT_PARSER_AUTOSAR_00015_extract_param_string_no_paren(self):
+        """Test _extract_param_string returns empty string when no parenthesis found (line 145)."""
+        parser = AutosarParser()
+
+        line = "FUNC(void, RTE_CODE) TestFunc"  # No parenthesis
+        start = line.find("TestFunc") + len("TestFunc")
+        param_string = parser._extract_param_string(line, start)
+
+        assert param_string == ""
+
+    def test_SWUT_PARSER_AUTOSAR_00016_parse_parameters_continue_on_void(self):
+        """Test parse_parameters continues when parameter is void (line 188)."""
+        parser = AutosarParser()
+
+        # Test with void parameter mixed with other params
+        # This should trigger the continue on line 188
+        params = parser.parse_parameters("void, uint32 param1, char param2")
+
+        # Should skip "void" and parse the other parameters
+        assert len(params) == 2
+        assert params[0].name == "param1"
+        assert params[1].name == "param2"
+
+    def test_SWUT_PARSER_AUTOSAR_00017_parse_traditional_returns_none(self):
+        """Test _parse_traditional_parameter returns None for invalid format (line 282)."""
+        parser = AutosarParser()
+
+        # Invalid parameter format (empty string after stripping)
+        param_str = "   "  # Just whitespace
+
+        result = parser._parse_traditional_parameter(param_str)
+
+        assert result is None

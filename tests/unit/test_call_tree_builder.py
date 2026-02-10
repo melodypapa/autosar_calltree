@@ -703,3 +703,203 @@ class TestMultipleDefinitions:
         # Should use first match
         assert result.call_tree is not None
         assert result.call_tree.function_info == func1
+
+    def test_verbose_multiple_definitions_warning(self):
+        """Test verbose mode shows warning for multiple definitions with file paths (lines 94-98)."""
+        from unittest.mock import patch
+
+        db = FunctionDatabase(source_dir="./demo")
+
+        func1 = FunctionInfo(
+            name="MultiDefFunc",
+            return_type="void",
+            file_path=Path("/path/to/source.c"),
+            line_number=42,
+            is_static=False,
+            function_type=FunctionType.TRADITIONAL_C,
+            calls=[],
+        )
+
+        func2 = FunctionInfo(
+            name="MultiDefFunc",
+            return_type="void",
+            file_path=Path("/path/to/header.c"),
+            line_number=99,
+            is_static=False,
+            function_type=FunctionType.TRADITIONAL_C,
+            calls=[],
+        )
+
+        builder = CallTreeBuilder(db)
+
+        import sys
+        from io import StringIO
+
+        old_stdout = sys.stdout
+        sys.stdout = StringIO()
+
+        # Mock lookup_function to return both definitions (bypassing _select_best_function_match)
+        with patch.object(db, 'lookup_function', return_value=[func1, func2]):
+            result = builder.build_tree("MultiDefFunc", max_depth=2, verbose=True)
+
+        output = sys.stdout.getvalue()
+        sys.stdout = old_stdout
+
+        # Should show warning about multiple definitions with exact format
+        assert "Warning: Multiple definitions found for 'MultiDefFunc'" in output
+        assert "/path/to/source.c:42" in output
+        assert "/path/to/header.c:99" in output
+
+
+class TestVerboseOutputCoverage:
+    """Test verbose output for uncovered lines."""
+
+    def test_verbose_function_not_found_error(self):
+        """Test verbose mode shows error when function not found (line 75)."""
+        db = FunctionDatabase(source_dir="./demo")
+        builder = CallTreeBuilder(db)
+
+        import sys
+        from io import StringIO
+
+        old_stdout = sys.stdout
+        sys.stdout = StringIO()
+
+        result = builder.build_tree("TotallyNonExistentFunction", max_depth=2, verbose=True)
+
+        output = sys.stdout.getvalue()
+        sys.stdout = old_stdout
+
+        # Should show error message
+        assert "Error" in output
+        assert "not found" in output
+        assert "TotallyNonExistentFunction" in output
+
+    def test_verbose_cycle_detection_message(self):
+        """Test verbose mode shows cycle detection message (line 170)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+
+            # Create circular call
+            (temp_path / "func_a.c").write_text(
+                """
+void func_a(void) {
+    func_b();
+}
+"""
+            )
+
+            (temp_path / "func_b.c").write_text(
+                """
+void func_b(void) {
+    func_a();
+}
+"""
+            )
+
+            db = FunctionDatabase(source_dir=temp_dir)
+            db.build_database(use_cache=False, verbose=False)
+
+            builder = CallTreeBuilder(db)
+
+            import sys
+            from io import StringIO
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            result = builder.build_tree("func_a", max_depth=5, verbose=True)
+
+            output = sys.stdout.getvalue()
+            sys.stdout = old_stdout
+
+            # Should show cycle detection message
+            assert "Cycle detected" in output
+            assert "func_a" in output and "func_b" in output
+
+    def test_verbose_missing_function_call(self):
+        """Test verbose mode shows message for missing function calls (lines 219-222)."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+
+            # Create function that calls non-existent function
+            (temp_path / "caller.c").write_text(
+                """
+void caller(void) {
+    external_lib_function();
+}
+"""
+            )
+
+            db = FunctionDatabase(source_dir=temp_dir)
+            db.build_database(use_cache=False, verbose=False)
+
+            builder = CallTreeBuilder(db)
+
+            import sys
+            from io import StringIO
+
+            old_stdout = sys.stdout
+            sys.stdout = StringIO()
+
+            result = builder.build_tree("caller", max_depth=3, verbose=True)
+
+            output = sys.stdout.getvalue()
+            sys.stdout = old_stdout
+
+            # Should show not found message for external function
+            assert "not found" in output
+            assert "external_lib_function" in output
+
+
+class TestLoopConditionTracking:
+    """Test loop condition tracking in call trees."""
+
+    def test_loop_condition_assignment(self):
+        """Test loop condition is assigned to child nodes (lines 242-243)."""
+        from autosar_calltree.database.models import FunctionCall
+
+        db = FunctionDatabase(source_dir="./demo")
+
+        # Create a function with a loop call
+        func_with_loop = FunctionInfo(
+            name="LoopCaller",
+            return_type="void",
+            file_path=Path("loop_test.c"),
+            line_number=10,
+            is_static=False,
+            function_type=FunctionType.TRADITIONAL_C,
+            calls=[
+                FunctionCall(
+                    name="LoopCallee",
+                    is_conditional=False,
+                    condition=None,
+                    is_loop=True,
+                    loop_condition="i < 10",
+                )
+            ],
+        )
+
+        callee = FunctionInfo(
+            name="LoopCallee",
+            return_type="void",
+            file_path=Path("loop_test.c"),
+            line_number=30,
+            is_static=False,
+            function_type=FunctionType.TRADITIONAL_C,
+            calls=[],
+        )
+
+        db.functions["LoopCaller"] = [func_with_loop]
+        db.functions["LoopCallee"] = [callee]
+
+        builder = CallTreeBuilder(db)
+        result = builder.build_tree("LoopCaller", max_depth=3, verbose=False)
+
+        # Check that child node has loop condition set
+        assert result.call_tree is not None
+        assert len(result.call_tree.children) == 1
+
+        child = result.call_tree.children[0]
+        assert child.is_loop is True
+        assert child.loop_condition == "i < 10"

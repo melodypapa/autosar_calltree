@@ -1088,3 +1088,76 @@ def test_SWUT_MODEL_00025_function_dict_type_alias():
     assert all(
         isinstance(f, FunctionInfo) for funcs in func_dict.values() for f in funcs
     )
+
+
+# Additional tests for FunctionCall.__str__ (covers lines 45-51)
+def test_function_call_str_with_loop_condition():
+    """Test FunctionCall.__str__ with loop condition (covers line 45-46)."""
+    call = FunctionCall(
+        name="ProcessItem",
+        is_conditional=False,
+        condition=None,
+        is_loop=True,
+        loop_condition="i < 10"
+    )
+    assert str(call) == "ProcessItem [loop: i < 10]"
+
+
+def test_function_call_str_with_condition():
+    """Test FunctionCall.__str__ with condition (covers line 47-48)."""
+    call = FunctionCall(
+        name="SendData",
+        is_conditional=True,
+        condition="mode == ACTIVE",
+        is_loop=False,
+        loop_condition=None
+    )
+    assert str(call) == "SendData [mode == ACTIVE]"
+
+
+def test_function_call_str_conditional_only():
+    """Test FunctionCall.__str__ with conditional flag only (covers line 49-51)."""
+    call = FunctionCall(
+        name="OptionalCall",
+        is_conditional=True,
+        condition=None,
+        is_loop=False,
+        loop_condition=None
+    )
+    assert str(call) == "OptionalCall [conditional]"
+
+
+def test_function_call_str_loop_only():
+    """Test FunctionCall.__str__ with loop flag only (covers line 49-51)."""
+    call = FunctionCall(
+        name="LoopCall",
+        is_conditional=False,
+        condition=None,
+        is_loop=True,
+        loop_condition=None
+    )
+    assert str(call) == "LoopCall [loop]"
+
+
+def test_function_call_str_plain():
+    """Test FunctionCall.__str__ with no flags (covers line 49-51)."""
+    call = FunctionCall(
+        name="SimpleCall",
+        is_conditional=False,
+        condition=None,
+        is_loop=False,
+        loop_condition=None
+    )
+    assert str(call) == "SimpleCall"
+
+
+def test_function_call_str_conditional_and_loop():
+    """Test FunctionCall.__str__ with both conditional and loop flags (covers line 49-51)."""
+    call = FunctionCall(
+        name="ComplexCall",
+        is_conditional=True,
+        condition=None,
+        is_loop=True,
+        loop_condition=None
+    )
+    assert str(call) == "ComplexCall [conditional] [loop]"
