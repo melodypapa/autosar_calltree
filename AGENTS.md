@@ -694,11 +694,14 @@ Contributions are welcome! Please follow these steps:
 
 ## Last Updated
 
-**Date**: 2026-02-09
-**Version**: 0.5.0
+**Date**: 2026-02-10
+**Version**: 0.6.0
 **Maintainer**: Melodypapa <melodypapa@outlook.com>
 
 **Recent Important Updates**:
+- ✅ Added loop detection for for/while statements with condition extraction (2026-02-10)
+- ✅ Verified parsing of production AUTOSAR codebase (448KB, 94 functions, 254 total) (2026-02-10)
+- ✅ Added multi-line if condition extraction with nested parentheses support (2026-02-10)
 - ✅ Added XMI/UML 2.5 output format (2026-02-03)
 - ✅ Added automatic conditional function call tracking (2026-02-04)
 - ✅ Added Mermaid opt/alt/else block support (2026-02-04)
