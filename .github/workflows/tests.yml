@@ -32,9 +32,9 @@ jobs:
         ruff check src/ tests/
 
     - name: Type check with mypy
+      continue-on-error: true
       run: |
         mypy src/autosar_calltree/
-        continue-on-error: true
 
     - name: Run tests
       run: |
