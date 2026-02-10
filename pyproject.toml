@@ -59,6 +59,7 @@ dev = [
     "flake8>=4.0.0",
     "mypy>=0.950",
     "isort>=5.10.0",
+    "pycparser>=2.21",
 ]
 docs = [
     "sphinx>=4.0.0",
