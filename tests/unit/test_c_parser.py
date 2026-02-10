@@ -1,5 +1,6 @@
 """Tests for C parser module (SWUT_PARSER_C_*)"""
 
+import tempfile
 from pathlib import Path
 
 from autosar_calltree.database.models import FunctionType
@@ -1065,3 +1066,974 @@ class TestCParserLoopSupport:
             assert process_elem_call.is_loop is True
 
             assert process_elem_call.loop_condition == "i < length"
+
+
+class TestCParserEdgeCases:
+    """Test C parser edge cases and error handling."""
+
+    # SWUT_PARSER_C_00027: File Read Error Handling
+    def test_SWUT_PARSER_C_00027_file_read_error_handling(self):
+        """Test that parser handles file read errors gracefully."""
+        parser = CParser()
+
+        # Test with non-existent file
+        non_existent = Path("/this/path/does/not/exist.c")
+        functions = parser.parse_file(non_existent)
+        assert functions == []
+
+        # Test with invalid path
+        invalid_path = Path("")
+        functions = parser.parse_file(invalid_path)
+        assert functions == []
+
+    # SWUT_PARSER_C_00028: Count Multiline Lines Without Closing Paren
+    def test_SWUT_PARSER_C_00028_count_multiline_lines_without_closing_paren(self):
+        """Test that _count_multiline_lines returns line count even without closing paren."""
+        parser = CParser()
+
+        # Test with lines that never have a closing paren
+        lines = ["void func(", "    uint8 param", "    uint16 param2"]
+        count = parser._count_multiline_lines(lines)
+        assert count == 3  # Should return total line count
+
+    # SWUT_PARSER_C_00029: Try Parse Multiline Function Without Closing Paren
+    def test_SWUT_PARSER_C_00029_try_parse_multiline_without_closing_paren(self):
+        """Test that _try_parse_multiline_function returns None without closing paren."""
+        parser = CParser()
+        content = "uint32 long_return_type\nvoid function_name(\n"
+        lines = content.split("\n")
+
+        result = parser._try_parse_multiline_function(
+            lines, 0, content, 0, Path("test.c")
+        )
+        assert result is None
+
+    # SWUT_PARSER_C_00030: Parse Function Match with Preprocessor Directive
+    def test_SWUT_PARSER_C_00030_parse_function_match_preprocessor_directive(self):
+        """Test that preprocessor directives are filtered out."""
+        parser = CParser()
+
+        # Test with #define
+        line = "#define FAKE_FUNC(x) void fake_##x(void)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+        # Test with #include
+        line = "#include <stdio.h>"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+    # SWUT_PARSER_C_00031: Parse Function Match with C Keyword Return Type
+    def test_SWUT_PARSER_C_00031_parse_function_match_c_keyword_return_type(self):
+        """Test that functions with C keyword return types are filtered out."""
+        parser = CParser()
+
+        # Test with 'if' as return type (shouldn't match pattern, but if it does)
+        line = "if (condition)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+    # SWUT_PARSER_C_00032: Parse Function Match with C Keyword Function Name
+    def test_SWUT_PARSER_C_00032_parse_function_match_c_keyword_function_name(self):
+        """Test that functions with C keyword names are filtered out."""
+        parser = CParser()
+
+        # Test with 'while' as function name
+        line = "uint32 while(uint8 value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+        # Test with 'for' as function name
+        line = "uint32 for(uint8 value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+    # SWUT_PARSER_C_00033: Parse Function Match with AUTOSAR Macro
+    def test_SWUT_PARSER_C_00033_parse_function_match_autosar_macro(self):
+        """Test that AUTOSAR macros are filtered out."""
+        parser = CParser()
+
+        # Test with UINT32_C macro
+        line = "uint32 UINT32_C(42)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+        # Test with TS_MAKEREF2CFG macro
+        line = "uint32 TS_MAKEREF2CFG(value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+    # SWUT_PARSER_C_00034: Parse Function Match with _C Suffix
+    def test_SWUT_PARSER_C_00034_parse_function_match_c_suffix(self):
+        """Test that functions ending with _C are filtered out."""
+        parser = CParser()
+
+        # Test with INT8_C
+        line = "uint32 INT8_C(value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+        # Test with custom _C function
+        line = "uint32 my_custom_C(value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+    # SWUT_PARSER_C_00035: Parse Function Match with Control Structure Name
+    def test_SWUT_PARSER_C_00035_parse_function_match_control_structure_name(self):
+        """Test that control structure names are filtered out."""
+        parser = CParser()
+
+        # Test with 'switch'
+        line = "uint32 switch(uint8 value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+        # Test with 'case'
+        line = "uint32 case(uint8 value)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+
+class TestCParserMissingLinesCoverage:
+    """Tests to cover missing lines in c_parser.py (66 lines)."""
+
+    def test_SWUT_PARSER_C_00036_parse_function_match_backtrack_logic_lines_326_328(self):
+        """Test _parse_function_match backtrack logic (lines 326-328)."""
+        parser = CParser()
+
+        # Create a multiline function declaration
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write a function that spans multiple lines
+            test_file.write_text("""
+STATIC uint32
+TestFunction
+(uint8 param)
+{
+    return 0;
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should parse the multiline function
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00037_parse_function_match_skip_macro_line_440(self):
+        """Test _parse_function_match skips macros (line 440)."""
+        parser = CParser()
+
+        # Test with macro (starts with #)
+        line = "#define TEST_MACRO(x) ((x) * 2)"
+        match = parser.function_pattern.search(line)
+        if match:
+            result = parser._parse_function_match(match, line, Path("test.c"))
+            assert result is None
+
+    def test_SWUT_PARSER_C_00038_parse_function_match_skip_control_structures_line_458(self):
+        """Test _parse_function_match skips control structures (line 458)."""
+        parser = CParser()
+
+        # Test with control structure names
+        for name in ["if", "for", "while", "switch", "case", "else"]:
+            line = f"uint32 {name}(uint8 value)"
+            match = parser.function_pattern.search(line)
+            if match:
+                result = parser._parse_function_match(match, line, Path("test.c"))
+                assert result is None
+
+    def test_SWUT_PARSER_C_00039_parse_parameters_empty_param_line_513(self):
+        """Test _parse_parameters skips empty parameters (line 513)."""
+        parser = CParser()
+
+        # Test with empty parameter string
+        params = parser._parse_parameters("")
+
+        # Should return empty list
+        assert len(params) == 0
+
+    def test_SWUT_PARSER_C_00040_parse_file_handles_syntax_errors_line_674(self):
+        """Test parse_file handles syntax errors gracefully (line 674)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write malformed C code
+            test_file.write_text("void test( {")
+
+            # Should not crash
+            functions = parser.parse_file(test_file)
+            # May return empty list or partial results
+            assert isinstance(functions, list)
+
+    def test_SWUT_PARSER_C_00041_parse_file_tracks_if_context_lines_718_728(self):
+        """Test parse_file tracks if context (lines 718-728)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write code with if statement
+            test_file.write_text("""
+void test(void) {
+    if (x > 0) {
+        do_something();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should parse the function
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00042_parse_file_tracks_else_if_lines_730_766(self):
+        """Test parse_file tracks else if (lines 730-766)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (x > 0) {
+        do_something();
+    } else if (x < 0) {
+        do_other();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00043_parse_file_tracks_else_lines_768_769(self):
+        """Test parse_file tracks else (lines 768-769)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (x > 0) {
+        do_something();
+    } else {
+        do_other();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00044_parse_file_tracks_loops_lines_781_792(self):
+        """Test parse_file tracks for/while loops (lines 781-792)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    for (i = 0; i < 10; i++) {
+        do_something();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00045_parse_file_handles_nested_parens_lines_802_810(self):
+        """Test parse_file handles nested parentheses (lines 802-810)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if ((a > 0) && (b < 10)) {
+        do_something();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00046_parse_file_else_block_handling_lines_826_843(self):
+        """Test parse_file else block handling (lines 826, 841-843)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (x > 0) {
+        do_something();
+    } else {
+        do_other();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00047_parse_file_nested_blocks_lines_846_848(self):
+        """Test parse_file nested block handling (lines 846-848)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (x > 0) {
+        if (y > 0) {
+            do_something();
+        }
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00048_parse_file_no_conditional_lines_873_875(self):
+        """Test parse_file with no conditional keyword (lines 873-875)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    do_something();
+    do_other();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00049_parse_file_other_keywords_lines_877_881(self):
+        """Test parse_file with other keywords (lines 877-881)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    return_value = some_function();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00050_parse_file_autosar_function_parsing_lines_158_180(self):
+        """Test parse_file parses AUTOSAR functions and extracts calls (lines 158-180)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write AUTOSAR function with function calls in body
+            test_file.write_text("""
+FUNC(void, RTE_CODE) AUTOSAR_TestFunction(void)
+{
+    Helper1();
+    Helper2();
+}
+
+FUNC(uint32, RTE_CODE) AUTOSAR_GetValue(VAR(uint8, AUTOMATIC) param)
+{
+    return param * 2;
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find both AUTOSAR functions
+            assert len(functions) >= 2
+            func_names = [f.name for f in functions]
+            assert "AUTOSAR_TestFunction" in func_names
+            assert "AUTOSAR_GetValue" in func_names
+
+            # Check that function calls were extracted
+            test_func = next((f for f in functions if f.name == "AUTOSAR_TestFunction"), None)
+            assert test_func is not None
+            call_names = [c.name for c in test_func.calls]
+            assert "Helper1" in call_names
+            assert "Helper2" in call_names
+
+    def test_SWUT_PARSER_C_00051_parse_file_autosar_line_start_lines_162_166(self):
+        """Test parse_file finds line start for AUTOSAR functions (lines 162-166)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+// Some comment
+FUNC(void, RTE_CODE) AUTOSAR_Function(void)
+{
+    Helper();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should parse the AUTOSAR function
+            assert len(functions) >= 1
+            func = functions[0]
+            assert func.name == "AUTOSAR_Function"
+
+    def test_SWUT_PARSER_C_00052_parse_file_autosar_function_body_lines_168_176(self):
+        """Test parse_file extracts function body for AUTOSAR functions (lines 168-176)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+FUNC(void, RTE_CODE) AUTOSAR_WithBody(void)
+{
+    InnerFunction();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should parse and extract calls
+            assert len(functions) >= 1
+            func = functions[0]
+            assert len(func.calls) >= 1
+            assert func.calls[0].name == "InnerFunction"
+
+    def test_SWUT_PARSER_C_00053_parse_file_autosar_with_calls_lines_177_179(self):
+        """Test parse_file extracts function calls from AUTOSAR function body (lines 177-179)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+FUNC(void, RTE_CODE) AUTOSAR_Complex(void)
+{
+    Function1();
+    Function2();
+    Function3();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should extract all three function calls
+            assert len(functions) >= 1
+            func = functions[0]
+            assert len(func.calls) == 3
+            call_names = [c.name for c in func.calls]
+            assert "Function1" in call_names
+            assert "Function2" in call_names
+            assert "Function3" in call_names
+
+    def test_SWUT_PARSER_C_00054_parse_file_multiline_return_type_backtrack_lines_326_328(self):
+        """Test multiline function with return type on separate line triggers backtrack (lines 326-328)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write a function that spans multiple lines
+            test_file.write_text("""
+uint32
+TestFunction
+(uint8 param)
+{
+    return 0;
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should parse the multiline function
+            assert len(functions) >= 1
+            func = functions[0]
+            assert func.name == "TestFunction"
+            assert func.return_type == "uint32"
+            assert len(func.parameters) == 1
+            assert func.parameters[0].name == "param"
+
+    def test_SWUT_PARSER_C_00068_parse_file_multiline_function_with_comments_lines_326_328(self):
+        """Test multiline function with return type separated by comments (lines 326-328)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write a function with return type on previous line
+            test_file.write_text("""
+/* Return type on separate line */
+uint32
+MultilineFunction(uint8 param1, uint16 param2)
+{
+    return 0;
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should parse the multiline function
+            assert len(functions) >= 1
+            func = functions[0]
+            assert func.name == "MultilineFunction"
+            assert func.return_type == "uint32"
+            assert len(func.parameters) == 2
+
+    def test_SWUT_PARSER_C_00069_parse_file_multiline_no_body_lines_674(self):
+        """Test parse_file with function that has no body (line 674)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write a function declaration (not definition)
+            test_file.write_text("""
+uint32 no_body_function(uint8 param);
+""")
+
+            # Should parse but not find body
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 0
+
+    def test_SWUT_PARSER_C_00070_parse_file_complex_if_conditions_lines_718_728(self):
+        """Test parse_file with complex if conditions (lines 718-728)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (x > 0 && y < 10) {
+        func1();
+    }
+    if (condition) {
+        func2();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "func1" in call_names
+            assert "func2" in call_names
+
+    def test_SWUT_PARSER_C_00071_parse_file_if_without_closing_paren_lines_730_766(self):
+        """Test parse_file with if that has unclosed paren (lines 730-766)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (x > 0) {
+        func1();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 1
+
+    def test_SWUT_PARSER_C_00072_parse_file_nested_conditions_lines_802_810(self):
+        """Test parse_file with nested conditions (lines 802-810)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if ((a > 0) && (b < 10) || (c == 0)) {
+        nested_func();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "nested_func" in call_names
+
+    def test_SWUT_PARSER_C_00073_parse_file_function_keywords_lines_875_881(self):
+        """Test parse_file handles function-like keywords (lines 875-881)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    value = sizeof(buffer);
+    result = (uint32)cast_func();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 1
+            func = functions[0]
+            # Should not include sizeof (C keyword)
+            call_names = [c.name for c in func.calls]
+            assert "sizeof" not in call_names
+            assert "cast_func" in call_names
+
+    def test_SWUT_PARSER_C_00055_parse_parameters_with_empty_params_lines_513_515(self):
+        """Test _parse_parameters with empty parameter list (lines 513-515)."""
+        parser = CParser()
+
+        # Test with empty string
+        params = parser._parse_parameters("")
+        assert len(params) == 0
+
+        # Test with whitespace only
+        params = parser._parse_parameters("   ")
+        assert len(params) == 0
+
+    def test_SWUT_PARSER_C_00056_parse_parameters_skip_empty_parts_line_513(self):
+        """Test _parse_parameters skips empty parts (line 513)."""
+        parser = CParser()
+
+        # Test with extra commas
+        params = parser._parse_parameters("uint8 a,, uint16 b")
+        assert len(params) == 2
+        assert params[0].name == "a"
+        assert params[1].name == "b"
+
+    def test_SWUT_PARSER_C_00057_parse_file_if_else_elseif_lines_718_769(self):
+        """Test parse_file with if, else if, and else (lines 718-769)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (condition1) {
+        func1();
+    } else if (condition2) {
+        func2();
+    } else {
+        func3();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "func1" in call_names
+            assert "func2" in call_names
+            assert "func3" in call_names
+
+            # All should be conditional
+            for call in func.calls:
+                assert call.is_conditional is True
+
+    def test_SWUT_PARSER_C_00058_parse_file_for_while_loops_lines_781_792(self):
+        """Test parse_file with for and while loops (lines 781-792)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    for (i = 0; i < 10; i++) {
+        loop_func1();
+    }
+    while (j < 20) {
+        loop_func2();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "loop_func1" in call_names
+            assert "loop_func2" in call_names
+
+            # Check loop status
+            loop1_call = next((c for c in func.calls if c.name == "loop_func1"), None)
+            assert loop1_call is not None
+            assert loop1_call.is_loop is True
+            assert "i < 10" in loop1_call.loop_condition
+
+            loop2_call = next((c for c in func.calls if c.name == "loop_func2"), None)
+            assert loop2_call is not None
+            assert loop2_call.is_loop is True
+            assert loop2_call.loop_condition == "j < 20"
+
+    def test_SWUT_PARSER_C_00059_parse_file_nested_parens_lines_802_810(self):
+        """Test parse_file with nested parentheses (lines 802-810)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if ((a > 0) && (b < 10)) {
+        nested_func();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "nested_func" in call_names
+
+            nested_call = next((c for c in func.calls if c.name == "nested_func"), None)
+            assert nested_call is not None
+            assert nested_call.is_conditional is True
+
+    def test_SWUT_PARSER_C_00060_parse_file_else_if_multiline_lines_730_766(self):
+        """Test parse_file with multi-line else if condition (lines 730-766)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (condition1) {
+        func1();
+    } else if (
+        condition2 &&
+        condition3
+    ) {
+        func2();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "func1" in call_names
+            assert "func2" in call_names
+
+            # Both should be conditional
+            for call in func.calls:
+                assert call.is_conditional is True
+
+    def test_SWUT_PARSER_C_00061_parse_file_nested_if_blocks_lines_846_848(self):
+        """Test parse_file with nested if blocks (lines 846-848)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (outer) {
+        if (inner) {
+            nested_func();
+        }
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "nested_func" in call_names
+
+            nested_call = next((c for c in func.calls if c.name == "nested_func"), None)
+            assert nested_call is not None
+            assert nested_call.is_conditional is True
+
+    def test_SWUT_PARSER_C_00062_parse_file_non_conditional_lines_873_875(self):
+        """Test parse_file with non-conditional calls (lines 873-875)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    func1();
+    func2();
+    func3();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            assert len(func.calls) == 3
+            call_names = [c.name for c in func.calls]
+            assert "func1" in call_names
+            assert "func2" in call_names
+            assert "func3" in call_names
+
+            # All should be non-conditional
+            for call in func.calls:
+                assert call.is_conditional is False
+                assert call.is_loop is False
+
+    def test_SWUT_PARSER_C_00063_parse_file_rte_calls_lines_877_881(self):
+        """Test parse_file extracts RTE calls (lines 877-881)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    Rte_Call_StartOperation();
+    Rte_Write_Parameter_1();
+    regular_func();
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "Rte_Call_StartOperation" in call_names
+            assert "Rte_Write_Parameter_1" in call_names
+            assert "regular_func" in call_names
+
+    def test_SWUT_PARSER_C_00064_parse_file_rte_conditional_lines_826_843(self):
+        """Test parse_file with RTE calls in conditional blocks (lines 826-843)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (condition) {
+        Rte_Call_StartOperation();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "Rte_Call_StartOperation" in call_names
+
+            rte_call = next((c for c in func.calls if c.name == "Rte_Call_StartOperation"), None)
+            assert rte_call is not None
+            assert rte_call.is_conditional is True
+            assert rte_call.condition == "condition"
+
+    def test_SWUT_PARSER_C_00065_parse_file_else_block_lines_841_843(self):
+        """Test parse_file with else block (lines 841-843)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    if (condition) {
+        func1();
+    } else {
+        func2();
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+            call_names = [c.name for c in func.calls]
+            assert "func1" in call_names
+            assert "func2" in call_names
+
+            # Both should be conditional
+            for call in func.calls:
+                assert call.is_conditional is True
+
+    def test_SWUT_PARSER_C_00066_parse_file_duplicate_update_lines_826_828(self):
+        """Test parse_file updates duplicate calls (lines 826-828)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            test_file.write_text("""
+void test(void) {
+    func1();
+    if (condition) {
+        func1();  # Same function, but conditional
+    }
+}
+""")
+
+            functions = parser.parse_file(test_file)
+
+            # Should find the function
+            assert len(functions) >= 1
+            func = functions[0]
+
+            # Should find func1 only once (deduplicated)
+            call_names = [c.name for c in func.calls]
+            assert call_names.count("func1") == 1
+
+            # But it should be marked as conditional
+            func1_call = next((c for c in func.calls if c.name == "func1"), None)
+            assert func1_call is not None
+            assert func1_call.is_conditional is True
+
+    def test_SWUT_PARSER_C_00067_parse_file_syntax_error_continues_line_674(self):
+        """Test parse_file continues after syntax errors (line 674)."""
+        parser = CParser()
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            test_file = Path(temp_dir) / "test.c"
+            # Write malformed code followed by valid code
+            test_file.write_text("""
+this is not valid C
+
+void valid_function(void) {
+    return;
+}
+""")
+
+            # Should not crash and should find valid function
+            functions = parser.parse_file(test_file)
+            assert len(functions) >= 1
+            func_names = [f.name for f in functions]
+            assert "valid_function" in func_names

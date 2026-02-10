@@ -685,3 +685,303 @@ class TestCLIEdgeCases:
         assert "--start-function" in result.output
         assert "--list-functions" in result.output
         assert "--search" in result.output
+
+
+class TestCLICoverageGaps:
+    """Additional tests to achieve 100% coverage for CLI"""
+
+    def test_verbose_shows_module_config_stats(self, demo_dir):
+        """Test verbose mode shows module config statistics (covers lines 145-147)."""
+        module_config = demo_dir / "module_mapping.yaml"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--module-config",
+                    str(module_config),
+                    "--verbose",
+                    "--no-cache",
+                ],
+            )
+            assert result.exit_code == 0
+            assert "Loaded module configuration" in result.output
+            assert "Specific file mappings" in result.output
+            assert "Pattern mappings" in result.output
+
+    def test_circular_dependencies_in_statistics(self, demo_dir, test_fixtures_dir):
+        """Test circular dependencies shown in statistics (covers line 264)."""
+        # Use circular functions fixture
+        circular_dir = test_fixtures_dir / "traditional_c"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(circular_dir),
+                    "--start-function",
+                    "Start_Circular",
+                    "--max-depth",
+                    "10",
+                    "--no-cache",
+                ],
+            )
+            assert result.exit_code == 0
+            # Should show circular dependencies in statistics
+            assert "Circular dependencies" in result.output
+
+    def test_circular_dependencies_warning_message(self, demo_dir, test_fixtures_dir):
+        """Test circular dependencies warning message (covers lines 362-368, 372)."""
+        circular_dir = test_fixtures_dir / "traditional_c"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(circular_dir),
+                    "--start-function",
+                    "Start_Circular",
+                    "--max-depth",
+                    "10",
+                    "--no-cache",
+                ],
+            )
+            assert result.exit_code == 0
+            # Should show warning header
+            assert "Circular dependencies detected" in result.output
+            # Should show analysis complete message
+            assert "Analysis complete" in result.output
+            # Should show the cycle path
+            assert " → " in result.output or "->" in result.output
+
+    def test_format_both_generates_xmi(self, demo_dir):
+        """Test format 'both' generates both Mermaid and XMI (covers lines 350-355)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--format",
+                    "both",
+                ],
+            )
+            assert result.exit_code == 0
+            # Both files should be generated
+            assert Path("call_tree.mermaid.md").exists()
+            assert Path("call_tree.xmi").exists()
+            # Verify XMI content
+            xmi_content = Path("call_tree.xmi").read_text()
+            assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
+
+    def test_format_both_with_custom_output(self, demo_dir):
+        """Test format 'both' with custom output path (covers lines 350-355)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--format",
+                    "both",
+                    "--output",
+                    "custom_output",
+                ],
+            )
+            assert result.exit_code == 0
+            # Both files should be generated with custom base name
+            assert Path("custom_output.mermaid.md").exists()
+            assert Path("custom_output.xmi").exists()
+
+    def test_multiple_cycles_detected(self, demo_dir, test_fixtures_dir):
+        """Test detection of multiple circular dependencies (covers lines 365-368)."""
+        circular_dir = test_fixtures_dir / "traditional_c"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            # Start with a function that can reach multiple cycles
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(circular_dir),
+                    "--start-function",
+                    "Start_Circular",
+                    "--max-depth",
+                    "20",
+                    "--no-cache",
+                ],
+            )
+            assert result.exit_code == 0
+            # Should show circular dependencies warning
+            assert "Circular dependencies detected" in result.output
+
+    def test_analysis_complete_message(self, demo_dir):
+        """Test analysis complete message is shown (covers line 372)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                ["--source-dir", str(demo_dir), "--start-function", "Demo_Init"],
+            )
+            assert result.exit_code == 0
+            assert "Analysis complete" in result.output
+
+    def test_module_config_invalid_yaml(self, demo_dir, tmp_path):
+        """Test invalid YAML in module config (covers lines 145-147)."""
+        # Create an invalid YAML file
+        invalid_config = tmp_path / "invalid_config.yaml"
+        invalid_config.write_text("invalid: yaml: content: [unclosed")
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--module-config",
+                    str(invalid_config),
+                ],
+            )
+            assert result.exit_code == 1
+            assert "Error loading module config" in result.output
+
+    def test_module_config_permission_denied(self, demo_dir, tmp_path):
+        """Test module config with permission denied (covers lines 145-147)."""
+        # Create a file without read permissions
+        restricted_config = tmp_path / "restricted.yaml"
+        restricted_config.write_text("version: \"1.0\"\nfile_mappings: {}")
+        # Remove read permissions (this may not work on all systems)
+        try:
+            restricted_config.chmod(0o000)
+        except Exception:
+            # Skip test if chmod doesn't work
+            return
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--module-config",
+                    str(restricted_config),
+                ],
+            )
+            # Should fail with permission error
+            assert result.exit_code == 1 or result.exit_code != 0
+            # Restore permissions for cleanup
+            restricted_config.chmod(0o644)
+
+    def test_keyboard_interrupt_handling(self, demo_dir):
+        """Test KeyboardInterrupt handling (covers lines 362-363)."""
+        from unittest.mock import patch
+
+        runner = CliRunner()
+
+        # Mock the build_tree method to raise KeyboardInterrupt
+        with patch('autosar_calltree.cli.main.CallTreeBuilder.build_tree') as mock_build:
+            mock_build.side_effect = KeyboardInterrupt()
+
+            with runner.isolated_filesystem():
+                result = runner.invoke(
+                    cli,
+                    [
+                        "--source-dir",
+                        str(demo_dir),
+                        "--start-function",
+                        "Demo_Init",
+                        "--no-cache",
+                    ],
+                )
+                # KeyboardInterrupt should exit with code 130
+                assert result.exit_code == 130
+                assert "Interrupted by user" in result.output
+
+    def test_general_exception_handling(self, demo_dir):
+        """Test general exception handling (covers lines 365-368)."""
+        from unittest.mock import patch
+
+        runner = CliRunner()
+
+        # Mock the build_tree method to raise a general exception
+        with patch('autosar_calltree.cli.main.CallTreeBuilder.build_tree') as mock_build:
+            mock_build.side_effect = ValueError("Test error")
+
+            with runner.isolated_filesystem():
+                result = runner.invoke(
+                    cli,
+                    [
+                        "--source-dir",
+                        str(demo_dir),
+                        "--start-function",
+                        "Demo_Init",
+                        "--no-cache",
+                    ],
+                )
+                # General exception should exit with code 1
+                assert result.exit_code == 1
+                assert "Error:" in result.output
+                assert "Test error" in result.output
+
+    def test_general_exception_with_verbose(self, demo_dir):
+        """Test general exception handling with verbose mode (covers lines 366-367)."""
+        from unittest.mock import patch
+
+        runner = CliRunner()
+
+        # Mock the build_tree method to raise a general exception
+        with patch('autosar_calltree.cli.main.CallTreeBuilder.build_tree') as mock_build:
+            mock_build.side_effect = ValueError("Test error with traceback")
+
+            with runner.isolated_filesystem():
+                result = runner.invoke(
+                    cli,
+                    [
+                        "--source-dir",
+                        str(demo_dir),
+                        "--start-function",
+                        "Demo_Init",
+                        "--verbose",
+                        "--no-cache",
+                    ],
+                )
+                # General exception should exit with code 1
+                assert result.exit_code == 1
+                assert "Error:" in result.output
+                assert "Test error with traceback" in result.output
+                # In verbose mode, should show exception details
+                # (CliRunner may strip the traceback, but the error should be shown)
+
+    def test_main_module_entry_point(self):
+        """Test that the module can be run as __main__ (covers line 372)."""
+        import subprocess
+        import sys
+
+        # Run the module as a script
+        result = subprocess.run(
+            [sys.executable, "-m", "autosar_calltree.cli.main", "--help"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        # Should succeed and show help
+        assert result.returncode == 0
+        assert "AUTOSAR Call Tree Analyzer" in result.stdout
