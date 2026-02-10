@@ -8,7 +8,7 @@ AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR c
 
 **Key capability**: Handles AUTOSAR's proprietary macros that traditional C parsers cannot understand. Use this when working with automotive embedded systems code.
 
-**Latest feature (v0.5.0)**: Automatic conditional function call detection with `opt`/`alt`/`else` block generation in both Mermaid and XMI formats.
+**Latest feature (v0.6.0)**: Loop detection and multi-line if condition extraction for complex AUTOSAR code.
 
 ## Development Commands
 
@@ -373,6 +373,7 @@ tests/
 
 ## Version History
 
+- **v0.6.0** (2026-02-10): Loop detection and multi-line if condition extraction for complex AUTOSAR code
 - **v0.5.0** (2026-02-04): Conditional function call tracking with opt/alt/else blocks
 - **v0.4.0**: XMI/UML 2.5 output format implementation
 - **v0.3.0**: SW module configuration system

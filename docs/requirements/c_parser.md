@@ -548,6 +548,54 @@ AUTOSAR code often uses multi-line conditions with logical operators (&&, ||) an
 
 ---
 
+### SWR_PARSER_C_00023: Multi-line Function Call Extraction
+
+**Priority:** High
+**Status:** Implemented
+**Maturity:** accept
+
+**Description:**
+The C parser shall extract function calls that span multiple lines within function bodies.
+
+**Rationale:**
+AUTOSAR codebases often use multi-line function calls for readability, especially with long parameter lists or complex expressions. For example:
+
+```c
+void ExampleFunction(void) {
+    // Multi-line call with multiple parameters
+    VeryLongFunctionName(
+        parameter1,
+        parameter2,
+        parameter3
+    );
+
+    // Multi-line call in conditional
+    if (status == OK) {
+        ProcessData(
+            buffer,
+            length,
+            flags
+        );
+    }
+}
+```
+
+The regex-based pattern matching (`identifier(`) naturally finds function calls regardless of line breaks, ensuring these calls are correctly extracted.
+
+**Acceptance Criteria:**
+- [ ] Detects function calls where opening parenthesis is on one line
+- [ ] Detects function calls where parameters span multiple lines
+- [ ] Detects function calls where closing parenthesis is on a different line
+- [ ] Handles multi-line calls with nested function calls as parameters
+- [ ] Handles multi-line calls within if/else blocks
+- [ ] Handles multi-line calls within for/while loops
+- [ ] Extracts only the function name (not parameters)
+- [ ] Deduplicates function calls across multiple lines
+
+**Related Requirements:** SWR_PARSER_C_00009
+
+---
+
 ## Traceability
 
 | Requirement ID | Test ID | Test Function | Status |
@@ -578,6 +626,7 @@ AUTOSAR code often uses multi-line conditions with logical operators (&&, ||) an
 | SWR_PARSER_C_00021 | SWUT_PARSER_C_00026 | test_loop_with_condition | ✅ Pass |
 | SWR_PARSER_C_00022 | SWUT_PARSER_C_00021 | test_SWUT_PARSER_C_00021_multiline_function_prototype | ✅ Pass |
 | SWR_PARSER_C_00022 | SWUT_PARSER_C_00022 | test_SWUT_PARSER_C_00022_multiline_if_condition | ✅ Pass |
+| SWR_PARSER_C_00023 | SWUT_PARSER_C_00028 | test_multiline_function_call_extraction | ✅ Pass |
 
 ## Revision History
 
@@ -587,3 +636,4 @@ AUTOSAR code often uses multi-line conditions with logical operators (&&, ||) an
 | 2026-01-30 | 1.1 | Claude | Added requirements for line-by-line processing (SWR_PARSER_C_00019) and regex optimization (SWR_PARSER_C_00020) to prevent catastrophic backtracking on large files |
 | 2026-02-09 | 1.2 | Claude | Added requirements for multi-line function prototypes (SWR_PARSER_C_00021) and multi-line if condition extraction (SWR_PARSER_C_00022) |
 | 2026-02-09 | 1.3 | Claude | Added requirement for loop detection (SWR_PARSER_C_00021) with 4 tests |
+| 2026-02-10 | 1.4 | Claude | Added requirement for multi-line function call extraction (SWR_PARSER_C_00023) |

@@ -2037,3 +2037,98 @@ void valid_function(void) {
             assert len(functions) >= 1
             func_names = [f.name for f in functions]
             assert "valid_function" in func_names
+
+
+class TestCParserMultiLineCalls:
+    """Test C parser multi-line function call extraction."""
+
+    # SWUT_PARSER_C_00028: Multi-line Function Call Extraction
+    def test_multiline_function_call_extraction(self):
+        """Test that multi-line function calls are correctly extracted.
+
+        SWR_PARSER_C_00023: Multi-line function calls should be detected
+        SWUT_PARSER_C_00028: Test multi-line function call extraction
+        """
+        parser = CParser()
+
+        # Create test file with multi-line function calls
+        test_code = """
+static void TestFunction(void)
+{
+    // Multi-line call with multiple parameters
+    VeryLongFunctionName(
+        parameter1,
+        parameter2,
+        parameter3
+    );
+
+    // Multi-line call in conditional
+    if (status == OK) {
+        ProcessData(
+            buffer,
+            length,
+            flags
+        );
+    }
+
+    // Multi-line call with nested function call as parameter
+    ComplexFunction(
+        (uint32*)0x1000,
+        calculate_value(
+            param1,
+            param2
+        ),
+        config->setting
+    );
+
+    // Multi-line call in loop
+    for (i = 0; i < 10; i++) {
+        ProcessElement(
+            array[i],
+            context
+        );
+    }
+}
+"""
+
+        # Write to temp file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.c', delete=False) as f:
+            f.write(test_code)
+            test_file = Path(f.name)
+
+        try:
+            functions = parser.parse_file(test_file)
+
+            # Find TestFunction
+            func = next((f for f in functions if f.name == "TestFunction"), None)
+            assert func is not None
+
+            # Check that multi-line calls are detected
+            call_names = [call.name for call in func.calls]
+
+            # Basic multi-line calls
+            assert "VeryLongFunctionName" in call_names
+            assert "ProcessData" in call_names
+            assert "ComplexFunction" in call_names
+            assert "calculate_value" in call_names  # Nested call
+            assert "ProcessElement" in call_names
+
+            # Check conditional context for ProcessData
+            process_data_call = next(
+                (c for c in func.calls if c.name == "ProcessData"), None
+            )
+            assert process_data_call is not None
+            assert process_data_call.is_conditional is True
+            assert process_data_call.condition == "status == OK"
+
+            # Check loop context for ProcessElement
+            process_elem_call = next(
+                (c for c in func.calls if c.name == "ProcessElement"), None
+            )
+            assert process_elem_call is not None
+            assert process_elem_call.is_loop is True
+            assert process_elem_call.loop_condition == "i < 10"
+
+        finally:
+            # Clean up temp file
+            test_file.unlink()

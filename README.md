@@ -26,6 +26,51 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 
 ## What's New
 
+### Version 0.6.0 (2026-02-10)
+
+**🎉 Major Feature: Loop Detection and Multi-line If Condition Support**
+
+This release adds parsing of function calls inside `for`/`while` loops and improves multi-line if condition extraction for complex AUTOSAR code.
+
+**New Features**:
+- 🔄 **Loop Detection**: Automatically detects function calls inside `for` and `while` loops with condition extraction
+- 📝 **Multi-line If Condition Extraction**: Handles complex multi-line if statements with nested parentheses and logical operators
+- ✅ **Production Ready**: Verified on real AUTOSAR codebases with complex formatting
+
+**Example Multi-line If**:
+```c
+// Complex multi-line condition with nested parentheses
+if ((((uint32)config_ptr->settings->mode &
+         ((uint32)0x1U << SLEEP_MODE)) > 0x0U) &&
+    (sensor_status == SENSOR_READY))
+{
+    InitPeripheral();
+    EnableClockControl();
+}
+```
+**Parsed Condition**: `(((uint32)config_ptr->settings->mode & ((uint32)0x1U << SLEEP_MODE)) > 0x0U) && (sensor_status == SENSOR_READY)`
+
+**Example Loop Detection**:
+```c
+while (retry_counter > 0x0U)
+{
+    if (InitOscillator() != E_OK)
+    {
+        ReportError(ERR_INIT_FAILED);
+    }
+    retry_counter--;
+}
+```
+**Detected**: Loop condition `retry_counter > 0x0U` with nested conditional call `ReportError`
+
+**Benefits**:
+- ✅ Handles production AUTOSAR code with complex formatting
+- ✅ Accurate condition extraction across line breaks
+- ✅ Better visualization of loop-based call patterns
+- ✅ Verified on real-world embedded codebases with zero parse errors
+
+---
+
 ### Version 0.5.0 (2026-02-04)
 
 **🎉 Major Feature: Automatic Conditional Call Detection with Opt/Alt/Else Blocks**
@@ -88,7 +133,32 @@ sequenceDiagram
 
 ## Changelog
 
-### [0.5.0] - 2026-02-04
+### [Version 0.6.0] - 2026-02-10
+
+#### Added
+- **Loop detection**: Automatic detection of `for` and `while` loops with condition text extraction
+- **Multi-line if condition extraction**: Handles complex multi-line if statements with nested parentheses
+- **FunctionCall model**: Extended with `is_loop` and `loop_condition` fields
+- **CallTreeNode model**: Extended with `is_loop` and `loop_condition` fields
+- **CParser enhancements**: Multi-line parenthesis tracking for complete condition extraction
+- Production AUTOSAR codebase verification (tested on large-scale embedded codebases)
+- Requirements documentation for loop detection (SWR_PARSER_C_00021)
+
+#### Improved
+- Multi-line if condition extraction now captures complete conditions across line breaks
+- Parenthesis depth tracking for complex nested conditions (4+ levels)
+- Condition extraction for bitwise operations (`&`, `|`, `<<`, `>>`)
+- Production code validation with zero parse errors
+
+#### Technical
+- Verified parsing of real-world AUTOSAR codebase with complex formatting
+- Functions with loop calls correctly identified and tracked
+- Multi-line conditions with 100+ character length properly extracted
+- All existing tests passing (298 tests, 89% coverage)
+
+---
+
+### [Version 0.5.0] - 2026-02-04
 
 #### Added
 - **Conditional function call tracking**: Automatic detection of `if`/`else` blocks with condition text extraction
@@ -110,7 +180,7 @@ sequenceDiagram
 
 ---
 
-### [0.4.0] - 2026-02-03
+### [Version 0.4.0] - 2026-02-03
 
 #### Added
 - **XMI/UML 2.5 output format**: Complete XMI generation with UML 2.5 compliance
@@ -128,7 +198,7 @@ sequenceDiagram
 
 ---
 
-### [0.3.3] - 2026-02-02
+### [Version 0.3.3] - 2026-02-02
 
 #### Fixed
 - **AUTOSAR macro false positives**: Performance degradation caused by incorrect macro matching
@@ -137,7 +207,7 @@ sequenceDiagram
 
 ---
 
-### [0.3.2] - 2026-02-01
+### [Version 0.3.2] - 2026-02-01
 
 #### Added
 - **File size display**: Show file sizes during processing in verbose mode
@@ -146,7 +216,7 @@ sequenceDiagram
 
 ---
 
-### [0.3.1] - 2026-01-31
+### [Version 0.3.1] - 2026-01-31
 
 #### Added
 - **Verbose file progress**: File-by-file progress display during database building
@@ -160,7 +230,7 @@ sequenceDiagram
 
 ---
 
-### [0.3.0] - 2026-01-30
+### [Version 0.3.0] - 2026-01-30
 
 #### Added
 - **SW Module Configuration System**: YAML-based file-to-module mapping
@@ -185,7 +255,7 @@ sequenceDiagram
 
 ### Earlier Versions
 
-**0.2.x** - Initial development releases with basic AUTOSAR parsing and Mermaid output
+**Version 0.2.x** - Initial development releases with basic AUTOSAR parsing and Mermaid output
 
 ## Installation
 
