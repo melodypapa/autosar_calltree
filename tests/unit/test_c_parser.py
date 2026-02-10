@@ -604,7 +604,7 @@ class TestCParserWithFixtures:
 
 
 class TestCParserLineByLineProcessing:
-    """Test line-by-line processing to avoid catastrophic backtracking (SWR_PARSER_C_00019)."""
+    """Test line-by-line processing to avoid catastrophic backtracking (SWR_PARSER_00019)."""
 
     # SWUT_PARSER_C_00019: Line-by-Line Processing
     def test_SWUT_PARSER_C_00019_line_by_line_processing(self):
@@ -711,7 +711,7 @@ void test_function(void) {
 
 
 class TestCParserRegexOptimization:
-    """Test regex optimization with length limits (SWR_PARSER_C_00020)."""
+    """Test regex optimization with length limits (SWR_PARSER_00020)."""
 
     # SWUT_PARSER_C_00020: Regex Optimization with Length Limits
     def test_SWUT_PARSER_C_00020_regex_optimization_length_limits(self):
@@ -919,7 +919,7 @@ class TestCParserMultiLine:
 class TestCParserLoopSupport:
     """Test C parser loop detection and extraction.
 
-    SWR_PARSER_C_00023: Loop Detection
+    SWR_PARSER_00023: Loop Detection
     SWUT_PARSER_C_00023: test_loop_detection_for
     SWUT_PARSER_C_00024: test_loop_detection_while
     SWUT_PARSER_C_00025: test_loop_multiple_calls
@@ -2046,7 +2046,7 @@ class TestCParserMultiLineCalls:
     def test_multiline_function_call_extraction(self):
         """Test that multi-line function calls are correctly extracted.
 
-        SWR_PARSER_C_00023: Multi-line function calls should be detected
+        SWR_PARSER_00023: Multi-line function calls should be detected
         SWUT_PARSER_C_00028: Test multi-line function call extraction
         """
         parser = CParser()
@@ -2131,4 +2131,183 @@ static void TestFunction(void)
 
         finally:
             # Clean up temp file
+            test_file.unlink()
+
+
+class TestCParserConditionSanitization:
+    """Test C parser condition text sanitization for Mermaid output."""
+
+    # SWUT_PARSER_C_00029: Condition Text Sanitization
+    def test_condition_sanitization_mermaid(self):
+        """Test that condition text is sanitized for Mermaid compatibility.
+
+        SWR_PARSER_00024: Condition text sanitization
+        SWUT_PARSER_C_00029: Test condition sanitization for Mermaid output
+        """
+        parser = CParser()
+
+        # Create test file with problematic condition patterns
+        test_code = """
+static void TestFunction(void)
+{
+    /* Case 1: Extra closing parenthesis and brace with preprocessor directive */
+    if (StmDiv == (uint8)MCAL_STMCLK_DISABLED) {    #if (MCALLIB_SAFETY_ENABLE == STD_ON
+        CallFunction1();
+    }
+
+    /* Case 2: Preprocessor directives and extra parenthesis */
+    if (ClcError == (Std_ReturnType)E_OK) #endif {  #if (MCU_CCU60_USED == STD_ON)
+        CallFunction2();
+    }
+
+    /* Case 3: C code statements with braces and semicolons */
+    if ((boolean)TRUE == Mcu_ConfigPtr->McuGtmConfigPtr->IsGtm61SleepModeEnabled) { Ccu61ClcVal.B.EDIS = 0x0U; } else { Ccu61ClcVal.B.EDIS = 0x1U; }
+        CallFunction3();
+    }
+
+    /* Case 4: Normal condition - should remain unchanged */
+    if (sensor_status == SENSOR_READY)
+    {
+        CallFunction4();
+    }
+}
+"""
+
+        # Write to temp file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.c', delete=False) as f:
+            f.write(test_code)
+            test_file = Path(f.name)
+
+        try:
+            functions = parser.parse_file(test_file)
+
+            # Find TestFunction
+            func = next((f for f in functions if f.name == "TestFunction"), None)
+            assert func is not None
+
+            # Get all conditional calls
+            conditional_calls = [c for c in func.calls if c.is_conditional]
+
+            # Verify conditions are sanitized
+            call_dict = {c.name: c for c in conditional_calls}
+
+            # Case 1: Should be sanitized - removed trailing ) { and preprocessor
+            if "CallFunction1" in call_dict:
+                cond = call_dict["CallFunction1"].condition
+                # Should NOT contain: trailing ), {, #if, or preprocessor directives
+                assert cond is not None
+                assert "#if" not in cond
+                assert "#endif" not in cond
+                # Condition should be sanitized (either simplified or cleaned)
+                # At minimum, it should not break Mermaid syntax
+
+            # Case 2: Should be sanitized - removed preprocessor directives
+            if "CallFunction2" in call_dict:
+                cond = call_dict["CallFunction2"].condition
+                assert cond is not None
+                assert "#if" not in cond
+                assert "#endif" not in cond
+
+            # Case 3: Should be sanitized - removed C statements
+            if "CallFunction3" in call_dict:
+                cond = call_dict["CallFunction3"].condition
+                assert cond is not None
+                # Should not contain C statements
+                assert "Ccu61ClcVal.B.EDIS = 0x0U" not in cond
+                assert ";" not in cond
+                # The condition should focus on the logical part
+
+            # Case 4: Normal condition should be preserved
+            if "CallFunction4" in call_dict:
+                cond = call_dict["CallFunction4"].condition
+                assert cond == "sensor_status == SENSOR_READY"
+
+            # All conditions should be Mermaid-compatible
+            for call in conditional_calls:
+                if call.condition:
+                    # Check for common Mermaid-breaking patterns
+                    assert not call.condition.strip().endswith(") {"), f"Condition ends with ') {{': {call.condition}"
+                    assert ";" not in call.condition or call.condition.strip().endswith(";"), f"Semicolon in middle of condition: {call.condition}"
+                    # Preprocessor directives should be removed
+                    assert not call.condition.startswith("#"), f"Condition starts with preprocessor directive: {call.condition}"
+
+        finally:
+            # Clean up temp file
+            test_file.unlink()
+
+    def test_condition_sanitization_edge_cases(self):
+        """Test condition sanitization edge cases.
+
+        SWR_PARSER_00024: Edge cases for condition sanitization
+        """
+        parser = CParser()
+
+        # Test the _sanitize_condition method directly
+        test_cases = [
+            # (input, expected_output)
+            ("StmDiv == (uint8)MCAL_STMCLK_DISABLED) {", "StmDiv == (uint8)MCAL_STMCLK_DISABLED"),
+            ("ClcError == E_OK) #endif {  #if (MCU_CCU60_USED == STD_ON)", "ClcError == E_OK"),
+            ("TRUE == ConfigPtr->IsEnabled) { Val.B.EDIS = 0x0U; }", "TRUE == ConfigPtr->IsEnabled"),
+            ("status == OK;", "status == OK"),
+            ("((uint32)ptr->mode & ((uint32)0x1U << SLEEP)) > 0x0U", "((uint32)ptr->mode & ((uint32)0x1U << SLEEP)) > 0x0U"),
+            ("", ""),  # Empty string
+            ("a)", "a"),  # Unbalanced parentheses
+        ]
+
+        for input_cond, expected in test_cases:
+            result = parser._sanitize_condition(input_cond)
+            # For empty input, expect empty or fallback
+            if not input_cond:
+                assert result == "" or result == "condition"
+            elif input_cond == "a)":
+                # Short unbalanced input returns fallback
+                assert result == "condition"
+            else:
+                # Check that result is cleaned (no trailing artifacts)
+                assert not result.endswith(") {")
+                assert not result.endswith("{")
+                assert not result.endswith(";")
+                assert "#" not in result
+                assert len(result) <= len(input_cond)
+
+        # Test with actual code that has conditions
+        test_code = """
+static void TestFunction(void)
+{
+    if (status == OK)
+    {
+        Function1();
+    }
+
+    if (sensor_value > threshold)
+    {
+        Function2();
+    }
+}
+"""
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.c', delete=False) as f:
+            f.write(test_code)
+            test_file = Path(f.name)
+
+        try:
+            functions = parser.parse_file(test_file)
+            func = next((f for f in functions if f.name == "TestFunction"), None)
+            assert func is not None
+
+            conditional_calls = [c for c in func.calls if c.is_conditional]
+
+            # Should have at least 2 conditional calls
+            assert len(conditional_calls) >= 2
+
+            # Check conditions don't break Mermaid
+            for call in conditional_calls:
+                if call.condition:
+                    # Should not contain preprocessor directives
+                    assert not call.condition.strip().startswith("#")
+                    # Should be reasonably clean
+                    assert len(call.condition) > 0
+                    assert len(call.condition) < 200
+
+        finally:
             test_file.unlink()

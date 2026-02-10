@@ -1,136 +1,107 @@
-# Requirements Documentation Index
+# Requirements Documentation
 
-This directory contains all software requirements for the AUTOSAR Call Tree Analyzer project.
+This directory contains all software requirements for the AUTOSAR Call Tree Analyzer project, organized by Python package structure.
+
+---
 
 ## Overview
 
-| Module | Requirement ID Range | Count | Status | Coverage |
-|--------|---------------------|-------|--------|----------|
-| Models | SWR_MODEL_00001-00025 | 25 | ✅ Complete | 100% |
-| AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 | 15 | ✅ Complete | 97% |
-| C Parser | SWR_PARSER_C_00001-00023 | 23 | ✅ Complete | 87% |
-| Database | SWR_DB_00001-00024 | 24 | ✅ Complete | 80% |
-| Analyzers | SWR_ANALYZER_00001-00020 | 20 | ✅ Complete | 94% |
-| Config | SWR_CONFIG_00001-00010 | 10 | ✅ Complete | 97% |
-| Generators | SWR_GENERATOR_00001-00020 | 20 | ✅ Complete | 96% |
-| CLI | SWR_CLI_00001-00014 | 14 | ✅ Complete | ~90% |
-| End-to-End | SWR_E2E_00001-00025 | 25 | ✅ Complete | ~90% |
-| **Total** | | **186** | **✅ 100% Traceable** | **93%** |
+| Package | File | Requirements | Status |
+|---------|------|--------------|--------|
+| `autosar_calltree.database` | [requirements_database.md](requirements_database.md) | 35 | ✅ Complete |
+| `autosar_calltree.parsers` | [requirements_parsers.md](requirements_parsers.md) | 40 | ✅ Complete |
+| `autosar_calltree.analyzers` | [requirements_analyzers.md](requirements_analyzers.md) | 15 | ✅ Complete |
+| `autosar_calltree.config` | [requirements_config.md](requirements_config.md) | 8 | ✅ Complete |
+| `autosar_calltree.generators` | [requirements_generators.md](requirements_generators.md) | 25 | ✅ Complete |
+| `autosar_calltree.cli` | [requirements_cli.md](requirements_cli.md) | 18 | ✅ Complete |
+| **Total** | **6 files** | **141** | **✅ 100% Traceable** |
 
-## Requirement Documents
+---
 
-### Core Requirements
+## Quick Reference
 
-- **[models.md](models.md)** - Data model requirements (25 requirements)
-  - Function types, parameters, function info
-  - Call tree nodes, circular dependencies
-  - Analysis statistics and results
+### By Package
 
-### Parser Requirements
+**Database** (`requirements_database.md`)
+- Data models (FunctionType, Parameter, FunctionInfo, etc.)
+- Function database (indexing, lookup, caching)
+- pycparser integration
+- Smart function selection
 
-- **[autosar_parser.md](autosar_parser.md)** - AUTOSAR macro parser (15 requirements)
-  - FUNC, FUNC_P2VAR, FUNC_P2CONST macros
-  - VAR, P2VAR, P2CONST, CONST parameters
-  - Parameter extraction and function detection
+**Parsers** (`requirements_parsers.md`)
+- AUTOSAR macro parser
+- Regex-based C parser
+- pycparser-based C parser
+- Hybrid parsing strategy
 
-- **[c_parser.md](c_parser.md)** - Traditional C parser (23 requirements)
-  - Standard C function declarations
-  - Progressive enhancement strategy
-  - Keyword filtering and AST parsing
-  - Loop detection (SWR_PARSER_C_00021)
-  - Multi-line if condition extraction (SWR_PARSER_C_00022)
-  - Multi-line function call extraction (SWR_PARSER_C_00023)
+**Analyzers** (`requirements_analyzers.md`)
+- Call tree builder
+- DFS traversal
+- Cycle detection
+- Statistics collection
 
-### Database Requirements
+**Config** (`requirements_config.md`)
+- Module configuration (YAML)
+- File and pattern mappings
+- Module lookup
 
-- **[function_database.md](function_database.md)** - Function database (24 requirements)
-  - Database initialization and indexing
-  - Smart function lookup strategy
-  - Caching with metadata validation
-  - Module configuration integration
+**Generators** (`requirements_generators.md`)
+- Mermaid sequence diagrams
+- XMI/UML 2.5 documents
+- Opt/alt/loop blocks
+- Function tables
 
-- **[requirements_cache_progress.md](requirements_cache_progress.md)** - Cache loading progress (specific requirements)
-  - File-by-file progress reporting
-  - Cache metadata structure
+**CLI** (`requirements_cli.md`)
+- Command-line interface (Click)
+- Output options
+- Caching control
+- Rich console output
 
-### Analyzer Requirements
+---
 
-- **[call_tree_builder.md](call_tree_builder.md)** - Call tree analyzer (20 requirements)
-  - Depth-first traversal algorithm
-  - Cycle detection and handling
-  - Statistics collection and reporting
+## Requirement ID Scheme
 
-### Configuration Requirements
+**Format**: `SWR_<PACKAGE>_<NUMBER>`
 
-- **[requirements_module_config.md](requirements_module_config.md)** - Module configuration (10 requirements)
-  - YAML configuration loading
-  - File and pattern mappings
-  - Lookup caching and validation
+**Package Codes**:
+- `DB`: Database (models + function_database)
+- `PARSER`: Parsers (autosar + c + c_pycparser)
+- `ANALYZER`: Analyzers (call_tree_builder)
+- `CONFIG`: Config (module_config)
+- `GEN`: Generators (mermaid + xmi)
+- `CLI`: CLI (main)
 
-### Generator Requirements
+**Numbering**: Sequential from 00001
 
-- **[requirements.md](requirements.md)** - Core generator requirements (20 requirements)
-  - Mermaid sequence diagram generation
-  - Function table formatting
-  - Metadata and text tree generation
-
-- **[requirements_mermaid_modules.md](requirements_mermaid_modules.md)** - Module-level diagrams (specific requirements)
-  - SW module name participants
-  - Module column in function tables
-  - Fallback to filename for unmapped files
-
-- **[requirements_parameters.md](requirements_parameters.md)** - Parameter display (specific requirements)
-  - Function parameters on call arrows
-  - Parameter formatting in diagrams
-  - Multiple parameters support
-
-### CLI Requirements
-
-- **[cli.md](cli.md)** - Command-line interface (14 requirements)
-  - Command-line options and arguments
-  - Input validation and error handling
-  - Verbose mode and progress reporting
-
-### End-to-End Requirements
-
-End-to-end requirements are distributed across the above modules and cover:
-- Basic workflow (analysis, cache, statistics)
-- Advanced features (module names, parameters, qualified names)
-- Error conditions and edge cases
-- Performance and usability
+---
 
 ## Traceability
 
-All requirements are traced to tests in the [Traceability Matrix](../TRACEABILITY.md).
+See [TRACEABILITY.md](../TRACEABILITY.md) for the complete traceability matrix linking requirements to test cases.
 
-For detailed test documentation, see [tests/README.md](../tests/README.md).
+---
 
-## Requirement Format
+## Document Structure
 
-Each requirement follows the standard format:
+Each requirements document follows this structure:
 
-```markdown
-### SWR_XXXXX_YYYYY - Requirement Title
+1. **Overview** - Package purpose and structure
+2. **Requirements** - Numbered requirements (SWR_XXXX_NNNNN)
+3. **Summary** - Total count and implementation status
 
-**Priority**: High/Medium/Low
-**Status**: Draft/Approved/Implemented
-**Assigned To**: Developer name
+Each requirement includes:
+- **Purpose**: What the requirement achieves
+- **Implementation**: How it's implemented (file/class/method)
+- **Details**: Specific behaviors, parameters, formats
 
-**Description**:
-Detailed requirement description...
-
-**Acceptance Criteria**:
-- Criteria 1
-- Criteria 2
-
-**Rationale**:
-Business or technical rationale...
-```
+---
 
 ## Change History
 
-| Date | Version | Author | Change Description |
-|------|---------|--------|-------------------|
-| 2026-01-30 | 1.0 | Claude | Initial requirements index with all modules |
-| 2026-01-30 | 1.1 | Claude | Added C Parser requirements for line-by-line processing (SWR_PARSER_C_00019-00020) to prevent catastrophic backtracking |
-| 2026-02-10 | 1.2 | Claude | Added C Parser requirements for loop detection (SWR_PARSER_C_00021), multi-line if conditions (SWR_PARSER_C_00022), and multi-line function calls (SWR_PARSER_C_00023) |
+| Date | Version | Changes |
+|------|---------|---------|
+| 2026-02-10 | 2.0 | **Major reorganization**: Consolidated from 16 files to 6 package-based files. Reduced from 158+ requirements to 141 core requirements by combining similar ones. |
+| 2026-02-10 | 1.3 | Added COMBINED_REQUIREMENTS.md with package organization |
+| 2026-02-10 | 1.2 | Added pycparser integration requirements |
+| 2026-02-04 | 1.1 | Added conditional call tracking requirements |
+| 2026-01-30 | 1.0 | Initial requirements index |

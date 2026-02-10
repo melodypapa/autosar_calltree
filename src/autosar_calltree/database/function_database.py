@@ -24,6 +24,14 @@ from ..parsers.autosar_parser import AutosarParser
 from ..parsers.c_parser import CParser
 from .models import FunctionInfo
 
+# Try to import pycparser-based parser (optional dependency)
+try:
+    from ..parsers.c_parser_pycparser import CParserPyCParser
+    PYCPARSER_AVAILABLE = True
+except ImportError:
+    PYCPARSER_AVAILABLE = False
+    CParserPyCParser = None  # type: ignore
+
 
 def _format_file_size(size_bytes: int) -> str:
     """Format file size in human-readable format."""
@@ -42,6 +50,7 @@ class CacheMetadata:
     created_at: datetime
     source_directory: str
     file_count: int
+    parser_type: str = "regex"  # Track which parser created this cache
     file_checksums: Dict[str, str] = field(default_factory=dict)
 
 
@@ -91,7 +100,15 @@ class FunctionDatabase:
 
         # Parsers
         self.autosar_parser = AutosarParser()
-        self.c_parser = CParser()
+
+        # Use pycparser if available, otherwise fall back to regex-based parser
+        # Type: Union[CParser, CParserPyCParser]
+        if PYCPARSER_AVAILABLE:
+            self.c_parser = CParserPyCParser()  # type: ignore[assignment]
+            self.parser_type = "pycparser"
+        else:
+            self.c_parser = CParser()  # type: ignore[assignment]
+            self.parser_type = "regex"
 
         # Module configuration
         self.module_config = module_config
@@ -115,6 +132,7 @@ class FunctionDatabase:
         """
         if verbose:
             print(f"Scanning source directory: {self.source_dir}")
+            print(f"Using parser: {self.parser_type}")
 
         # Try to load from cache first
         if use_cache and not rebuild_cache:
@@ -174,7 +192,7 @@ class FunctionDatabase:
         Args:
             file_path: Path to source file
         """
-        # Use C parser which handles both traditional C and AUTOSAR via fallback
+        # Use C parser which handles both traditional C and AUTOSAR via pycparser
         functions = self.c_parser.parse_file(file_path)
 
         # Add functions to database
@@ -387,6 +405,8 @@ class FunctionDatabase:
         )
 
         return {
+            "parser_type": self.parser_type,
+            "pycparser_available": PYCPARSER_AVAILABLE,
             "total_files_scanned": self.total_files_scanned,
             "total_functions_found": self.total_functions_found,
             "unique_function_names": len(self.functions),
@@ -428,6 +448,7 @@ class FunctionDatabase:
                 created_at=datetime.now(),
                 source_directory=str(self.source_dir),
                 file_count=self.total_files_scanned,
+                parser_type=self.parser_type,
             )
 
             # Create cache data
@@ -484,6 +505,13 @@ class FunctionDatabase:
             if metadata.source_directory != str(self.source_dir):
                 if verbose:
                     print("Cache invalid: source directory mismatch")
+                return False
+
+            # Check parser type matches (invalidate cache if parser changed)
+            # This ensures consistency when pycparser is installed/uninstalled
+            if hasattr(metadata, "parser_type") and metadata.parser_type != self.parser_type:
+                if verbose:
+                    print(f"Cache invalid: parser type mismatch (cached: {metadata.parser_type}, current: {self.parser_type})")
                 return False
 
             # Load data

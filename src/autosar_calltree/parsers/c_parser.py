@@ -619,8 +619,8 @@ class CParser:
 
         # Analyze function body to track if/else context
         # We'll parse line by line to detect if/else blocks
-        # SWR_PARSER_C_00022: Multi-line If Condition Extraction
-        # SWR_PARSER_C_00023: Loop Detection
+        # SWR_PARSER_00022: Multi-line If Condition Extraction
+        # SWR_PARSER_00023: Loop Detection
         lines = function_body.split("\n")
         in_if_block = False
         in_else_block = False
@@ -664,7 +664,7 @@ class CParser:
                                         condition_part = multiline_condition_buffer[
                                             paren_start + 1 : closing_paren_pos
                                         ]
-                                        current_condition = condition_part.strip()
+                                        current_condition = self._sanitize_condition(condition_part.strip())
                             collecting_multiline_condition = False
                             multiline_condition_buffer = ""
                             multiline_paren_depth = 0
@@ -695,9 +695,9 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = partial_condition
+                            current_condition = self._sanitize_condition(partial_condition)
                     else:
-                        current_condition = condition_candidate
+                        current_condition = self._sanitize_condition(condition_candidate)
                 else:
                     # Check if the line has an opening '(' but no closing ')'
                     # This indicates a multi-line condition
@@ -712,7 +712,7 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = partial_condition
+                            current_condition = self._sanitize_condition(partial_condition)
                     else:
                         # Fallback: try to extract everything between "if" and the first '{'
                         if_start = stripped.find("if")
@@ -723,9 +723,9 @@ class CParser:
                             condition_part = (
                                 condition_part.lstrip("(").rstrip(")").strip()
                             )
-                            current_condition = condition_part
+                            current_condition = self._sanitize_condition(condition_part)
                         else:
-                            current_condition = "condition"
+                            current_condition = self._sanitize_condition("condition")
             elif stripped.startswith("else if") or stripped.startswith("else if("):
                 in_if_block = True
                 # Extract condition from else if statement
@@ -745,9 +745,9 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = partial_condition
+                            current_condition = self._sanitize_condition(partial_condition)
                     else:
-                        current_condition = f"else if {condition_candidate}"
+                        current_condition = self._sanitize_condition(f"else if {condition_candidate}")
                 else:
                     # Check for multi-line else if condition
                     if "(" in stripped and ")" not in stripped:
@@ -761,21 +761,21 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = partial_condition
+                            current_condition = self._sanitize_condition(partial_condition)
                     else:
-                        current_condition = "else if condition"
+                        current_condition = self._sanitize_condition("else if condition")
             elif stripped.startswith("else") and not stripped.startswith("else if"):
                 in_else_block = True
                 current_condition = "else"
 
-            # Track for/while loop blocks - SWR_PARSER_C_00023: Loop Detection
+            # Track for/while loop blocks - SWR_PARSER_00023: Loop Detection
             elif stripped.startswith("for ") or stripped.startswith("for("):
                 in_loop_block = True
                 # Extract condition from for statement
                 # Handle both "for (init; cond; inc)" and "for(init; cond; inc)" formats
                 for_match = re.match(r"for\s*\(\s*[^;]*;\s*(.+?)\s*;\s*", stripped)
                 if for_match:
-                    current_loop_condition = for_match.group(1).strip()
+                    current_loop_condition = self._sanitize_condition(for_match.group(1).strip())
                 else:
                     # Fallback: extract everything between "for" and first ')'
                     for_start = stripped.find("for")
@@ -785,29 +785,29 @@ class CParser:
                         # Split by semicolons and take the middle part (condition)
                         parts = loop_part.split(";")
                         if len(parts) >= 2:
-                            current_loop_condition = parts[1].strip()
+                            current_loop_condition = self._sanitize_condition(parts[1].strip())
                         else:
-                            current_loop_condition = "condition"
+                            current_loop_condition = self._sanitize_condition("condition")
                     else:
-                        current_loop_condition = "condition"
+                        current_loop_condition = self._sanitize_condition("condition")
 
             elif stripped.startswith("while ") or stripped.startswith("while("):
                 in_loop_block = True
                 # Extract condition from while statement
                 while_match = re.match(r"while\s*\(\s*(.+?)\s*\)", stripped)
                 if while_match:
-                    current_loop_condition = while_match.group(1).strip()
+                    current_loop_condition = self._sanitize_condition(while_match.group(1).strip())
                 else:
                     # Fallback: extract everything between "while" and first ')'
                     while_start = stripped.find("while")
                     paren_end = stripped.find(")")
                     if paren_end != -1:
                         condition_part = stripped[while_start + 5 : paren_end].strip()
-                        current_loop_condition = (
+                        current_loop_condition = self._sanitize_condition(
                             condition_part.lstrip("(").rstrip(")").strip()
                         )
                     else:
-                        current_loop_condition = "condition"
+                        current_loop_condition = self._sanitize_condition("condition")
 
             # Track brace depth for nested blocks
             brace_depth += stripped.count("{")
@@ -825,10 +825,10 @@ class CParser:
                 if function_name in self.AUTOSAR_TYPES:
                     continue
 
-                # Check if this call is inside an if/else block - SWR_PARSER_C_00022
+                # Check if this call is inside an if/else block - SWR_PARSER_00022
                 is_conditional = (in_if_block or in_else_block) and brace_depth > 0
 
-                # Check if this call is inside a loop block - SWR_PARSER_C_00023
+                # Check if this call is inside a loop block - SWR_PARSER_00023
                 is_loop = in_loop_block and brace_depth > 0
 
                 # Add to called functions if not already present
@@ -841,7 +841,7 @@ class CParser:
                         existing.is_conditional = True
                         if current_condition and not existing.condition:
                             existing.condition = current_condition
-                    # Update loop status if this occurrence is in a loop - SWR_PARSER_C_00023
+                    # Update loop status if this occurrence is in a loop - SWR_PARSER_00023
                     if is_loop:
                         existing.is_loop = True
                         if current_loop_condition and not existing.loop_condition:
@@ -898,6 +898,80 @@ class CParser:
 
         # Sort by name for consistent output
         return sorted(called_functions, key=lambda fc: fc.name)
+
+    def _sanitize_condition(self, condition: str) -> str:
+        """
+        Sanitize condition text for Mermaid output compatibility.
+
+        SWR_PARSER_00024: Condition Text Sanitization for Mermaid Output
+
+        Removes problematic patterns from condition text:
+        - Extra closing parentheses that create unbalanced parentheses
+        - Preprocessor directives (#if, #endif, #else, #elif, #define)
+        - C code statements (braces, semicolons)
+        - Incomplete expressions at end of line
+
+        Args:
+            condition: Raw condition text extracted from source code
+
+        Returns:
+            Sanitized condition text safe for Mermaid rendering
+        """
+        if not condition:
+            return condition
+
+        sanitized = condition
+
+        # 1. Remove preprocessor directives and everything after them
+        # Patterns like: "condition) #if (FEATURE" or "condition) #endif"
+        preprocessor_patterns = [
+            r'\s*#\s*(if|ifdef|ifndef|elif|else|endif|define)\b.*',
+            r'\s*#.*',  # Any other preprocessor directive
+        ]
+        for pattern in preprocessor_patterns:
+            sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
+
+        # 2. Stop at opening brace - exclude C statements
+        # Patterns like: "condition) { statement;" or "condition) { Value = 1; }"
+        brace_match = re.search(r'\s*\{', sanitized)
+        if brace_match:
+            sanitized = sanitized[:brace_match.start()].strip()
+
+        # 3. Remove trailing semicolons
+        sanitized = sanitized.rstrip(';').strip()
+
+        # 4. Fix unbalanced parentheses by removing extra closing parens
+        # Count opening and closing parentheses
+        open_count = sanitized.count('(')
+        close_count = sanitized.count(')')
+
+        if close_count > open_count:
+            # Remove extra closing parentheses from the end
+            chars = list(sanitized)
+            chars_to_remove = close_count - open_count
+            removed = 0
+            for i in range(len(chars) - 1, -1, -1):
+                if chars[i] == ')' and removed < chars_to_remove:
+                    chars.pop(i)
+                    removed += 1
+            sanitized = ''.join(chars).strip()
+
+        # 5. Remove trailing artifacts like ") {" that might remain
+        # This can happen when the condition includes function call syntax
+        artifacts_to_remove = [') {', '){', ') {', ' )', '( ', '{']
+        for artifact in artifacts_to_remove:
+            sanitized = sanitized.rstrip(artifact).strip()
+
+        # 6. Clean up any remaining whitespace issues
+        sanitized = re.sub(r'\s+', ' ', sanitized)  # Collapse multiple spaces
+        sanitized = sanitized.strip()
+
+        # 7. If after sanitization the condition is empty or too short,
+        # provide a fallback
+        if len(sanitized) < 3:
+            return "condition"
+
+        return sanitized
 
     def parse_function_declaration(self, declaration: str) -> Optional[FunctionInfo]:
         """

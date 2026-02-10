@@ -1272,7 +1272,7 @@ def test_SWUT_GENERATOR_00038_optional_function_mode() -> None:
 def test_SWUT_GENERATOR_00039_loop_block_generation() -> None:
     """Test that loop calls are wrapped in loop blocks.
 
-    SWR_MERMAID_00005: Loop Block Generation
+    SWR_GEN_00005: Loop Block Generation
     """
     root = create_mock_call_tree(
         [
@@ -1302,7 +1302,7 @@ def test_SWUT_GENERATOR_00039_loop_block_generation() -> None:
 def test_SWUT_GENERATOR_00040_multiple_loop_calls() -> None:
     """Test that multiple loop calls each get their own loop block.
 
-    SWR_MERMAID_00005: Multiple Loop Calls
+    SWR_GEN_00005: Multiple Loop Calls
     """
     root = create_mock_call_tree(
         [
@@ -1336,7 +1336,7 @@ def test_SWUT_GENERATOR_00040_multiple_loop_calls() -> None:
 def test_SWUT_GENERATOR_00041_mixed_loop_and_optional() -> None:
     """Test diagram with both loop and optional calls.
 
-    SWR_MERMAID_00005: Mixed Loop and Optional
+    SWR_GEN_00005: Mixed Loop and Optional
     """
     root = create_mock_call_tree(
         [

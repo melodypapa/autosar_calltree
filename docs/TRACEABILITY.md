@@ -8,7 +8,7 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 |--------|-------------|-------|--------|
 | Models | SWR_MODEL_00001-00028 (28) | SWUT_MODEL_00001-00028 (28) | ✅ Complete (100% coverage) |
 | AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 (15) | SWUT_PARSER_AUTOSAR_00001-00015 (15) | ✅ Complete (97% coverage) |
-| C Parser | SWR_PARSER_C_00001-00023 (23) | SWUT_PARSER_C_00001-00028 (28) | ✅ Complete (87% coverage) |
+| C Parser | SWR_PARSER_C_00001-00024 (24) | SWUT_PARSER_C_00001-00029 (29) | ✅ Complete (87% coverage) |
 | Database | SWR_DB_00001-00025 (25) | SWUT_DB_00001-00021 (21) | ✅ Complete (80% coverage) |
 | Analyzers | SWR_ANALYZER_00001-00020 (20) | SWUT_ANALYZER_00001-00020 (20) | ✅ Complete (94% coverage) |
 | Config | SWR_CONFIG_00001-00010 (10) | SWUT_CONFIG_00001-00025 (25) | ✅ Complete (97% coverage) |
@@ -149,13 +149,14 @@ This document traces the mapping between requirements (SWR_*) and tests (SWUT_*)
 
 ## Summary
 
-- **Total Requirements**: 173 requirements across 10 modules
-- **Total Tests**: 309 tests
+- **Total Requirements**: 174 requirements across 10 modules
+- **Total Tests**: 311 tests
 - **Overall Coverage**: 87%
 - **Passing Tests**: 309/309 (100%)
 
 ## Recent Updates
 
+- **2026-02-10**: Added condition text sanitization requirement (SWR_PARSER_C_00024) to fix Mermaid rendering errors caused by extra parentheses, preprocessor directives, and C statements in conditions
 - **2026-02-10**: Added multi-line function call extraction requirement (SWR_PARSER_C_00023) with 1 test (SWUT_PARSER_C_00028)
 - **2026-02-10**: Fixed requirement mappings: SWR_PARSER_C_00021 for loop detection, SWR_PARSER_C_00022 for multi-line if conditions
 - **2026-02-09**: Added loop detection requirements (SWR_PARSER_C_00021) with 4 tests (SWUT_PARSER_C_00023-00026)
