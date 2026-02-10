@@ -353,7 +353,7 @@ void test(void)
             func = next((f for f in functions if f.name == "test"), None)
             assert func is not None
             # The underscore function should be included as a call
-            internal_call = next(
+            next(
                 (fc for fc in func.calls if fc.name == "__internal_func"), None
             )
             # This test verifies the code path where underscore functions are NOT filtered

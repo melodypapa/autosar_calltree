@@ -1562,4 +1562,3 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "`uint32 id`" in params
         assert "`uint8* data`" in params
         assert "<br>" in params
-

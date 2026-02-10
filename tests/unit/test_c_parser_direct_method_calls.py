@@ -13,7 +13,7 @@ class TestCParserDirectMethodCalls:
     """Direct method tests for c_parser.py coverage."""
 
     def test_line_326_328_multiline_backtrack_with_non_type(self):
-        """Test multiline function backtrack with non-type line (lines 326-328).
+        r"""Test multiline function backtrack with non-type line (lines 326-328).
 
         This triggers the else: break branch when prev_line doesn't
         match ^[\w\s\*]+$ pattern.

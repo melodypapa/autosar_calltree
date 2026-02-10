@@ -740,7 +740,7 @@ class TestMultipleDefinitions:
 
         # Mock lookup_function to return both definitions (bypassing _select_best_function_match)
         with patch.object(db, 'lookup_function', return_value=[func1, func2]):
-            result = builder.build_tree("MultiDefFunc", max_depth=2, verbose=True)
+            builder.build_tree("MultiDefFunc", max_depth=2, verbose=True)
 
         output = sys.stdout.getvalue()
         sys.stdout = old_stdout
@@ -765,7 +765,7 @@ class TestVerboseOutputCoverage:
         old_stdout = sys.stdout
         sys.stdout = StringIO()
 
-        result = builder.build_tree("TotallyNonExistentFunction", max_depth=2, verbose=True)
+        builder.build_tree("TotallyNonExistentFunction", max_depth=2, verbose=True)
 
         output = sys.stdout.getvalue()
         sys.stdout = old_stdout
@@ -808,7 +808,7 @@ void func_b(void) {
             old_stdout = sys.stdout
             sys.stdout = StringIO()
 
-            result = builder.build_tree("func_a", max_depth=5, verbose=True)
+            builder.build_tree("func_a", max_depth=5, verbose=True)
 
             output = sys.stdout.getvalue()
             sys.stdout = old_stdout
@@ -842,7 +842,7 @@ void caller(void) {
             old_stdout = sys.stdout
             sys.stdout = StringIO()
 
-            result = builder.build_tree("caller", max_depth=3, verbose=True)
+            builder.build_tree("caller", max_depth=3, verbose=True)
 
             output = sys.stdout.getvalue()
             sys.stdout = old_stdout

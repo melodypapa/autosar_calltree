@@ -1,4 +1,4 @@
-"""Test to cover lines 326-328 in c_parser.py.
+r"""Test to cover lines 326-328 in c_parser.py.
 
 Lines 326-328 are in the multiline function parsing backtrack logic.
 They are triggered when the previous line doesn't match the pattern ^[\w\s\*]+$
@@ -10,7 +10,7 @@ from autosar_calltree.parsers.c_parser import CParser
 
 
 def test_swut_parser_c_line_326_328_multiline_with_non_type_return_line():
-    """Test multiline function where previous line doesn't match type pattern.
+    r"""Test multiline function where previous line doesn't match type pattern.
 
     This tests lines 326-328:
     - Line 326: else:

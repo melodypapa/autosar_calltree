@@ -22,7 +22,7 @@ class TestCParserRemainingLines:
     """Tests for the remaining uncovered lines in c_parser.py."""
 
     def test_line_326_328_multiline_with_non_type_return_type(self):
-        """Test multiline function with struct type (lines 326-328).
+        r"""Test multiline function with struct type (lines 326-328).
 
         This triggers the else: break branch when prev_line
         doesn't match ^[\w\s\*]+$ pattern.
