@@ -1486,7 +1486,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
         # Verify functions exist but have no implementation
         assert func1.name == "test_func"
         assert func2.name == "test_func"
-        assert db.source_dir == "./demo"  # Use db to avoid F841
+        assert db.source_dir.name == "demo"  # Use db to avoid F841
 
     def test_SWUT_DB_00010_smart_lookup_returns_func_info_when_file_matches_line_299(self):
         """Test smart lookup returns func_info when file name matches (line 299)."""
