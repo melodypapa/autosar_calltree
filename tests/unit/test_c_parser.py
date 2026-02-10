@@ -11,8 +11,10 @@ class TestCParserPatterns:
     """Test C parser pattern recognition and filtering."""
 
     # SWUT_PARSER_C_00001: Traditional C Function Pattern Recognition
-    def test_SWUT_PARSER_C_00001_traditional_c_function_pattern(self):
-        """Test that traditional C function patterns are correctly recognized."""
+    def test_traditional_c_function_pattern(self):
+        """SWUT_PARSER_C_00001
+        
+        Test that traditional C function patterns are correctly recognized."""
         parser = CParser()
 
         # Test basic void function
@@ -50,8 +52,10 @@ class TestCParserPatterns:
         assert match.group("inline") == "__inline__"
 
     # SWUT_PARSER_C_00002: C Keyword Filtering
-    def test_SWUT_PARSER_C_00002_c_keyword_filtering(self):
-        """Test that C keywords are properly filtered."""
+    def test_c_keyword_filtering(self):
+        """SWUT_PARSER_C_00002
+        
+        Test that C keywords are properly filtered."""
         parser = CParser()
 
         # Test that C_KEYWORDS set contains expected keywords
@@ -85,8 +89,10 @@ class TestCParserPatterns:
             )
 
     # SWUT_PARSER_C_00003: AUTOSAR Type Filtering
-    def test_SWUT_PARSER_C_00003_autosar_type_filtering(self):
-        """Test that AUTOSAR types are properly filtered."""
+    def test_autosar_type_filtering(self):
+        """SWUT_PARSER_C_00003
+        
+        Test that AUTOSAR types are properly filtered."""
         parser = CParser()
 
         # Test that AUTOSAR_TYPES set contains expected types
@@ -106,8 +112,10 @@ class TestCParserPatterns:
         assert "StatusType" in parser.AUTOSAR_TYPES
 
     # SWUT_PARSER_C_00016: Preprocessor Directive Filtering
-    def test_SWUT_PARSER_C_00016_preprocessor_directive_filtering(self):
-        """Test that preprocessor directives are filtered out."""
+    def test_preprocessor_directive_filtering(self):
+        """SWUT_PARSER_C_00016
+        
+        Test that preprocessor directives are filtered out."""
         parser = CParser()
 
         # Test preprocessor directive pattern
@@ -122,8 +130,10 @@ class TestCParserParsing:
     """Test C parser functionality."""
 
     # SWUT_PARSER_C_00004: File-Level Parsing
-    def test_SWUT_PARSER_C_00004_file_level_parsing(self):
-        """Test parse_file method with traditional C file."""
+    def test_file_level_parsing(self):
+        """SWUT_PARSER_C_00004
+        
+        Test parse_file method with traditional C file."""
         parser = CParser()
         fixture_path = (
             Path(__file__).parent.parent
@@ -152,8 +162,10 @@ class TestCParserParsing:
         assert internal_func.is_static is True
 
     # SWUT_PARSER_C_00005: Comment Removal
-    def test_SWUT_PARSER_C_00005_comment_removal(self):
-        """Test that comments are removed before parsing."""
+    def test_comment_removal(self):
+        """SWUT_PARSER_C_00005
+        
+        Test that comments are removed before parsing."""
         parser = CParser()
 
         # Test multi-line comment removal
@@ -178,8 +190,10 @@ class TestCParserParsing:
         assert "real_function" in cleaned
 
     # SWUT_PARSER_C_00006: Parameter String Parsing
-    def test_SWUT_PARSER_C_00006_parameter_string_parsing(self):
-        """Test traditional C parameter parsing."""
+    def test_parameter_string_parsing(self):
+        """SWUT_PARSER_C_00006
+        
+        Test traditional C parameter parsing."""
         parser = CParser()
 
         # Test void parameter
@@ -221,8 +235,10 @@ class TestCParserParsing:
         assert params[2].name == "param3"
 
     # SWUT_PARSER_C_00007: Smart Split for Parameters
-    def test_SWUT_PARSER_C_00007_smart_split_parameters(self):
-        """Test smart split method respecting nested delimiters."""
+    def test_smart_split_parameters(self):
+        """SWUT_PARSER_C_00007
+        
+        Test smart split method respecting nested delimiters."""
         parser = CParser()
 
         # Test simple splitting
@@ -248,8 +264,10 @@ class TestCParserParsing:
         assert len(parts) == 3
 
     # SWUT_PARSER_C_00008: Function Body Extraction
-    def test_SWUT_PARSER_C_00008_function_body_extraction(self):
-        """Test function body extraction from source code."""
+    def test_function_body_extraction(self):
+        """SWUT_PARSER_C_00008
+        
+        Test function body extraction from source code."""
         parser = CParser()
 
         # Test simple function body
@@ -281,8 +299,10 @@ class TestCParserParsing:
         assert body is None
 
     # SWUT_PARSER_C_00009: Function Call Extraction
-    def test_SWUT_PARSER_C_00009_function_call_extraction(self):
-        """Test function call extraction from function bodies."""
+    def test_function_call_extraction(self):
+        """SWUT_PARSER_C_00009
+        
+        Test function call extraction from function bodies."""
         parser = CParser()
 
         # Test simple function calls
@@ -333,8 +353,10 @@ class TestCParserParsing:
         assert call_names.count("helper") == 1  # Should be deduplicated
 
     # SWUT_PARSER_C_00010: Function Match Parsing
-    def test_SWUT_PARSER_C_00010_function_match_parsing(self):
-        """Test complete function match parsing."""
+    def test_function_match_parsing(self):
+        """SWUT_PARSER_C_00010
+        
+        Test complete function match parsing."""
         parser = CParser()
         content = "void simple_function(void)\n{\n    return;\n}\n"
         match = parser.function_pattern.search(content)
@@ -351,8 +373,10 @@ class TestCParserParsing:
             assert len(result.parameters) == 0
 
     # SWUT_PARSER_C_00011: Static Function Detection
-    def test_SWUT_PARSER_C_00011_static_function_detection(self):
-        """Test that static keyword is detected and is_static flag is set."""
+    def test_static_function_detection(self):
+        """SWUT_PARSER_C_00011
+        
+        Test that static keyword is detected and is_static flag is set."""
         parser = CParser()
         fixture_path = (
             Path(__file__).parent.parent
@@ -378,8 +402,10 @@ class TestCParserParsing:
         assert non_static_func.is_static is False
 
     # SWUT_PARSER_C_00012: Line Number Calculation
-    def test_SWUT_PARSER_C_00012_line_number_calculation(self):
-        """Test that line numbers are calculated correctly."""
+    def test_line_number_calculation(self):
+        """SWUT_PARSER_C_00012
+        
+        Test that line numbers are calculated correctly."""
         parser = CParser()
 
         # Single line file
@@ -399,8 +425,10 @@ class TestCParserParsing:
             assert result.line_number == 3
 
     # SWUT_PARSER_C_00013: Progressive Enhancement Strategy
-    def test_SWUT_PARSER_C_00013_progressive_enhancement_strategy(self):
-        """Test that AUTOSAR parsing is tried first, then traditional C."""
+    def test_progressive_enhancement_strategy(self):
+        """SWUT_PARSER_C_00013
+        
+        Test that AUTOSAR parsing is tried first, then traditional C."""
         parser = CParser()
 
         # Test with demo file that has AUTOSAR functions
@@ -419,8 +447,10 @@ class TestCParserParsing:
             assert demo_init.function_type == FunctionType.AUTOSAR_FUNC
 
     # SWUT_PARSER_C_00014: AUTOSAR Parser Integration
-    def test_SWUT_PARSER_C_00014_autosar_parser_integration(self):
-        """Test that C parser integrates with AutosarParser."""
+    def test_autosar_parser_integration(self):
+        """SWUT_PARSER_C_00014
+        
+        Test that C parser integrates with AutosarParser."""
         parser = CParser()
 
         # Check that AutosarParser is instantiated
@@ -434,8 +464,10 @@ class TestCParserParsing:
         assert parser.autosar_parser.is_autosar_function(c_line) is False
 
     # SWUT_PARSER_C_00015: Single Declaration Parsing
-    def test_SWUT_PARSER_C_00015_single_declaration_parsing(self):
-        """Test parse_function_declaration method."""
+    def test_single_declaration_parsing(self):
+        """SWUT_PARSER_C_00015
+        
+        Test parse_function_declaration method."""
         parser = CParser()
 
         # Test valid declaration
@@ -453,8 +485,10 @@ class TestCParserParsing:
         assert result is None
 
     # SWUT_PARSER_C_00017: Pointer Parameter Detection
-    def test_SWUT_PARSER_C_00017_pointer_parameter_detection(self):
-        """Test that pointer parameters are detected correctly."""
+    def test_pointer_parameter_detection(self):
+        """SWUT_PARSER_C_00017
+        
+        Test that pointer parameters are detected correctly."""
         parser = CParser()
 
         # Test single pointer
@@ -482,8 +516,10 @@ class TestCParserParsing:
         assert params[0].param_type == "uint32"
 
     # SWUT_PARSER_C_00018: FunctionInfo Creation for C Functions
-    def test_SWUT_PARSER_C_00018_functioninfo_creation_c_functions(self):
-        """Test that FunctionInfo objects are created correctly for C functions."""
+    def test_functioninfo_creation_c_functions(self):
+        """SWUT_PARSER_C_00018
+        
+        Test that FunctionInfo objects are created correctly for C functions."""
         parser = CParser()
         content = (
             "static uint32 process_value(uint8 input)\n{\n    return input * 2;\n}\n"
@@ -604,11 +640,13 @@ class TestCParserWithFixtures:
 
 
 class TestCParserLineByLineProcessing:
-    """Test line-by-line processing to avoid catastrophic backtracking (SWR_PARSER_00019)."""
+    """Test line-by-line processing to avoid catastrophic backtracking (SWR_PARSER_C_00019)."""
 
     # SWUT_PARSER_C_00019: Line-by-Line Processing
-    def test_SWUT_PARSER_C_00019_line_by_line_processing(self):
-        """Test that parser processes content line-by-line to avoid catastrophic backtracking."""
+    def test_line_by_line_processing(self):
+        """SWUT_PARSER_C_00019
+        
+        Test that parser processes content line-by-line to avoid catastrophic backtracking."""
         parser = CParser()
 
         # Create content with multiple functions on different lines
@@ -645,8 +683,10 @@ inline void func3(void) {
         finally:
             temp_path.unlink()
 
-    def test_SWUT_PARSER_C_00019_filters_non_function_lines(self):
-        """Test that line-by-line processing filters lines without function patterns."""
+    def test_filters_non_function_lines(self):
+        """SWUT_PARSER_C_00019
+        
+        Test that line-by-line processing filters lines without function patterns."""
         parser = CParser()
 
         # Content with lines that don't look like functions
@@ -678,8 +718,10 @@ int variable = 42;
         finally:
             temp_path.unlink()
 
-    def test_SWUT_PARSER_C_00019_tracks_position_offsets(self):
-        """Test that AdjustedMatch correctly tracks position offsets."""
+    def test_tracks_position_offsets(self):
+        """SWUT_PARSER_C_00019
+        
+        Test that AdjustedMatch correctly tracks position offsets."""
         parser = CParser()
 
         # Multi-line content to test offset tracking
@@ -711,11 +753,13 @@ void test_function(void) {
 
 
 class TestCParserRegexOptimization:
-    """Test regex optimization with length limits (SWR_PARSER_00020)."""
+    """Test regex optimization with length limits (SWR_PARSER_C_00020)."""
 
     # SWUT_PARSER_C_00020: Regex Optimization with Length Limits
-    def test_SWUT_PARSER_C_00020_regex_optimization_length_limits(self):
-        """Test that regex patterns have length limits to prevent catastrophic backtracking."""
+    def test_regex_optimization_length_limits(self):
+        """SWUT_PARSER_C_00020
+        
+        Test that regex patterns have length limits to prevent catastrophic backtracking."""
         parser = CParser()
 
         # Test that pattern matches valid function declarations
@@ -730,8 +774,10 @@ class TestCParserRegexOptimization:
             match = parser.function_pattern.match(line)
             assert match is not None, f"Should match: {line}"
 
-    def test_SWUT_PARSER_C_00020_rejects_extremely_long_identifiers(self):
-        """Test that pattern rejects identifiers beyond reasonable length."""
+    def test_rejects_extremely_long_identifiers(self):
+        """SWUT_PARSER_C_00020
+        
+        Test that pattern rejects identifiers beyond reasonable length."""
         parser = CParser()
 
         # Create an identifier longer than the pattern limit (50 chars)
@@ -744,8 +790,10 @@ class TestCParserRegexOptimization:
         # (function_name pattern is limited to {1,50} characters)
         assert match is None
 
-    def test_SWUT_PARSER_C_00020_rejects_extremely_long_return_types(self):
-        """Test that pattern rejects return types beyond reasonable length."""
+    def test_rejects_extremely_long_return_types(self):
+        """SWUT_PARSER_C_00020
+        
+        Test that pattern rejects return types beyond reasonable length."""
         parser = CParser()
 
         # Create a return type longer than the pattern limit (100 chars)
@@ -758,8 +806,10 @@ class TestCParserRegexOptimization:
         # (return_type pattern is limited to {1,100} characters)
         assert match is None
 
-    def test_SWUT_PARSER_C_00020_handles_complex_parameters(self):
-        """Test that pattern handles complex parameter lists within limits."""
+    def test_handles_complex_parameters(self):
+        """SWUT_PARSER_C_00020
+        
+        Test that pattern handles complex parameter lists within limits."""
         parser = CParser()
 
         # Test with complex but valid parameters
@@ -770,8 +820,10 @@ class TestCParserRegexOptimization:
         assert match is not None
         assert match.group("function_name") == "func"
 
-    def test_SWUT_PARSER_C_00020_no_catastrophic_backtracking(self):
-        """Test that parser doesn't exhibit catastrophic backtracking on large files."""
+    def test_no_catastrophic_backtracking(self):
+        """SWUT_PARSER_C_00020
+        
+        Test that parser doesn't exhibit catastrophic backtracking on large files."""
         import tempfile
         import time
 
@@ -809,8 +861,10 @@ class TestCParserMultiLine:
     """Test C parser multi-line support."""
 
     # SWUT_PARSER_C_00021: Multi-line Function Prototype Recognition
-    def test_SWUT_PARSER_C_00021_multiline_function_prototype(self):
-        """Test that multi-line function prototypes are correctly recognized."""
+    def test_multiline_function_prototype(self):
+        """SWUT_PARSER_C_00021
+        
+        Test that multi-line function prototypes are correctly recognized."""
         parser = CParser()
         fixture_path = (
             Path(__file__).parent.parent
@@ -860,8 +914,10 @@ class TestCParserMultiLine:
         assert len(multiline_cond.parameters) == 2
 
     # SWUT_PARSER_C_00022: Multi-line If Condition Extraction
-    def test_SWUT_PARSER_C_00022_multiline_if_condition(self):
-        """Test that multi-line if conditions are correctly extracted."""
+    def test_multiline_if_condition(self):
+        """SWUT_PARSER_C_00022
+        
+        Test that multi-line if conditions are correctly extracted."""
         parser = CParser()
         fixture_path = (
             Path(__file__).parent.parent
@@ -919,7 +975,7 @@ class TestCParserMultiLine:
 class TestCParserLoopSupport:
     """Test C parser loop detection and extraction.
 
-    SWR_PARSER_00023: Loop Detection
+    SWR_PARSER_C_00023: Loop Detection
     SWUT_PARSER_C_00023: test_loop_detection_for
     SWUT_PARSER_C_00024: test_loop_detection_while
     SWUT_PARSER_C_00025: test_loop_multiple_calls
@@ -1072,8 +1128,10 @@ class TestCParserEdgeCases:
     """Test C parser edge cases and error handling."""
 
     # SWUT_PARSER_C_00027: File Read Error Handling
-    def test_SWUT_PARSER_C_00027_file_read_error_handling(self):
-        """Test that parser handles file read errors gracefully."""
+    def test_file_read_error_handling(self):
+        """SWUT_PARSER_C_00027
+        
+        Test that parser handles file read errors gracefully."""
         parser = CParser()
 
         # Test with non-existent file
@@ -1087,8 +1145,10 @@ class TestCParserEdgeCases:
         assert functions == []
 
     # SWUT_PARSER_C_00028: Count Multiline Lines Without Closing Paren
-    def test_SWUT_PARSER_C_00028_count_multiline_lines_without_closing_paren(self):
-        """Test that _count_multiline_lines returns line count even without closing paren."""
+    def test_count_multiline_lines_without_closing_paren(self):
+        """SWUT_PARSER_C_00028
+        
+        Test that _count_multiline_lines returns line count even without closing paren."""
         parser = CParser()
 
         # Test with lines that never have a closing paren
@@ -1097,8 +1157,10 @@ class TestCParserEdgeCases:
         assert count == 3  # Should return total line count
 
     # SWUT_PARSER_C_00029: Try Parse Multiline Function Without Closing Paren
-    def test_SWUT_PARSER_C_00029_try_parse_multiline_without_closing_paren(self):
-        """Test that _try_parse_multiline_function returns None without closing paren."""
+    def test_try_parse_multiline_without_closing_paren(self):
+        """SWUT_PARSER_C_00029
+        
+        Test that _try_parse_multiline_function returns None without closing paren."""
         parser = CParser()
         content = "uint32 long_return_type\nvoid function_name(\n"
         lines = content.split("\n")
@@ -1109,8 +1171,10 @@ class TestCParserEdgeCases:
         assert result is None
 
     # SWUT_PARSER_C_00030: Parse Function Match with Preprocessor Directive
-    def test_SWUT_PARSER_C_00030_parse_function_match_preprocessor_directive(self):
-        """Test that preprocessor directives are filtered out."""
+    def test_parse_function_match_preprocessor_directive(self):
+        """SWUT_PARSER_C_00030
+        
+        Test that preprocessor directives are filtered out."""
         parser = CParser()
 
         # Test with #define
@@ -1128,8 +1192,10 @@ class TestCParserEdgeCases:
             assert result is None
 
     # SWUT_PARSER_C_00031: Parse Function Match with C Keyword Return Type
-    def test_SWUT_PARSER_C_00031_parse_function_match_c_keyword_return_type(self):
-        """Test that functions with C keyword return types are filtered out."""
+    def test_parse_function_match_c_keyword_return_type(self):
+        """SWUT_PARSER_C_00031
+        
+        Test that functions with C keyword return types are filtered out."""
         parser = CParser()
 
         # Test with 'if' as return type (shouldn't match pattern, but if it does)
@@ -1140,8 +1206,10 @@ class TestCParserEdgeCases:
             assert result is None
 
     # SWUT_PARSER_C_00032: Parse Function Match with C Keyword Function Name
-    def test_SWUT_PARSER_C_00032_parse_function_match_c_keyword_function_name(self):
-        """Test that functions with C keyword names are filtered out."""
+    def test_parse_function_match_c_keyword_function_name(self):
+        """SWUT_PARSER_C_00032
+        
+        Test that functions with C keyword names are filtered out."""
         parser = CParser()
 
         # Test with 'while' as function name
@@ -1159,8 +1227,10 @@ class TestCParserEdgeCases:
             assert result is None
 
     # SWUT_PARSER_C_00033: Parse Function Match with AUTOSAR Macro
-    def test_SWUT_PARSER_C_00033_parse_function_match_autosar_macro(self):
-        """Test that AUTOSAR macros are filtered out."""
+    def test_parse_function_match_autosar_macro(self):
+        """SWUT_PARSER_C_00033
+        
+        Test that AUTOSAR macros are filtered out."""
         parser = CParser()
 
         # Test with UINT32_C macro
@@ -1178,8 +1248,10 @@ class TestCParserEdgeCases:
             assert result is None
 
     # SWUT_PARSER_C_00034: Parse Function Match with _C Suffix
-    def test_SWUT_PARSER_C_00034_parse_function_match_c_suffix(self):
-        """Test that functions ending with _C are filtered out."""
+    def test_parse_function_match_c_suffix(self):
+        """SWUT_PARSER_C_00034
+        
+        Test that functions ending with _C are filtered out."""
         parser = CParser()
 
         # Test with INT8_C
@@ -1197,8 +1269,10 @@ class TestCParserEdgeCases:
             assert result is None
 
     # SWUT_PARSER_C_00035: Parse Function Match with Control Structure Name
-    def test_SWUT_PARSER_C_00035_parse_function_match_control_structure_name(self):
-        """Test that control structure names are filtered out."""
+    def test_parse_function_match_control_structure_name(self):
+        """SWUT_PARSER_C_00035
+        
+        Test that control structure names are filtered out."""
         parser = CParser()
 
         # Test with 'switch'
@@ -1219,8 +1293,10 @@ class TestCParserEdgeCases:
 class TestCParserMissingLinesCoverage:
     """Tests to cover missing lines in c_parser.py (66 lines)."""
 
-    def test_SWUT_PARSER_C_00036_parse_function_match_backtrack_logic_lines_326_328(self):
-        """Test _parse_function_match backtrack logic (lines 326-328)."""
+    def test_parse_function_match_backtrack_logic_lines_326_328(self):
+        """SWUT_PARSER_C_00036
+        
+        Test _parse_function_match backtrack logic (lines 326-328)."""
         parser = CParser()
 
         # Create a multiline function declaration
@@ -1241,8 +1317,10 @@ TestFunction
             # Should parse the multiline function
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00037_parse_function_match_skip_macro_line_440(self):
-        """Test _parse_function_match skips macros (line 440)."""
+    def test_parse_function_match_skip_macro_line_440(self):
+        """SWUT_PARSER_C_00037
+        
+        Test _parse_function_match skips macros (line 440)."""
         parser = CParser()
 
         # Test with macro (starts with #)
@@ -1252,8 +1330,10 @@ TestFunction
             result = parser._parse_function_match(match, line, Path("test.c"))
             assert result is None
 
-    def test_SWUT_PARSER_C_00038_parse_function_match_skip_control_structures_line_458(self):
-        """Test _parse_function_match skips control structures (line 458)."""
+    def test_parse_function_match_skip_control_structures_line_458(self):
+        """SWUT_PARSER_C_00038
+        
+        Test _parse_function_match skips control structures (line 458)."""
         parser = CParser()
 
         # Test with control structure names
@@ -1264,8 +1344,10 @@ TestFunction
                 result = parser._parse_function_match(match, line, Path("test.c"))
                 assert result is None
 
-    def test_SWUT_PARSER_C_00039_parse_parameters_empty_param_line_513(self):
-        """Test _parse_parameters skips empty parameters (line 513)."""
+    def test_parse_parameters_empty_param_line_513(self):
+        """SWUT_PARSER_C_00039
+        
+        Test _parse_parameters skips empty parameters (line 513)."""
         parser = CParser()
 
         # Test with empty parameter string
@@ -1274,8 +1356,10 @@ TestFunction
         # Should return empty list
         assert len(params) == 0
 
-    def test_SWUT_PARSER_C_00040_parse_file_handles_syntax_errors_line_674(self):
-        """Test parse_file handles syntax errors gracefully (line 674)."""
+    def test_parse_file_handles_syntax_errors_line_674(self):
+        """SWUT_PARSER_C_00040
+        
+        Test parse_file handles syntax errors gracefully (line 674)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1288,8 +1372,10 @@ TestFunction
             # May return empty list or partial results
             assert isinstance(functions, list)
 
-    def test_SWUT_PARSER_C_00041_parse_file_tracks_if_context_lines_718_728(self):
-        """Test parse_file tracks if context (lines 718-728)."""
+    def test_parse_file_tracks_if_context_lines_718_728(self):
+        """SWUT_PARSER_C_00041
+        
+        Test parse_file tracks if context (lines 718-728)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1308,8 +1394,10 @@ void test(void) {
             # Should parse the function
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00042_parse_file_tracks_else_if_lines_730_766(self):
-        """Test parse_file tracks else if (lines 730-766)."""
+    def test_parse_file_tracks_else_if_lines_730_766(self):
+        """SWUT_PARSER_C_00042
+        
+        Test parse_file tracks else if (lines 730-766)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1327,8 +1415,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00043_parse_file_tracks_else_lines_768_769(self):
-        """Test parse_file tracks else (lines 768-769)."""
+    def test_parse_file_tracks_else_lines_768_769(self):
+        """SWUT_PARSER_C_00043
+        
+        Test parse_file tracks else (lines 768-769)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1346,8 +1436,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00044_parse_file_tracks_loops_lines_781_792(self):
-        """Test parse_file tracks for/while loops (lines 781-792)."""
+    def test_parse_file_tracks_loops_lines_781_792(self):
+        """SWUT_PARSER_C_00044
+        
+        Test parse_file tracks for/while loops (lines 781-792)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1363,8 +1455,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00045_parse_file_handles_nested_parens_lines_802_810(self):
-        """Test parse_file handles nested parentheses (lines 802-810)."""
+    def test_parse_file_handles_nested_parens_lines_802_810(self):
+        """SWUT_PARSER_C_00045
+        
+        Test parse_file handles nested parentheses (lines 802-810)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1380,8 +1474,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00046_parse_file_else_block_handling_lines_826_843(self):
-        """Test parse_file else block handling (lines 826, 841-843)."""
+    def test_parse_file_else_block_handling_lines_826_843(self):
+        """SWUT_PARSER_C_00046
+        
+        Test parse_file else block handling (lines 826, 841-843)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1399,8 +1495,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00047_parse_file_nested_blocks_lines_846_848(self):
-        """Test parse_file nested block handling (lines 846-848)."""
+    def test_parse_file_nested_blocks_lines_846_848(self):
+        """SWUT_PARSER_C_00047
+        
+        Test parse_file nested block handling (lines 846-848)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1418,8 +1516,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00048_parse_file_no_conditional_lines_873_875(self):
-        """Test parse_file with no conditional keyword (lines 873-875)."""
+    def test_parse_file_no_conditional_lines_873_875(self):
+        """SWUT_PARSER_C_00048
+        
+        Test parse_file with no conditional keyword (lines 873-875)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1434,8 +1534,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00049_parse_file_other_keywords_lines_877_881(self):
-        """Test parse_file with other keywords (lines 877-881)."""
+    def test_parse_file_other_keywords_lines_877_881(self):
+        """SWUT_PARSER_C_00049
+        
+        Test parse_file with other keywords (lines 877-881)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1449,8 +1551,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00050_parse_file_autosar_function_parsing_lines_158_180(self):
-        """Test parse_file parses AUTOSAR functions and extracts calls (lines 158-180)."""
+    def test_parse_file_autosar_function_parsing_lines_158_180(self):
+        """SWUT_PARSER_C_00050
+        
+        Test parse_file parses AUTOSAR functions and extracts calls (lines 158-180)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1484,8 +1588,10 @@ FUNC(uint32, RTE_CODE) AUTOSAR_GetValue(VAR(uint8, AUTOMATIC) param)
             assert "Helper1" in call_names
             assert "Helper2" in call_names
 
-    def test_SWUT_PARSER_C_00051_parse_file_autosar_line_start_lines_162_166(self):
-        """Test parse_file finds line start for AUTOSAR functions (lines 162-166)."""
+    def test_parse_file_autosar_line_start_lines_162_166(self):
+        """SWUT_PARSER_C_00051
+        
+        Test parse_file finds line start for AUTOSAR functions (lines 162-166)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1505,8 +1611,10 @@ FUNC(void, RTE_CODE) AUTOSAR_Function(void)
             func = functions[0]
             assert func.name == "AUTOSAR_Function"
 
-    def test_SWUT_PARSER_C_00052_parse_file_autosar_function_body_lines_168_176(self):
-        """Test parse_file extracts function body for AUTOSAR functions (lines 168-176)."""
+    def test_parse_file_autosar_function_body_lines_168_176(self):
+        """SWUT_PARSER_C_00052
+        
+        Test parse_file extracts function body for AUTOSAR functions (lines 168-176)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1526,8 +1634,10 @@ FUNC(void, RTE_CODE) AUTOSAR_WithBody(void)
             assert len(func.calls) >= 1
             assert func.calls[0].name == "InnerFunction"
 
-    def test_SWUT_PARSER_C_00053_parse_file_autosar_with_calls_lines_177_179(self):
-        """Test parse_file extracts function calls from AUTOSAR function body (lines 177-179)."""
+    def test_parse_file_autosar_with_calls_lines_177_179(self):
+        """SWUT_PARSER_C_00053
+        
+        Test parse_file extracts function calls from AUTOSAR function body (lines 177-179)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1552,8 +1662,10 @@ FUNC(void, RTE_CODE) AUTOSAR_Complex(void)
             assert "Function2" in call_names
             assert "Function3" in call_names
 
-    def test_SWUT_PARSER_C_00054_parse_file_multiline_return_type_backtrack_lines_326_328(self):
-        """Test multiline function with return type on separate line triggers backtrack (lines 326-328)."""
+    def test_parse_file_multiline_return_type_backtrack_lines_326_328(self):
+        """SWUT_PARSER_C_00054
+        
+        Test multiline function with return type on separate line triggers backtrack (lines 326-328)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1578,8 +1690,10 @@ TestFunction
             assert len(func.parameters) == 1
             assert func.parameters[0].name == "param"
 
-    def test_SWUT_PARSER_C_00068_parse_file_multiline_function_with_comments_lines_326_328(self):
-        """Test multiline function with return type separated by comments (lines 326-328)."""
+    def test_parse_file_multiline_function_with_comments_lines_326_328(self):
+        """SWUT_PARSER_C_00068
+        
+        Test multiline function with return type separated by comments (lines 326-328)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1603,8 +1717,10 @@ MultilineFunction(uint8 param1, uint16 param2)
             assert func.return_type == "uint32"
             assert len(func.parameters) == 2
 
-    def test_SWUT_PARSER_C_00069_parse_file_multiline_no_body_lines_674(self):
-        """Test parse_file with function that has no body (line 674)."""
+    def test_parse_file_multiline_no_body_lines_674(self):
+        """SWUT_PARSER_C_00069
+        
+        Test parse_file with function that has no body (line 674)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1618,8 +1734,10 @@ uint32 no_body_function(uint8 param);
             functions = parser.parse_file(test_file)
             assert len(functions) >= 0
 
-    def test_SWUT_PARSER_C_00070_parse_file_complex_if_conditions_lines_718_728(self):
-        """Test parse_file with complex if conditions (lines 718-728)."""
+    def test_parse_file_complex_if_conditions_lines_718_728(self):
+        """SWUT_PARSER_C_00070
+        
+        Test parse_file with complex if conditions (lines 718-728)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1642,8 +1760,10 @@ void test(void) {
             assert "func1" in call_names
             assert "func2" in call_names
 
-    def test_SWUT_PARSER_C_00071_parse_file_if_without_closing_paren_lines_730_766(self):
-        """Test parse_file with if that has unclosed paren (lines 730-766)."""
+    def test_parse_file_if_without_closing_paren_lines_730_766(self):
+        """SWUT_PARSER_C_00071
+        
+        Test parse_file with if that has unclosed paren (lines 730-766)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1659,8 +1779,10 @@ void test(void) {
             functions = parser.parse_file(test_file)
             assert len(functions) >= 1
 
-    def test_SWUT_PARSER_C_00072_parse_file_nested_conditions_lines_802_810(self):
-        """Test parse_file with nested conditions (lines 802-810)."""
+    def test_parse_file_nested_conditions_lines_802_810(self):
+        """SWUT_PARSER_C_00072
+        
+        Test parse_file with nested conditions (lines 802-810)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1679,8 +1801,10 @@ void test(void) {
             call_names = [c.name for c in func.calls]
             assert "nested_func" in call_names
 
-    def test_SWUT_PARSER_C_00073_parse_file_function_keywords_lines_875_881(self):
-        """Test parse_file handles function-like keywords (lines 875-881)."""
+    def test_parse_file_function_keywords_lines_875_881(self):
+        """SWUT_PARSER_C_00073
+        
+        Test parse_file handles function-like keywords (lines 875-881)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1700,8 +1824,10 @@ void test(void) {
             assert "sizeof" not in call_names
             assert "cast_func" in call_names
 
-    def test_SWUT_PARSER_C_00055_parse_parameters_with_empty_params_lines_513_515(self):
-        """Test _parse_parameters with empty parameter list (lines 513-515)."""
+    def test_parse_parameters_with_empty_params_lines_513_515(self):
+        """SWUT_PARSER_C_00055
+        
+        Test _parse_parameters with empty parameter list (lines 513-515)."""
         parser = CParser()
 
         # Test with empty string
@@ -1712,8 +1838,10 @@ void test(void) {
         params = parser._parse_parameters("   ")
         assert len(params) == 0
 
-    def test_SWUT_PARSER_C_00056_parse_parameters_skip_empty_parts_line_513(self):
-        """Test _parse_parameters skips empty parts (line 513)."""
+    def test_parse_parameters_skip_empty_parts_line_513(self):
+        """SWUT_PARSER_C_00056
+        
+        Test _parse_parameters skips empty parts (line 513)."""
         parser = CParser()
 
         # Test with extra commas
@@ -1722,8 +1850,10 @@ void test(void) {
         assert params[0].name == "a"
         assert params[1].name == "b"
 
-    def test_SWUT_PARSER_C_00057_parse_file_if_else_elseif_lines_718_769(self):
-        """Test parse_file with if, else if, and else (lines 718-769)."""
+    def test_parse_file_if_else_elseif_lines_718_769(self):
+        """SWUT_PARSER_C_00057
+        
+        Test parse_file with if, else if, and else (lines 718-769)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1754,8 +1884,10 @@ void test(void) {
             for call in func.calls:
                 assert call.is_conditional is True
 
-    def test_SWUT_PARSER_C_00058_parse_file_for_while_loops_lines_781_792(self):
-        """Test parse_file with for and while loops (lines 781-792)."""
+    def test_parse_file_for_while_loops_lines_781_792(self):
+        """SWUT_PARSER_C_00058
+        
+        Test parse_file with for and while loops (lines 781-792)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1791,8 +1923,10 @@ void test(void) {
             assert loop2_call.is_loop is True
             assert loop2_call.loop_condition == "j < 20"
 
-    def test_SWUT_PARSER_C_00059_parse_file_nested_parens_lines_802_810(self):
-        """Test parse_file with nested parentheses (lines 802-810)."""
+    def test_parse_file_nested_parens_lines_802_810(self):
+        """SWUT_PARSER_C_00059
+        
+        Test parse_file with nested parentheses (lines 802-810)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1817,8 +1951,10 @@ void test(void) {
             assert nested_call is not None
             assert nested_call.is_conditional is True
 
-    def test_SWUT_PARSER_C_00060_parse_file_else_if_multiline_lines_730_766(self):
-        """Test parse_file with multi-line else if condition (lines 730-766)."""
+    def test_parse_file_else_if_multiline_lines_730_766(self):
+        """SWUT_PARSER_C_00060
+        
+        Test parse_file with multi-line else if condition (lines 730-766)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1849,8 +1985,10 @@ void test(void) {
             for call in func.calls:
                 assert call.is_conditional is True
 
-    def test_SWUT_PARSER_C_00061_parse_file_nested_if_blocks_lines_846_848(self):
-        """Test parse_file with nested if blocks (lines 846-848)."""
+    def test_parse_file_nested_if_blocks_lines_846_848(self):
+        """SWUT_PARSER_C_00061
+        
+        Test parse_file with nested if blocks (lines 846-848)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1877,8 +2015,10 @@ void test(void) {
             assert nested_call is not None
             assert nested_call.is_conditional is True
 
-    def test_SWUT_PARSER_C_00062_parse_file_non_conditional_lines_873_875(self):
-        """Test parse_file with non-conditional calls (lines 873-875)."""
+    def test_parse_file_non_conditional_lines_873_875(self):
+        """SWUT_PARSER_C_00062
+        
+        Test parse_file with non-conditional calls (lines 873-875)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1907,8 +2047,10 @@ void test(void) {
                 assert call.is_conditional is False
                 assert call.is_loop is False
 
-    def test_SWUT_PARSER_C_00063_parse_file_rte_calls_lines_877_881(self):
-        """Test parse_file extracts RTE calls (lines 877-881)."""
+    def test_parse_file_rte_calls_lines_877_881(self):
+        """SWUT_PARSER_C_00063
+        
+        Test parse_file extracts RTE calls (lines 877-881)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1931,8 +2073,10 @@ void test(void) {
             assert "Rte_Write_Parameter_1" in call_names
             assert "regular_func" in call_names
 
-    def test_SWUT_PARSER_C_00064_parse_file_rte_conditional_lines_826_843(self):
-        """Test parse_file with RTE calls in conditional blocks (lines 826-843)."""
+    def test_parse_file_rte_conditional_lines_826_843(self):
+        """SWUT_PARSER_C_00064
+        
+        Test parse_file with RTE calls in conditional blocks (lines 826-843)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1958,8 +2102,10 @@ void test(void) {
             assert rte_call.is_conditional is True
             assert rte_call.condition == "condition"
 
-    def test_SWUT_PARSER_C_00065_parse_file_else_block_lines_841_843(self):
-        """Test parse_file with else block (lines 841-843)."""
+    def test_parse_file_else_block_lines_841_843(self):
+        """SWUT_PARSER_C_00065
+        
+        Test parse_file with else block (lines 841-843)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1987,8 +2133,10 @@ void test(void) {
             for call in func.calls:
                 assert call.is_conditional is True
 
-    def test_SWUT_PARSER_C_00066_parse_file_duplicate_update_lines_826_828(self):
-        """Test parse_file updates duplicate calls (lines 826-828)."""
+    def test_parse_file_duplicate_update_lines_826_828(self):
+        """SWUT_PARSER_C_00066
+        
+        Test parse_file updates duplicate calls (lines 826-828)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -2017,8 +2165,10 @@ void test(void) {
             assert func1_call is not None
             assert func1_call.is_conditional is True
 
-    def test_SWUT_PARSER_C_00067_parse_file_syntax_error_continues_line_674(self):
-        """Test parse_file continues after syntax errors (line 674)."""
+    def test_parse_file_syntax_error_continues_line_674(self):
+        """SWUT_PARSER_C_00067
+        
+        Test parse_file continues after syntax errors (line 674)."""
         parser = CParser()
 
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -2046,7 +2196,7 @@ class TestCParserMultiLineCalls:
     def test_multiline_function_call_extraction(self):
         """Test that multi-line function calls are correctly extracted.
 
-        SWR_PARSER_00023: Multi-line function calls should be detected
+        SWR_PARSER_C_00023: Multi-line function calls should be detected
         SWUT_PARSER_C_00028: Test multi-line function call extraction
         """
         parser = CParser()
@@ -2133,181 +2283,3 @@ static void TestFunction(void)
             # Clean up temp file
             test_file.unlink()
 
-
-class TestCParserConditionSanitization:
-    """Test C parser condition text sanitization for Mermaid output."""
-
-    # SWUT_PARSER_C_00029: Condition Text Sanitization
-    def test_condition_sanitization_mermaid(self):
-        """Test that condition text is sanitized for Mermaid compatibility.
-
-        SWR_PARSER_00024: Condition text sanitization
-        SWUT_PARSER_C_00029: Test condition sanitization for Mermaid output
-        """
-        parser = CParser()
-
-        # Create test file with problematic condition patterns
-        test_code = """
-static void TestFunction(void)
-{
-    /* Case 1: Extra closing parenthesis and brace with preprocessor directive */
-    if (StmDiv == (uint8)MCAL_STMCLK_DISABLED) {    #if (MCALLIB_SAFETY_ENABLE == STD_ON
-        CallFunction1();
-    }
-
-    /* Case 2: Preprocessor directives and extra parenthesis */
-    if (ClcError == (Std_ReturnType)E_OK) #endif {  #if (MCU_CCU60_USED == STD_ON)
-        CallFunction2();
-    }
-
-    /* Case 3: C code statements with braces and semicolons */
-    if ((boolean)TRUE == Mcu_ConfigPtr->McuGtmConfigPtr->IsGtm61SleepModeEnabled) { Ccu61ClcVal.B.EDIS = 0x0U; } else { Ccu61ClcVal.B.EDIS = 0x1U; }
-        CallFunction3();
-    }
-
-    /* Case 4: Normal condition - should remain unchanged */
-    if (sensor_status == SENSOR_READY)
-    {
-        CallFunction4();
-    }
-}
-"""
-
-        # Write to temp file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.c', delete=False) as f:
-            f.write(test_code)
-            test_file = Path(f.name)
-
-        try:
-            functions = parser.parse_file(test_file)
-
-            # Find TestFunction
-            func = next((f for f in functions if f.name == "TestFunction"), None)
-            assert func is not None
-
-            # Get all conditional calls
-            conditional_calls = [c for c in func.calls if c.is_conditional]
-
-            # Verify conditions are sanitized
-            call_dict = {c.name: c for c in conditional_calls}
-
-            # Case 1: Should be sanitized - removed trailing ) { and preprocessor
-            if "CallFunction1" in call_dict:
-                cond = call_dict["CallFunction1"].condition
-                # Should NOT contain: trailing ), {, #if, or preprocessor directives
-                assert cond is not None
-                assert "#if" not in cond
-                assert "#endif" not in cond
-                # Condition should be sanitized (either simplified or cleaned)
-                # At minimum, it should not break Mermaid syntax
-
-            # Case 2: Should be sanitized - removed preprocessor directives
-            if "CallFunction2" in call_dict:
-                cond = call_dict["CallFunction2"].condition
-                assert cond is not None
-                assert "#if" not in cond
-                assert "#endif" not in cond
-
-            # Case 3: Should be sanitized - removed C statements
-            if "CallFunction3" in call_dict:
-                cond = call_dict["CallFunction3"].condition
-                assert cond is not None
-                # Should not contain C statements
-                assert "Ccu61ClcVal.B.EDIS = 0x0U" not in cond
-                assert ";" not in cond
-                # The condition should focus on the logical part
-
-            # Case 4: Normal condition should be preserved
-            if "CallFunction4" in call_dict:
-                cond = call_dict["CallFunction4"].condition
-                assert cond == "sensor_status == SENSOR_READY"
-
-            # All conditions should be Mermaid-compatible
-            for call in conditional_calls:
-                if call.condition:
-                    # Check for common Mermaid-breaking patterns
-                    assert not call.condition.strip().endswith(") {"), f"Condition ends with ') {{': {call.condition}"
-                    assert ";" not in call.condition or call.condition.strip().endswith(";"), f"Semicolon in middle of condition: {call.condition}"
-                    # Preprocessor directives should be removed
-                    assert not call.condition.startswith("#"), f"Condition starts with preprocessor directive: {call.condition}"
-
-        finally:
-            # Clean up temp file
-            test_file.unlink()
-
-    def test_condition_sanitization_edge_cases(self):
-        """Test condition sanitization edge cases.
-
-        SWR_PARSER_00024: Edge cases for condition sanitization
-        """
-        parser = CParser()
-
-        # Test the _sanitize_condition method directly
-        test_cases = [
-            # (input, expected_output)
-            ("StmDiv == (uint8)MCAL_STMCLK_DISABLED) {", "StmDiv == (uint8)MCAL_STMCLK_DISABLED"),
-            ("ClcError == E_OK) #endif {  #if (MCU_CCU60_USED == STD_ON)", "ClcError == E_OK"),
-            ("TRUE == ConfigPtr->IsEnabled) { Val.B.EDIS = 0x0U; }", "TRUE == ConfigPtr->IsEnabled"),
-            ("status == OK;", "status == OK"),
-            ("((uint32)ptr->mode & ((uint32)0x1U << SLEEP)) > 0x0U", "((uint32)ptr->mode & ((uint32)0x1U << SLEEP)) > 0x0U"),
-            ("", ""),  # Empty string
-            ("a)", "a"),  # Unbalanced parentheses
-        ]
-
-        for input_cond, expected in test_cases:
-            result = parser._sanitize_condition(input_cond)
-            # For empty input, expect empty or fallback
-            if not input_cond:
-                assert result == "" or result == "condition"
-            elif input_cond == "a)":
-                # Short unbalanced input returns fallback
-                assert result == "condition"
-            else:
-                # Check that result is cleaned (no trailing artifacts)
-                assert not result.endswith(") {")
-                assert not result.endswith("{")
-                assert not result.endswith(";")
-                assert "#" not in result
-                assert len(result) <= len(input_cond)
-
-        # Test with actual code that has conditions
-        test_code = """
-static void TestFunction(void)
-{
-    if (status == OK)
-    {
-        Function1();
-    }
-
-    if (sensor_value > threshold)
-    {
-        Function2();
-    }
-}
-"""
-
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.c', delete=False) as f:
-            f.write(test_code)
-            test_file = Path(f.name)
-
-        try:
-            functions = parser.parse_file(test_file)
-            func = next((f for f in functions if f.name == "TestFunction"), None)
-            assert func is not None
-
-            conditional_calls = [c for c in func.calls if c.is_conditional]
-
-            # Should have at least 2 conditional calls
-            assert len(conditional_calls) >= 2
-
-            # Check conditions don't break Mermaid
-            for call in conditional_calls:
-                if call.condition:
-                    # Should not contain preprocessor directives
-                    assert not call.condition.strip().startswith("#")
-                    # Should be reasonably clean
-                    assert len(call.condition) > 0
-                    assert len(call.condition) < 200
-
-        finally:
-            test_file.unlink()
