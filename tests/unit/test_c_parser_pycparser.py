@@ -10,8 +10,8 @@ from pathlib import Path
 
 import pytest
 
-from autosar_calltree.parsers.c_parser_pycparser import CParserPyCParser
 from autosar_calltree.database.models import FunctionType
+from autosar_calltree.parsers.c_parser_pycparser import CParserPyCParser
 
 # Skip all tests in this module if pycparser is not installed
 pytestmark = pytest.mark.skipif(
