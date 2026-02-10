@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autosar-calltree"
-version = "0.6.0"
+version = "0.6.1"
 description = "A Python tool to analyze C/AUTOSAR codebases and generate function call trees with Mermaid and XMI output"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -32,7 +32,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Code Generators",
     "Topic :: Software Development :: Documentation",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: MIT",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -59,11 +59,18 @@ dev = [
     "flake8>=4.0.0",
     "mypy>=0.950",
     "isort>=5.10.0",
+    "pycparser>=2.21",
 ]
 docs = [
     "sphinx>=4.0.0",
     "sphinx-rtd-theme>=1.0.0",
     "sphinx-click>=3.0.0",
+]
+parser = [
+    "pycparser>=2.21",
+]
+parser-clang = [
+    "libclang>=18.0.0",
 ]
 
 [project.urls]

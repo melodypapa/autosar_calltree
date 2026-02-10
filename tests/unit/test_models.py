@@ -17,8 +17,10 @@ from autosar_calltree.database.models import (
 
 
 # SWUT_MODEL_00001: FunctionType Enum Values
-def test_SWUT_MODEL_00001_function_type_enum_values():
-    """Test that FunctionType enum has all required classification values."""
+def test_function_type_enum_values():
+    """SWUT_MODEL_00001
+    
+    Test that FunctionType enum has all required classification values."""
     # Verify all enum values exist and have correct string representations
     assert FunctionType.AUTOSAR_FUNC.value == "autosar_func"
     assert FunctionType.AUTOSAR_FUNC_P2VAR.value == "autosar_func_p2var"
@@ -32,8 +34,10 @@ def test_SWUT_MODEL_00001_function_type_enum_values():
 
 
 # SWUT_MODEL_00002: Parameter Dataclass Core Fields
-def test_SWUT_MODEL_00002_parameter_core_fields():
-    """Test Parameter dataclass core fields."""
+def test_parameter_core_fields():
+    """SWUT_MODEL_00002
+    
+    Test Parameter dataclass core fields."""
     # Create parameter with all fields
     param = Parameter(
         name="timerId",
@@ -58,8 +62,10 @@ def test_SWUT_MODEL_00002_parameter_core_fields():
 
 
 # SWUT_MODEL_00003: Parameter String Representation
-def test_SWUT_MODEL_00003_parameter_str_representation():
-    """Test that Parameter.__str__ method formats parameters correctly."""
+def test_parameter_str_representation():
+    """SWUT_MODEL_00003
+    
+    Test that Parameter.__str__ method formats parameters correctly."""
     # Test const parameter
     param_const = Parameter(name="value", param_type="uint32", is_const=True)
     assert str(param_const) == "const uint32 value"
@@ -92,8 +98,10 @@ def test_SWUT_MODEL_00003_parameter_str_representation():
 
 
 # SWUT_MODEL_00004: FunctionInfo Core Identity Fields
-def test_SWUT_MODEL_00004_function_info_identity_fields():
-    """Test that FunctionInfo dataclass has all core identity fields."""
+def test_function_info_identity_fields():
+    """SWUT_MODEL_00004
+    
+    Test that FunctionInfo dataclass has all core identity fields."""
     # Create function with all identity fields
     func = FunctionInfo(
         name="Demo_Init",
@@ -124,8 +132,10 @@ def test_SWUT_MODEL_00004_function_info_identity_fields():
 
 
 # SWUT_MODEL_00005: FunctionInfo Type Classification
-def test_SWUT_MODEL_00005_function_info_type_classification():
-    """Test that FunctionInfo includes function type classification and AUTOSAR-specific metadata."""
+def test_function_info_type_classification():
+    """SWUT_MODEL_00005
+    
+    Test that FunctionInfo includes function type classification and AUTOSAR-specific metadata."""
     # Test AUTOSAR FUNC
     func_autosar = FunctionInfo(
         name="COM_Init",
@@ -169,8 +179,10 @@ def test_SWUT_MODEL_00005_function_info_type_classification():
 
 
 # SWUT_MODEL_00006: FunctionInfo Call Relationships
-def test_SWUT_MODEL_00006_function_info_call_relationships():
-    """Test that FunctionInfo tracks bidirectional call relationships."""
+def test_function_info_call_relationships():
+    """SWUT_MODEL_00006
+    
+    Test that FunctionInfo tracks bidirectional call relationships."""
     # Create function with parameters and calls
     func = FunctionInfo(
         name="Demo_Main",
@@ -216,8 +228,10 @@ def test_SWUT_MODEL_00006_function_info_call_relationships():
 
 
 # SWUT_MODEL_00007: FunctionInfo Disambiguation and Module Assignment
-def test_SWUT_MODEL_00007_function_info_disambiguation_module():
-    """Test that FunctionInfo supports qualified names and SW module assignment."""
+def test_function_info_disambiguation_module():
+    """SWUT_MODEL_00007
+    
+    Test that FunctionInfo supports qualified names and SW module assignment."""
     # Create function with qualified name and module
     func1 = FunctionInfo(
         name="Helper",
@@ -263,8 +277,10 @@ def test_SWUT_MODEL_00007_function_info_disambiguation_module():
 
 
 # SWUT_MODEL_00008: FunctionInfo Hash Implementation
-def test_SWUT_MODEL_00008_function_info_hash():
-    """Test that FunctionInfo.__hash__ enables use in sets and as dictionary keys."""
+def test_function_info_hash():
+    """SWUT_MODEL_00008
+    
+    Test that FunctionInfo.__hash__ enables use in sets and as dictionary keys."""
     # Create two identical functions
     func1 = FunctionInfo(
         name="TestFunc",
@@ -313,8 +329,10 @@ def test_SWUT_MODEL_00008_function_info_hash():
 
 
 # SWUT_MODEL_00009: FunctionInfo Equality Implementation
-def test_SWUT_MODEL_00009_function_info_equality():
-    """Test that FunctionInfo.__eq__ compares identity fields only."""
+def test_function_info_equality():
+    """SWUT_MODEL_00009
+    
+    Test that FunctionInfo.__eq__ compares identity fields only."""
     # Create functions with same identity but different other fields
     func1 = FunctionInfo(
         name="TestFunc",
@@ -370,8 +388,10 @@ def test_SWUT_MODEL_00009_function_info_equality():
 
 
 # SWUT_MODEL_00010: FunctionInfo Signature Generation
-def test_SWUT_MODEL_00010_function_info_signature():
-    """Test that FunctionInfo.get_signature generates correctly formatted signatures."""
+def test_function_info_signature():
+    """SWUT_MODEL_00010
+    
+    Test that FunctionInfo.get_signature generates correctly formatted signatures."""
     # Test function with no parameters
     func_no_params = FunctionInfo(
         name="Init",
@@ -439,8 +459,10 @@ def test_SWUT_MODEL_00010_function_info_signature():
 
 
 # SWUT_MODEL_00011: FunctionInfo RTE Function Detection
-def test_SWUT_MODEL_00011_function_info_rte_detection():
-    """Test that FunctionInfo.is_rte_function correctly detects RTE functions."""
+def test_function_info_rte_detection():
+    """SWUT_MODEL_00011
+    
+    Test that FunctionInfo.is_rte_function correctly detects RTE functions."""
     # Test RTE function by naming convention
     func_rte_call = FunctionInfo(
         name="Rte_Call_StartTrigger",
@@ -498,8 +520,10 @@ def test_SWUT_MODEL_00011_function_info_rte_detection():
 
 
 # SWUT_MODEL_00012: CallTreeNode Core Structure
-def test_SWUT_MODEL_00012_call_tree_node_structure():
-    """Test that CallTreeNode dataclass has core fields for hierarchical tree structure."""
+def test_call_tree_node_structure():
+    """SWUT_MODEL_00012
+    
+    Test that CallTreeNode dataclass has core fields for hierarchical tree structure."""
     # Create function info for node
     func_info = FunctionInfo(
         name="ParentFunc",
@@ -537,8 +561,10 @@ def test_SWUT_MODEL_00012_call_tree_node_structure():
 
 
 # SWUT_MODEL_00013: CallTreeNode State Flags
-def test_SWUT_MODEL_00013_call_tree_node_state_flags():
-    """Test that CallTreeNode includes state flags for recursive calls, truncation, and call frequency."""
+def test_call_tree_node_state_flags():
+    """SWUT_MODEL_00013
+    
+    Test that CallTreeNode includes state flags for recursive calls, truncation, and call frequency."""
     func = FunctionInfo(
         name="TestFunc",
         return_type="void",
@@ -576,8 +602,10 @@ def test_SWUT_MODEL_00013_call_tree_node_state_flags():
 
 
 # SWUT_MODEL_00014: CallTreeNode Tree Manipulation
-def test_SWUT_MODEL_00014_call_tree_node_add_child():
-    """Test that CallTreeNode.add_child correctly builds parent-child relationships."""
+def test_call_tree_node_add_child():
+    """SWUT_MODEL_00014
+    
+    Test that CallTreeNode.add_child correctly builds parent-child relationships."""
     # Create parent and child nodes
     parent_func = FunctionInfo(
         name="Parent",
@@ -628,8 +656,10 @@ def test_SWUT_MODEL_00014_call_tree_node_add_child():
 
 
 # SWUT_MODEL_00015: CallTreeNode Function Collection
-def test_SWUT_MODEL_00015_call_tree_node_get_all_functions():
-    """Test that CallTreeNode.get_all_functions collects all unique functions in subtree."""
+def test_call_tree_node_get_all_functions():
+    """SWUT_MODEL_00015
+    
+    Test that CallTreeNode.get_all_functions collects all unique functions in subtree."""
     # Create function infos
     func1 = FunctionInfo(
         name="Func1",
@@ -683,8 +713,10 @@ def test_SWUT_MODEL_00015_call_tree_node_get_all_functions():
 
 
 # SWUT_MODEL_00016: CallTreeNode Depth Calculation
-def test_SWUT_MODEL_00016_call_tree_node_get_max_depth():
-    """Test that CallTreeNode.get_max_depth calculates maximum depth of subtree."""
+def test_call_tree_node_get_max_depth():
+    """SWUT_MODEL_00016
+    
+    Test that CallTreeNode.get_max_depth calculates maximum depth of subtree."""
     func = FunctionInfo(
         name="Func",
         return_type="void",
@@ -728,8 +760,10 @@ def test_SWUT_MODEL_00016_call_tree_node_get_max_depth():
 
 
 # SWUT_MODEL_00017: CircularDependency Core Structure
-def test_SWUT_MODEL_00017_circular_dependency_structure():
-    """Test that CircularDependency dataclass has core fields for representing detected cycles."""
+def test_circular_dependency_structure():
+    """SWUT_MODEL_00017
+    
+    Test that CircularDependency dataclass has core fields for representing detected cycles."""
     # Create circular dependency
     cycle = CircularDependency(cycle=["FuncA", "FuncB", "FuncC", "FuncA"], depth=3)
 
@@ -749,8 +783,10 @@ def test_SWUT_MODEL_00017_circular_dependency_structure():
 
 
 # SWUT_MODEL_00018: CircularDependency String Representation
-def test_SWUT_MODEL_00018_circular_dependency_str():
-    """Test that CircularDependency.__str__ formats cycles in readable arrow notation."""
+def test_circular_dependency_str():
+    """SWUT_MODEL_00018
+    
+    Test that CircularDependency.__str__ formats cycles in readable arrow notation."""
     # Test 3-function cycle
     cycle1 = CircularDependency(cycle=["FuncA", "FuncB", "FuncC", "FuncA"], depth=3)
     assert str(cycle1) == "FuncA -> FuncB -> FuncC -> FuncA"
@@ -769,8 +805,10 @@ def test_SWUT_MODEL_00018_circular_dependency_str():
 
 
 # SWUT_MODEL_00019: AnalysisStatistics Counters
-def test_SWUT_MODEL_00019_analysis_statistics_counters():
-    """Test that AnalysisStatistics dataclass has all counter fields with correct defaults."""
+def test_analysis_statistics_counters():
+    """SWUT_MODEL_00019
+    
+    Test that AnalysisStatistics dataclass has all counter fields with correct defaults."""
     # Test default values
     stats = AnalysisStatistics()
     assert stats.total_functions == 0
@@ -811,8 +849,10 @@ def test_SWUT_MODEL_00019_analysis_statistics_counters():
 
 
 # SWUT_MODEL_00020: AnalysisStatistics Dictionary Conversion
-def test_SWUT_MODEL_00020_analysis_statistics_to_dict():
-    """Test that AnalysisStatistics.to_dict converts statistics to dictionary format."""
+def test_analysis_statistics_to_dict():
+    """SWUT_MODEL_00020
+    
+    Test that AnalysisStatistics.to_dict converts statistics to dictionary format."""
     # Test with values
     stats = AnalysisStatistics(
         total_functions=100,
@@ -859,8 +899,10 @@ def test_SWUT_MODEL_00020_analysis_statistics_to_dict():
 
 
 # SWUT_MODEL_00021: AnalysisResult Result Container
-def test_SWUT_MODEL_00021_analysis_result_container():
-    """Test that AnalysisResult dataclass encapsulates complete analysis results."""
+def test_analysis_result_container():
+    """SWUT_MODEL_00021
+    
+    Test that AnalysisResult dataclass encapsulates complete analysis results."""
     # Create components
     func = FunctionInfo(
         name="Root",
@@ -901,8 +943,10 @@ def test_SWUT_MODEL_00021_analysis_result_container():
 
 
 # SWUT_MODEL_00022: AnalysisResult Metadata
-def test_SWUT_MODEL_00022_analysis_result_metadata():
-    """Test that AnalysisResult includes metadata fields for analysis context."""
+def test_analysis_result_metadata():
+    """SWUT_MODEL_00022
+    
+    Test that AnalysisResult includes metadata fields for analysis context."""
     # Create basic result
     func = FunctionInfo(
         name="Test",
@@ -946,8 +990,10 @@ def test_SWUT_MODEL_00022_analysis_result_metadata():
 
 
 # SWUT_MODEL_00023: AnalysisResult Function Collection
-def test_SWUT_MODEL_00023_analysis_result_get_all_functions():
-    """Test that AnalysisResult.get_all_functions collects functions from call tree."""
+def test_analysis_result_get_all_functions():
+    """SWUT_MODEL_00023
+    
+    Test that AnalysisResult.get_all_functions collects functions from call tree."""
     # Create tree with multiple functions
     func1 = FunctionInfo(
         name="Root",
@@ -993,8 +1039,10 @@ def test_SWUT_MODEL_00023_analysis_result_get_all_functions():
 
 
 # SWUT_MODEL_00024: AnalysisResult Circular Dependency Check
-def test_SWUT_MODEL_00024_analysis_result_has_circular_deps():
-    """Test that AnalysisResult.has_circular_dependencies correctly detects cycles."""
+def test_analysis_result_has_circular_deps():
+    """SWUT_MODEL_00024
+    
+    Test that AnalysisResult.has_circular_dependencies correctly detects cycles."""
     # Create basic components
     func = FunctionInfo(
         name="Test",
@@ -1041,8 +1089,10 @@ def test_SWUT_MODEL_00024_analysis_result_has_circular_deps():
 
 
 # SWUT_MODEL_00025: FunctionDict Type Alias
-def test_SWUT_MODEL_00025_function_dict_type_alias():
-    """Test that FunctionDict type alias correctly represents mapping."""
+def test_function_dict_type_alias():
+    """SWUT_MODEL_00025
+    
+    Test that FunctionDict type alias correctly represents mapping."""
     # Create FunctionDict instance
     func1 = FunctionInfo(
         name="COM_Init",
@@ -1161,3 +1211,4 @@ def test_function_call_str_conditional_and_loop():
         loop_condition=None
     )
     assert str(call) == "ComplexCall [conditional] [loop]"
+
