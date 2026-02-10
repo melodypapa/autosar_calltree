@@ -97,49 +97,157 @@ class FunctionVisitor(c_ast.NodeVisitor):
             Return type string
         """
         # Navigate the type hierarchy
-        # FuncDef -> Decl -> TypeDecl (or PtrDecl) -> type
+        # FuncDef -> Decl -> FuncDecl -> type (this is the return type)
+        # For FuncDef, node.decl.type is a FuncDecl representing the function
+        # The actual return type is node.decl.type.type
         decl_type = node.decl.type
 
+        # For function definitions, decl_type is a FuncDecl
+        # We need to go one level deeper to get the actual return type
+        if isinstance(decl_type, c_ast.FuncDecl):
+            return_type_node = decl_type.type
+        else:
+            # Fallback for other cases
+            return_type_node = decl_type
+
+        # First, get the return type from pycparser
+        pycparser_return_type = self._get_return_type_from_node(return_type_node)
+
+        # Workaround: pycparser doesn't preserve const qualifiers in some cases
+        # Check if the original source has "const" but pycparser result doesn't
+        if "const" not in pycparser_return_type.lower() and node.coord:
+            # Try to extract the return type from source as a fallback
+            source_return_type = self._extract_return_type_from_source(node)
+            if source_return_type and "const" in source_return_type.lower():
+                return source_return_type
+
+        return pycparser_return_type
+
+    def _get_return_type_from_node(self, return_type_node: c_ast.Node) -> str:
+        """
+        Extract return type from an AST node.
+
+        Args:
+            return_type_node: The return type AST node
+
+        Returns:
+            Return type string
+        """
         # Handle pointer return types
-        if isinstance(decl_type, c_ast.PtrDecl):
+        if isinstance(return_type_node, c_ast.PtrDecl):
+            # Check for qualifiers on the PtrDecl itself (e.g., for "int * const")
+            ptr_quals = []
+            if hasattr(return_type_node, "qualifiers") and return_type_node.qualifiers:
+                ptr_quals = list(return_type_node.qualifiers)
+
             # Get the type being pointed to
-            underlying_type = decl_type.type
-            base_type = self._get_type_name(underlying_type)
+            underlying_type = return_type_node.type
+            base_type = self._get_type_name(underlying_type, include_quals=True)
+
+            # Combine pointer qualifiers with base type
+            if ptr_quals:
+                return f"{base_type}* {' '.join(ptr_quals)}"
             return f"{base_type}*"
 
         # Handle array return types (uncommon but valid)
-        if isinstance(decl_type, c_ast.ArrayDecl):
-            underlying_type = decl_type.type
-            base_type = self._get_type_name(underlying_type)
+        if isinstance(return_type_node, c_ast.ArrayDecl):
+            underlying_type = return_type_node.type
+            base_type = self._get_type_name(underlying_type, include_quals=True)
             return f"{base_type}[]"
 
         # Standard type
-        return self._get_type_name(decl_type)
+        return self._get_type_name(return_type_node, include_quals=True)
 
-    def _get_type_name(self, type_node: c_ast.Node) -> str:
+    def _extract_return_type_from_source(self, node: c_ast.FuncDef) -> Optional[str]:
+        """
+        Extract return type from original source code as a fallback.
+
+        This is used when pycparser doesn't preserve const qualifiers.
+
+        Args:
+            node: Function definition AST node
+
+        Returns:
+            Return type string or None if extraction fails
+        """
+        if not self.content:
+            return None
+
+        # Look for the function declaration pattern in the original content
+        # Pattern: return_type function_name(...)
+        func_name = node.decl.name
+
+        # Search for the function declaration in the original content
+        # Pattern: function_name followed by (
+        pattern = rf"([\w\s\*]+)\s+{re.escape(func_name)}\s*\("
+        match = re.search(pattern, self.content)
+
+        if not match:
+            return None
+
+        # Extract everything before the function name as the return type
+        return_type_candidate = match.group(1).strip()
+
+        # Validate that it looks like a type (contains alphanumeric or *)
+        if re.match(r"^[\w\s\*]+$", return_type_candidate):
+            return return_type_candidate
+
+        return None
+
+    def _get_type_name(self, type_node: c_ast.Node, include_quals: bool = False) -> str:
         """
         Get the name of a type node.
 
         Args:
             type_node: Type AST node
+            include_quals: Whether to include type qualifiers (const, volatile)
 
         Returns:
             Type name string
         """
         # Handle TypeDecl (most common)
         if isinstance(type_node, c_ast.TypeDecl):
+            # Add qualifiers if requested
+            quals = []
+            if include_quals and hasattr(type_node, "qualifiers"):
+                if type_node.qualifiers:
+                    quals = list(type_node.qualifiers)
+
             if isinstance(type_node.type, c_ast.IdentifierType):
-                return " ".join(type_node.type.names)
+                type_name = " ".join(type_node.type.names)
             elif isinstance(type_node.type, c_ast.Struct):
-                return f"struct {type_node.type.name}"
+                type_name = f"struct {type_node.type.name}"
             elif isinstance(type_node.type, c_ast.Union):
-                return f"union {type_node.type.name}"
+                type_name = f"union {type_node.type.name}"
             elif isinstance(type_node.type, c_ast.Enum):
-                return f"enum {type_node.type.name}"
+                type_name = f"enum {type_node.type.name}"
+            else:
+                type_name = "unknown"
+
+            # Prepend qualifiers if any
+            if quals:
+                return f"{' '.join(quals)} {type_name}"
+            return type_name
+
+        # Handle PtrDecl - need to extract the underlying type and potentially its qualifiers
+        if isinstance(type_node, c_ast.PtrDecl):
+            # Check for qualifiers on the PtrDecl itself
+            quals = []
+            if include_quals and hasattr(type_node, "qualifiers"):
+                if type_node.qualifiers:
+                    quals = list(type_node.qualifiers)
+
+            # Get the underlying type name
+            underlying_name = self._get_type_name(type_node.type, include_quals=include_quals)
+
+            # Prepend qualifiers if any
+            if quals:
+                return f"{' '.join(quals)} {underlying_name}"
+            return underlying_name
 
         # Handle function types (function pointers)
         if isinstance(type_node, c_ast.FuncDecl):
-            return self._get_type_name(type_node.type)
+            return self._get_type_name(type_node.type, include_quals=include_quals)
 
         return "unknown"
 
@@ -185,11 +293,17 @@ class FunctionVisitor(c_ast.NodeVisitor):
         """
         # Get parameter name
         param_name = ""
+        is_const = False
         if isinstance(param, c_ast.Decl):
             param_name = param.name or ""
             type_node = param.type
+            # Check if parameter is const (at PtrDecl or TypeDecl level)
+            if hasattr(type_node, "qualifiers") and type_node.qualifiers:
+                is_const = "const" in type_node.qualifiers
         elif isinstance(param, c_ast.Typename):
             type_node = param.type
+            if hasattr(type_node, "qualifiers") and type_node.qualifiers:
+                is_const = "const" in type_node.qualifiers
         else:
             return None
 
@@ -197,15 +311,20 @@ class FunctionVisitor(c_ast.NodeVisitor):
         is_pointer = False
         if isinstance(type_node, c_ast.PtrDecl):
             is_pointer = True
+            # Check for const at the pointer level (e.g., "int * const")
+            if hasattr(type_node, "qualifiers") and type_node.qualifiers:
+                if "const" in type_node.qualifiers:
+                    is_const = True
             type_node = type_node.type
 
-        # Get type name
-        param_type = self._get_type_name(type_node)
+        # Get type name with qualifiers
+        param_type = self._get_type_name(type_node, include_quals=True)
 
         return Parameter(
             name=param_name,
             param_type=param_type,
             is_pointer=is_pointer,
+            is_const=is_const,
         )
 
     def _is_static(self, node: c_ast.FuncDef) -> bool:
@@ -218,8 +337,10 @@ class FunctionVisitor(c_ast.NodeVisitor):
         Returns:
             True if function is static
         """
-        if hasattr(node.decl, "storage_class"):
-            return str(node.decl.storage_class) == "static"
+        if hasattr(node.decl, "storage") and node.decl.storage:
+            # The storage attribute is a list of storage class specifiers
+            # e.g., ['static'], ['extern'], ['inline', 'static'], etc.
+            return "static" in node.decl.storage
         return False
 
     def _extract_function_calls(self, node: c_ast.FuncDef) -> List[FunctionCall]:
@@ -369,7 +490,10 @@ class CParserPyCParser:
                             all_functions.append(autosar_func)
 
         # Then, parse traditional C functions using pycparser
-        preprocessed = self._preprocess_content(content)
+        # Remove AUTOSAR function declarations before preprocessing
+        # so they don't get converted and parsed as traditional C functions
+        content_for_traditional_c = self._remove_autosar_functions(content)
+        preprocessed = self._preprocess_content(content_for_traditional_c)
 
         # Check if file contains any traditional C functions
         if self._has_traditional_c_functions(preprocessed):
@@ -400,6 +524,7 @@ class CParserPyCParser:
 
         This handles:
         - AUTOSAR macros (FUNC, VAR, P2VAR, etc.) that pycparser can't handle
+        - AUTOSAR types (uint8, uint16, etc.) that need typedefs
         - Preprocessor directives
         - Other issues that would confuse pycparser
 
@@ -410,6 +535,23 @@ class CParserPyCParser:
             Preprocessed C code suitable for pycparser
         """
         preprocessed = content
+
+        # Add typedefs for common AUTOSAR types at the beginning
+        # This allows pycparser to recognize these types
+        autosar_typedefs = """typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned long long uint64;
+typedef signed char sint8;
+typedef short sint16;
+typedef int sint32;
+typedef long long sint64;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+"""
+        preprocessed = autosar_typedefs + preprocessed
 
         # Remove comments (pycparser can handle them, but removing helps)
         preprocessed = re.sub(r"/\*.*?\*/", "", preprocessed, flags=re.DOTALL)
@@ -550,6 +692,60 @@ class CParserPyCParser:
                 )
 
         return sorted(called_functions, key=lambda fc: fc.name)
+
+    def _remove_autosar_functions(self, content: str) -> str:
+        """
+        Remove AUTOSAR function declarations from content.
+
+        This prevents AUTOSAR macros from being converted to traditional C
+        and then parsed as traditional C functions.
+
+        Args:
+            content: Original C source code
+
+        Returns:
+            Content with AUTOSAR function declarations removed
+        """
+        lines = content.split("\n")
+        filtered_lines = []
+        in_autosar_func = False
+
+        for line in lines:
+            stripped = line.strip()
+
+            # Check if this line starts an AUTOSAR function declaration
+            # Pattern: FUNC(...) or FUNC_P2VAR(...) etc.
+            if re.match(r"^\s*FUNC(_P2\w+)?\s*\(", stripped):
+                # Check if this is a full declaration (ends with ; or {)
+                # or a multi-line declaration
+                if ";" in stripped or "{" in stripped:
+                    # Single-line declaration - skip it
+                    in_autosar_func = False
+                    # If it ends with {, we need to skip the body too
+                    if "{" in stripped:
+                        # Keep the body (everything after {)
+                        open_brace_pos = stripped.find("{")
+                        if open_brace_pos != -1:
+                            filtered_lines.append(stripped[open_brace_pos:])
+                else:
+                    # Multi-line declaration start
+                    in_autosar_func = True
+            elif in_autosar_func:
+                # We're in a multi-line AUTOSAR declaration
+                if ";" in stripped or "{" in stripped:
+                    # End of declaration
+                    in_autosar_func = False
+                    # If it ends with {, we need to keep the body
+                    if "{" in stripped:
+                        open_brace_pos = stripped.find("{")
+                        if open_brace_pos != -1:
+                            filtered_lines.append(stripped[open_brace_pos:])
+                # Skip the declaration lines
+            else:
+                # Not an AUTOSAR function line
+                filtered_lines.append(line)
+
+        return "\n".join(filtered_lines)
 
     def _has_traditional_c_functions(self, content: str) -> bool:
         """

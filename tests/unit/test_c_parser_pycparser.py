@@ -216,7 +216,7 @@ class TestCParserPyCParser:
         assert func.function_type == FunctionType.TRADITIONAL_C
 
     def test_file_with_no_traditional_c(self, tmp_path: Path):
-        """Test that files with only AUTOSAR macros return empty list."""
+        """Test that files with only AUTOSAR macros are parsed correctly."""
         test_file = tmp_path / "test.c"
         test_file.write_text(
             """
@@ -230,9 +230,11 @@ class TestCParserPyCParser:
         parser = CParserPyCParser()
         functions = parser.parse_file(test_file)
 
-        # pycparser-based parser should return empty list
-        # (AUTOSAR functions should be handled by AutosarParser)
-        assert len(functions) == 0
+        # CParserPyCParser handles both AUTOSAR (via AutosarParser) and traditional C (via pycparser)
+        # For a file with only AUTOSAR functions, it should return those AUTOSAR functions
+        assert len(functions) == 1
+        assert functions[0].function_type == FunctionType.AUTOSAR_FUNC
+        assert functions[0].name == "AutosarFunction"
 
     def test_complex_function_signature(self, tmp_path: Path):
         """Test parsing complex function signatures."""
