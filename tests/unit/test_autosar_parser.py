@@ -10,8 +10,10 @@ class TestAutosarParserPatterns:
     """Test AUTOSAR parser pattern recognition."""
 
     # SWUT_PARSER_AUTOSAR_00001: FUNC Macro Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00001_func_macro_pattern(self):
-        """Test that FUNC macro pattern is correctly recognized and parsed."""
+    def test_func_macro_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00001
+        
+        Test that FUNC macro pattern is correctly recognized and parsed."""
         parser = AutosarParser()
 
         # Test basic FUNC pattern
@@ -45,8 +47,10 @@ class TestAutosarParserPatterns:
         assert result.memory_class == "CODE"
 
     # SWUT_PARSER_AUTOSAR_00002: FUNC_P2VAR Macro Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00002_func_p2var_macro_pattern(self):
-        """Test that FUNC_P2VAR macro pattern is correctly recognized and parsed."""
+    def test_func_p2var_macro_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00002
+        
+        Test that FUNC_P2VAR macro pattern is correctly recognized and parsed."""
         parser = AutosarParser()
 
         # Test basic FUNC_P2VAR pattern
@@ -68,8 +72,10 @@ class TestAutosarParserPatterns:
         assert len(result.parameters) == 1
 
     # SWUT_PARSER_AUTOSAR_00003: FUNC_P2CONST Macro Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00003_func_p2const_macro_pattern(self):
-        """Test that FUNC_P2CONST macro pattern is correctly recognized and parsed."""
+    def test_func_p2const_macro_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00003
+        
+        Test that FUNC_P2CONST macro pattern is correctly recognized and parsed."""
         parser = AutosarParser()
 
         # Test basic FUNC_P2CONST pattern
@@ -94,8 +100,10 @@ class TestAutosarParserParameters:
     """Test AUTOSAR parser parameter parsing."""
 
     # SWUT_PARSER_AUTOSAR_00004: Parameter String Extraction
-    def test_SWUT_PARSER_AUTOSAR_00004_parameter_string_extraction(self):
-        """Test that parameter strings are correctly extracted from function declarations."""
+    def test_parameter_string_extraction(self):
+        """SWUT_PARSER_AUTOSAR_00004
+        
+        Test that parameter strings are correctly extracted from function declarations."""
         parser = AutosarParser()
 
         # Test simple parameter list
@@ -124,8 +132,10 @@ class TestAutosarParserParameters:
         assert "(VAR(uint32, AUTOMATIC))" in param_string
 
     # SWUT_PARSER_AUTOSAR_00005: VAR Parameter Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00005_var_parameter_pattern(self):
-        """Test that VAR macro parameters are correctly parsed."""
+    def test_var_parameter_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00005
+        
+        Test that VAR macro parameters are correctly parsed."""
         parser = AutosarParser()
 
         # Test basic VAR parameter
@@ -153,8 +163,10 @@ class TestAutosarParserParameters:
         assert params[2].name == "param3"
 
     # SWUT_PARSER_AUTOSAR_00006: P2VAR Parameter Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00006_p2var_parameter_pattern(self):
-        """Test that P2VAR macro parameters are correctly parsed."""
+    def test_p2var_parameter_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00006
+        
+        Test that P2VAR macro parameters are correctly parsed."""
         parser = AutosarParser()
 
         # Test basic P2VAR parameter
@@ -174,8 +186,10 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "APPL_DATA"
 
     # SWUT_PARSER_AUTOSAR_00007: P2CONST Parameter Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00007_p2const_parameter_pattern(self):
-        """Test that P2CONST macro parameters are correctly parsed."""
+    def test_p2const_parameter_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00007
+        
+        Test that P2CONST macro parameters are correctly parsed."""
         parser = AutosarParser()
 
         # Test basic P2CONST parameter
@@ -195,8 +209,10 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "APPL_DATA"
 
     # SWUT_PARSER_AUTOSAR_00008: CONST Parameter Pattern Recognition
-    def test_SWUT_PARSER_AUTOSAR_00008_const_parameter_pattern(self):
-        """Test that CONST macro parameters are correctly parsed."""
+    def test_const_parameter_pattern(self):
+        """SWUT_PARSER_AUTOSAR_00008
+        
+        Test that CONST macro parameters are correctly parsed."""
         parser = AutosarParser()
 
         # Test basic CONST parameter
@@ -216,8 +232,10 @@ class TestAutosarParserParameters:
         assert params[0].memory_class == "RTE_CONST"
 
     # SWUT_PARSER_AUTOSAR_00009: Traditional C Parameter Fallback
-    def test_SWUT_PARSER_AUTOSAR_00009_traditional_c_parameter_fallback(self):
-        """Test that traditional C parameters are parsed as fallback."""
+    def test_traditional_c_parameter_fallback(self):
+        """SWUT_PARSER_AUTOSAR_00009
+        
+        Test that traditional C parameters are parsed as fallback."""
         parser = AutosarParser()
 
         # Test pointer parameter
@@ -246,8 +264,10 @@ class TestAutosarParserParameters:
         assert params[0].param_type == "uint32"
 
     # SWUT_PARSER_AUTOSAR_00010: Parameter List Splitting
-    def test_SWUT_PARSER_AUTOSAR_00010_parameter_list_splitting(self):
-        """Test that parameter lists are split correctly respecting nested parentheses."""
+    def test_parameter_list_splitting(self):
+        """SWUT_PARSER_AUTOSAR_00010
+        
+        Test that parameter lists are split correctly respecting nested parentheses."""
         parser = AutosarParser()
 
         # Test simple splitting
@@ -274,8 +294,10 @@ class TestAutosarParserEdgeCases:
     """Test AUTOSAR parser edge cases."""
 
     # SWUT_PARSER_AUTOSAR_00011: Function Declaration Parsing
-    def test_SWUT_PARSER_AUTOSAR_00011_function_declaration_parsing(self):
-        """Test complete function declaration parsing."""
+    def test_function_declaration_parsing(self):
+        """SWUT_PARSER_AUTOSAR_00011
+        
+        Test complete function declaration parsing."""
         parser = AutosarParser()
 
         # Test FUNC declaration
@@ -314,8 +336,10 @@ class TestAutosarParserEdgeCases:
         assert result is None
 
     # SWUT_PARSER_AUTOSAR_00012: AUTOSAR Function Detection
-    def test_SWUT_PARSER_AUTOSAR_00012_autosar_function_detection(self):
-        """Test is_autosar_function method."""
+    def test_autosar_function_detection(self):
+        """SWUT_PARSER_AUTOSAR_00012
+        
+        Test is_autosar_function method."""
         parser = AutosarParser()
 
         # Test FUNC detection
@@ -346,8 +370,10 @@ class TestAutosarParserEdgeCases:
         assert parser.is_autosar_function("") is False
 
     # SWUT_PARSER_AUTOSAR_00013: Empty Parameter List Handling
-    def test_SWUT_PARSER_AUTOSAR_00013_empty_parameter_list_handling(self):
-        """Test that void and empty parameter lists are handled correctly."""
+    def test_empty_parameter_list_handling(self):
+        """SWUT_PARSER_AUTOSAR_00013
+        
+        Test that void and empty parameter lists are handled correctly."""
         parser = AutosarParser()
 
         # Test void parameter list
@@ -363,8 +389,10 @@ class TestAutosarParserEdgeCases:
         assert len(params) == 0
 
     # SWUT_PARSER_AUTOSAR_00014: Whitespace Tolerance
-    def test_SWUT_PARSER_AUTOSAR_00014_whitespace_tolerance(self):
-        """Test that parser handles variable whitespace correctly."""
+    def test_whitespace_tolerance(self):
+        """SWUT_PARSER_AUTOSAR_00014
+        
+        Test that parser handles variable whitespace correctly."""
         parser = AutosarParser()
 
         # Test extra spaces in FUNC macro
@@ -385,8 +413,10 @@ class TestAutosarParserEdgeCases:
         assert result.parameters[0].name == "value"
 
     # SWUT_PARSER_AUTOSAR_00015: FunctionInfo Object Creation
-    def test_SWUT_PARSER_AUTOSAR_00015_functioninfo_object_creation(self):
-        """Test that FunctionInfo objects are created with all fields populated."""
+    def test_functioninfo_object_creation(self):
+        """SWUT_PARSER_AUTOSAR_00015
+        
+        Test that FunctionInfo objects are created with all fields populated."""
         parser = AutosarParser()
 
         # Test FUNC FunctionInfo creation
@@ -519,8 +549,10 @@ class TestAutosarParserWithFixtures:
 class TestAutosarParserMissingLinesCoverage:
     """Tests to cover missing lines in autosar_parser.py."""
 
-    def test_SWUT_PARSER_AUTOSAR_00015_extract_param_string_no_paren(self):
-        """Test _extract_param_string returns empty string when no parenthesis found (line 145)."""
+    def test_extract_param_string_no_paren(self):
+        """SWUT_PARSER_AUTOSAR_00015
+        
+        Test _extract_param_string returns empty string when no parenthesis found (line 145)."""
         parser = AutosarParser()
 
         line = "FUNC(void, RTE_CODE) TestFunc"  # No parenthesis
@@ -529,8 +561,10 @@ class TestAutosarParserMissingLinesCoverage:
 
         assert param_string == ""
 
-    def test_SWUT_PARSER_AUTOSAR_00016_parse_parameters_continue_on_void(self):
-        """Test parse_parameters continues when parameter is void (line 188)."""
+    def test_parse_parameters_continue_on_void(self):
+        """SWUT_PARSER_AUTOSAR_00016
+        
+        Test parse_parameters continues when parameter is void (line 188)."""
         parser = AutosarParser()
 
         # Test with void parameter mixed with other params
@@ -542,8 +576,10 @@ class TestAutosarParserMissingLinesCoverage:
         assert params[0].name == "param1"
         assert params[1].name == "param2"
 
-    def test_SWUT_PARSER_AUTOSAR_00017_parse_traditional_returns_none(self):
-        """Test _parse_traditional_parameter returns None for invalid format (line 282)."""
+    def test_parse_traditional_returns_none(self):
+        """SWUT_PARSER_AUTOSAR_00017
+        
+        Test _parse_traditional_parameter returns None for invalid format (line 282)."""
         parser = AutosarParser()
 
         # Invalid parameter format (empty string after stripping)
@@ -552,3 +588,4 @@ class TestAutosarParserMissingLinesCoverage:
         result = parser._parse_traditional_parameter(param_str)
 
         assert result is None
+

@@ -1073,3 +1073,69 @@ Parent directories created automatically.
 **Total Tests:** 31
 **Requirements:** 20
 **Coverage Target:** ≥90%
+
+## Requirements Traceability Matrix
+
+| Requirement ID | Test ID | Test Function | Status |
+|----------------|---------|---------------|--------|
+| SWR_GENERATOR_00001 | SWUT_GENERATOR_00001 | test_SWUT_GENERATOR_00001_initialization | ✅ Pass |
+| SWR_GENERATOR_00002 | SWUT_GENERATOR_00002 | test_SWUT_GENERATOR_00002_mermaid_header | ✅ Pass |
+| SWR_GENERATOR_00003 | SWUT_GENERATOR_00003 | test_SWUT_GENERATOR_00003_collect_participants_functions | ✅ Pass |
+| SWR_GENERATOR_00004 | SWUT_GENERATOR_00004 | test_SWUT_GENERATOR_00004_collect_participants_modules | ✅ Pass |
+| SWR_GENERATOR_00005 | SWUT_GENERATOR_00005 | test_SWUT_GENERATOR_00005_module_fallback_to_filename | ✅ Pass |
+| SWR_GENERATOR_00006 | SWUT_GENERATOR_00006 | test_SWUT_GENERATOR_00006_rte_abbreviation | ✅ Pass |
+| SWR_GENERATOR_00006 | SWUT_GENERATOR_00007 | test_SWUT_GENERATOR_00007_rte_abbreviation_disabled | ✅ Pass |
+| SWR_GENERATOR_00006 | SWUT_GENERATOR_00008 | test_SWUT_GENERATOR_00008_short_rte_not_abbreviated | ✅ Pass |
+| SWR_GENERATOR_00007 | SWUT_GENERATOR_00009 | test_SWUT_GENERATOR_00009_sequence_calls_function_mode | ✅ Pass |
+| SWR_GENERATOR_00004 | SWUT_GENERATOR_00010 | test_SWUT_GENERATOR_00010_sequence_calls_module_mode | ✅ Pass |
+| SWR_GENERATOR_00008 | SWUT_GENERATOR_00011 | test_SWUT_GENERATOR_00011_parameters_on_arrows | ✅ Pass |
+| SWR_GENERATOR_00008 | SWUT_GENERATOR_00012 | test_SWUT_GENERATOR_00012_multiple_parameters | ✅ Pass |
+| SWR_GENERATOR_00009 | SWUT_GENERATOR_00013 | test_SWUT_GENERATOR_00013_recursive_call_handling | ✅ Pass |
+| SWR_GENERATOR_00010 | SWUT_GENERATOR_00014 | test_SWUT_GENERATOR_00014_return_statements | ✅ Pass |
+| SWR_GENERATOR_00010 | SWUT_GENERATOR_00015 | test_SWUT_GENERATOR_00015_returns_disabled_default | ✅ Pass |
+| SWR_GENERATOR_00011 | SWUT_GENERATOR_00016 | test_SWUT_GENERATOR_00016_function_table_format | ✅ Pass |
+| SWR_GENERATOR_00012 | SWUT_GENERATOR_00017 | test_SWUT_GENERATOR_00017_function_table_module_column | ✅ Pass |
+| SWR_GENERATOR_00012 | SWUT_GENERATOR_00018 | test_SWUT_GENERATOR_00018_function_table_na_for_unmapped | ✅ Pass |
+| SWR_GENERATOR_00013 | SWUT_GENERATOR_00019 | test_SWUT_GENERATOR_00019_parameter_formatting_table | ✅ Pass |
+| SWR_GENERATOR_00013 | SWUT_GENERATOR_00020 | test_SWUT_GENERATOR_00020_void_parameters | ✅ Pass |
+| SWR_GENERATOR_00013 | SWUT_GENERATOR_00021 | test_SWUT_GENERATOR_00021_parameter_formatting_diagram | ✅ Pass |
+| SWR_GENERATOR_00014 | SWUT_GENERATOR_00022 | test_SWUT_GENERATOR_00022_text_tree_generation | ✅ Pass |
+| SWR_GENERATOR_00015 | SWUT_GENERATOR_00023 | test_SWUT_GENERATOR_00023_circular_dependencies_section | ✅ Pass |
+| SWR_GENERATOR_00016 | SWUT_GENERATOR_00024 | test_SWUT_GENERATOR_00024_metadata_generation | ✅ Pass |
+| SWR_GENERATOR_00017 | SWUT_GENERATOR_00025 | test_SWUT_GENERATOR_00025_file_output | ✅ Pass |
+| SWR_GENERATOR_00018 | SWUT_GENERATOR_00026 | test_SWUT_GENERATOR_00026_string_output | ✅ Pass |
+| SWR_GENERATOR_00019 | SWUT_GENERATOR_00027 | test_SWUT_GENERATOR_00027_empty_call_tree_error | ✅ Pass |
+| SWR_GENERATOR_00017 | SWUT_GENERATOR_00028 | test_SWUT_GENERATOR_00028_optional_sections | ✅ Pass |
+| SWR_GENERATOR_00011 | SWUT_GENERATOR_00029 | test_SWUT_GENERATOR_00029_unique_functions_in_table | ✅ Pass |
+| SWR_GENERATOR_00011 | SWUT_GENERATOR_00030 | test_SWUT_GENERATOR_00030_sorted_function_table | ✅ Pass |
+| SWR_GENERATOR_00017 | SWUT_GENERATOR_00031 | test_SWUT_GENERATOR_00031_parent_directory_creation | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00032 | test_SWUT_GENERATOR_00032_opt_block_generation | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00033 | test_SWUT_GENERATOR_00033_multiple_optional_calls | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00034 | test_SWUT_GENERATOR_00034_mixed_optional_and_regular | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00035 | test_SWUT_GENERATOR_00035_nested_optional | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00036 | test_SWUT_GENERATOR_00036_recursive_not_opt | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00037 | test_SWUT_GENERATOR_00037_optional_with_returns | ✅ Pass |
+| SWR_MERMAID_00004 | SWUT_GENERATOR_00038 | test_SWUT_GENERATOR_00038_optional_function_mode | ✅ Pass |
+| SWR_MERMAID_00005 | SWUT_GENERATOR_00039 | test_SWUT_GENERATOR_00039_loop_block_generation | ✅ Pass |
+| SWR_MERMAID_00005 | SWUT_GENERATOR_00040 | test_SWUT_GENERATOR_00040_multiple_loop_calls | ✅ Pass |
+| SWR_MERMAID_00005 | SWUT_GENERATOR_00041 | test_SWUT_GENERATOR_00041_mixed_loop_and_optional | ✅ Pass |
+
+## Running Tests
+
+```bash
+# Run all Mermaid generator tests
+pytest tests/unit/test_mermaid_generator.py
+
+# Run specific test case
+pytest tests/unit/test_mermaid_generator.py::TestMermaidGenerator::test_SWUT_GENERATOR_00001_initialization
+
+# Run with coverage
+pytest tests/unit/test_mermaid_generator.py --cov=src/autosar_calltree/generators/mermaid_gen.py --cov-report=term-missing
+```
+
+## Change History
+
+| Date | Version | Author | Change Description |
+|------|---------|--------|-------------------|
+| 2026-02-10 | 1.1 | Claude | Added requirements traceability matrix, updated to align with new structure |
+| 2026-01-30 | 1.0 | Claude | Initial test documentation |
