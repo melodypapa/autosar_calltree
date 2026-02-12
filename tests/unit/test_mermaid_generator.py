@@ -1,8 +1,6 @@
-"""
-Unit tests for Mermaid Generator module.
+"""Tests for generators/mermaid_generator.py (SWUT_GEN_00001-00015)
 
-Tests the MermaidGenerator class which generates Mermaid sequence diagrams
-from call trees.
+Tests the MermaidGenerator class which generates Mermaid sequence diagrams from call trees.
 """
 
 from datetime import datetime
@@ -159,9 +157,9 @@ def create_mock_analysis_result(
     )
 
 
-# SWUT_GENERATOR_00001: Generator Initialization
+# SWUT_GEN_00001: Generator Initialization
 def test_initialization() -> None:
-    """SWUT_GENERATOR_00001
+    """SWUT_GEN_00001
     
     Test MermaidGenerator initialization with various options."""
     # Default initialization
@@ -183,9 +181,9 @@ def test_initialization() -> None:
     assert gen2.include_returns is True
 
 
-# SWUT_GENERATOR_00002: Mermaid Sequence Diagram Header
+# SWUT_GEN_00002: Mermaid Sequence Diagram Header
 def test_mermaid_header() -> None:
-    """SWUT_GENERATOR_00002
+    """SWUT_GEN_00002
     
     Test that generated Mermaid diagram starts with correct header."""
     result = create_mock_analysis_result()
@@ -197,9 +195,9 @@ def test_mermaid_header() -> None:
     assert lines[0] == "sequenceDiagram"
 
 
-# SWUT_GENERATOR_00003: Participant Collection - Function Names
+# SWUT_GEN_00003: Participant Collection - Function Names
 def test_collect_participants_functions() -> None:
-    """SWUT_GENERATOR_00003
+    """SWUT_GEN_00003
     
     Test participants collected as function names when use_module_names=False."""
     root = create_mock_call_tree(
@@ -225,9 +223,9 @@ def test_collect_participants_functions() -> None:
     assert len(participants) == 3
 
 
-# SWUT_GENERATOR_00004: Participant Collection - Module Names
+# SWUT_GEN_00004: Participant Collection - Module Names
 def test_collect_participants_modules() -> None:
-    """SWUT_GENERATOR_00004
+    """SWUT_GEN_00004
     
     Test participants collected as module names when use_module_names=True."""
     root = create_mock_call_tree(
@@ -253,9 +251,9 @@ def test_collect_participants_modules() -> None:
     assert len(participants) == 3
 
 
-# SWUT_GENERATOR_00005: Module Fallback to Filename
+# SWUT_GEN_00005: Module Fallback to Filename
 def test_module_fallback_to_filename() -> None:
-    """SWUT_GENERATOR_00005
+    """SWUT_GEN_00005
     
     Test functions without module assignment use filename as participant."""
     root = create_mock_call_tree(
@@ -279,9 +277,9 @@ def test_module_fallback_to_filename() -> None:
     assert len(participants) == 2
 
 
-# SWUT_GENERATOR_00006: RTE Function Abbreviation
+# SWUT_GEN_00006: RTE Function Abbreviation
 def test_rte_abbreviation() -> None:
-    """SWUT_GENERATOR_00006
+    """SWUT_GEN_00006
     
     Test that long RTE function names are abbreviated."""
     gen = MermaidGenerator(abbreviate_rte=True)
@@ -293,9 +291,9 @@ def test_rte_abbreviation() -> None:
     assert abbrev2 == "Rte_Write_SDS"
 
 
-# SWUT_GENERATOR_00007: RTE Abbreviation Disabled
+# SWUT_GEN_00007: RTE Abbreviation Disabled
 def test_rte_abbreviation_disabled() -> None:
-    """SWUT_GENERATOR_00007
+    """SWUT_GEN_00007
     
     Test that RTE abbreviation can be disabled."""
     gen = MermaidGenerator(abbreviate_rte=False)
@@ -304,9 +302,9 @@ def test_rte_abbreviation_disabled() -> None:
     assert abbrev == "Rte_Read_P_Voltage_Value"
 
 
-# SWUT_GENERATOR_00008: Short RTE Name Not Abbreviated
+# SWUT_GEN_00008: Short RTE Name Not Abbreviated
 def test_short_rte_not_abbreviated() -> None:
-    """SWUT_GENERATOR_00008
+    """SWUT_GEN_00008
     
     Test that short RTE names are not abbreviated."""
     gen = MermaidGenerator(abbreviate_rte=True)
@@ -318,9 +316,9 @@ def test_short_rte_not_abbreviated() -> None:
     assert abbrev2 == "Rte_Read"
 
 
-# SWUT_GENERATOR_00009: Sequence Call Generation - Function Mode
+# SWUT_GEN_00009: Sequence Call Generation - Function Mode
 def test_sequence_calls_function_mode() -> None:
-    """SWUT_GENERATOR_00009
+    """SWUT_GEN_00009
     
     Test sequence calls are generated correctly with function participants."""
     root = create_mock_call_tree(
@@ -344,9 +342,9 @@ def test_sequence_calls_function_mode() -> None:
     assert "Demo_Init->>HW_Init: call" in output
 
 
-# SWUT_GENERATOR_00010: Sequence Call Generation - Module Mode
+# SWUT_GEN_00010: Sequence Call Generation - Module Mode
 def test_sequence_calls_module_mode() -> None:
-    """SWUT_GENERATOR_00010
+    """SWUT_GEN_00010
     
     Test sequence calls show function names on arrows in module mode."""
     root = create_mock_call_tree(
@@ -370,9 +368,9 @@ def test_sequence_calls_module_mode() -> None:
     assert "DemoModule->>HardwareModule: HW_Init" in output
 
 
-# SWUT_GENERATOR_00011: Parameter Display on Arrows
+# SWUT_GEN_00011: Parameter Display on Arrows
 def test_parameters_on_arrows() -> None:
-    """SWUT_GENERATOR_00011
+    """SWUT_GEN_00011
     
     Test that function parameters are displayed on sequence arrows."""
     params = [Parameter("timerId", "uint32", False, False)]
@@ -398,9 +396,9 @@ def test_parameters_on_arrows() -> None:
     assert "HW_Init(timerId)" in output
 
 
-# SWUT_GENERATOR_00012: Multiple Parameters Display
+# SWUT_GEN_00012: Multiple Parameters Display
 def test_multiple_parameters() -> None:
-    """SWUT_GENERATOR_00012
+    """SWUT_GEN_00012
     
     Test that multiple parameters are comma-separated."""
     params = [
@@ -429,9 +427,9 @@ def test_multiple_parameters() -> None:
     assert "Func(value, status)" in output
 
 
-# SWUT_GENERATOR_00013: Recursive Call Handling
+# SWUT_GEN_00013: Recursive Call Handling
 def test_recursive_call_handling() -> None:
-    """SWUT_GENERATOR_00013
+    """SWUT_GEN_00013
     
     Test that recursive calls use special arrow syntax."""
     root = create_mock_call_tree(
@@ -459,9 +457,9 @@ def test_recursive_call_handling() -> None:
     assert "DemoModule-->>xHardwareModule: HW_Init [recursive]" in output
 
 
-# SWUT_GENERATOR_00052: Recursive Call Without Module Names (Line 227)
+# SWUT_GEN_00052: Recursive Call Without Module Names (Line 227)
 def test_recursive_call_without_module_names_line_227() -> None:
-    """SWUT_GENERATOR_00052
+    """SWUT_GEN_00052
     
     Test recursive call with use_module_names=False (covers line 227)."""
     root = create_mock_call_tree(
@@ -489,9 +487,9 @@ def test_recursive_call_without_module_names_line_227() -> None:
     assert "Demo_Init-->>xHW_Init: recursive call" in output
 
 
-# SWUT_GENERATOR_00014: Return Statement Generation
+# SWUT_GEN_00014: Return Statement Generation
 def test_return_statements() -> None:
-    """SWUT_GENERATOR_00014
+    """SWUT_GEN_00014
     
     Test that return statements are generated when include_returns=True."""
     root = create_mock_call_tree(
@@ -515,9 +513,9 @@ def test_return_statements() -> None:
     assert "HardwareModule-->>DemoModule: return" in output
 
 
-# SWUT_GENERATOR_00015: Return Statements Disabled by Default
+# SWUT_GEN_00015: Return Statements Disabled by Default
 def test_returns_disabled_default() -> None:
-    """SWUT_GENERATOR_00015
+    """SWUT_GEN_00015
     
     Test that return statements are not generated by default."""
     root = create_mock_call_tree(
@@ -541,9 +539,9 @@ def test_returns_disabled_default() -> None:
     assert "return" not in output.lower()
 
 
-# SWUT_GENERATOR_00016: Function Table - Function Mode
+# SWUT_GEN_00016: Function Table - Function Mode
 def test_function_table_format() -> None:
-    """SWUT_GENERATOR_00016
+    """SWUT_GEN_00016
     
     Test function table has correct format when use_module_names=False."""
     root = create_mock_call_tree([("Demo_Init", "demo.c", None)])
@@ -557,9 +555,9 @@ def test_function_table_format() -> None:
     assert "| Module |" not in table
 
 
-# SWUT_GENERATOR_00017: Function Table - Module Mode
+# SWUT_GEN_00017: Function Table - Module Mode
 def test_function_table_module_column() -> None:
-    """SWUT_GENERATOR_00017
+    """SWUT_GEN_00017
     
     Test function table includes Module column when use_module_names=True."""
     root = create_mock_call_tree(
@@ -585,9 +583,9 @@ def test_function_table_module_column() -> None:
     assert "| `HW_Init` | HardwareModule |" in table
 
 
-# SWUT_GENERATOR_00018: Function Table - N/A for Unmapped
+# SWUT_GEN_00018: Function Table - N/A for Unmapped
 def test_function_table_na_for_unmapped() -> None:
-    """SWUT_GENERATOR_00018
+    """SWUT_GEN_00018
     
     Test unmapped functions show 'N/A' in Module column."""
     root = create_mock_call_tree(
@@ -609,9 +607,9 @@ def test_function_table_na_for_unmapped() -> None:
     assert "| `Unmapped` | N/A |" in table
 
 
-# SWUT_GENERATOR_00019: Parameter Formatting for Table
+# SWUT_GEN_00019: Parameter Formatting for Table
 def test_parameter_formatting_table() -> None:
-    """SWUT_GENERATOR_00019
+    """SWUT_GEN_00019
     
     Test parameters formatted correctly for function table."""
     params = [
@@ -628,9 +626,9 @@ def test_parameter_formatting_table() -> None:
     assert "ptr`" in formatted
 
 
-# SWUT_GENERATOR_00020: Void Parameter Display
+# SWUT_GEN_00020: Void Parameter Display
 def test_void_parameters() -> None:
-    """SWUT_GENERATOR_00020
+    """SWUT_GEN_00020
     
     Test functions with no parameters show 'void'."""
     func = create_mock_function("Func", "file.c", [])
@@ -641,9 +639,9 @@ def test_void_parameters() -> None:
     assert formatted == "`void`"
 
 
-# SWUT_GENERATOR_00021: Parameter Formatting for Diagram
+# SWUT_GEN_00021: Parameter Formatting for Diagram
 def test_parameter_formatting_diagram() -> None:
-    """SWUT_GENERATOR_00021
+    """SWUT_GEN_00021
     
     Test parameters formatted for sequence diagram (names only)."""
     params = [
@@ -658,9 +656,9 @@ def test_parameter_formatting_diagram() -> None:
     assert formatted == "value, status"
 
 
-# SWUT_GENERATOR_00022: Text Tree Generation
+# SWUT_GEN_00022: Text Tree Generation
 def test_text_tree_generation() -> None:
-    """SWUT_GENERATOR_00022
+    """SWUT_GEN_00022
     
     Test text tree is generated with correct formatting."""
     root = create_mock_call_tree(
@@ -685,9 +683,9 @@ def test_text_tree_generation() -> None:
     assert "└── SW_Init (sw.c:1)" in tree or "├── SW_Init (sw.c:1)" in tree
 
 
-# SWUT_GENERATOR_00023: Circular Dependencies Section
+# SWUT_GEN_00023: Circular Dependencies Section
 def test_circular_dependencies_section() -> None:
-    """SWUT_GENERATOR_00023
+    """SWUT_GEN_00023
     
     Test circular dependencies are displayed in section."""
     result = create_mock_analysis_result()
@@ -707,9 +705,9 @@ def test_circular_dependencies_section() -> None:
     assert "**Depth 4**" in section
 
 
-# SWUT_GENERATOR_00024: Metadata Generation
+# SWUT_GEN_00024: Metadata Generation
 def test_metadata_generation() -> None:
-    """SWUT_GENERATOR_00024
+    """SWUT_GEN_00024
     
     Test metadata section is generated correctly."""
     result = create_mock_analysis_result()
@@ -730,9 +728,9 @@ def test_metadata_generation() -> None:
     assert "**Circular Dependencies**: 0" in metadata
 
 
-# SWUT_GENERATOR_00025: File Output Generation
+# SWUT_GEN_00025: File Output Generation
 def test_file_output(tmp_path: Path) -> None:
-    """SWUT_GENERATOR_00025
+    """SWUT_GEN_00025
     
     Test generate() creates markdown file with all sections."""
     result = create_mock_analysis_result()
@@ -750,9 +748,9 @@ def test_file_output(tmp_path: Path) -> None:
     assert "## Function Details" in content
 
 
-# SWUT_GENERATOR_00026: String Output Generation
+# SWUT_GEN_00026: String Output Generation
 def test_string_output() -> None:
-    """SWUT_GENERATOR_00026
+    """SWUT_GEN_00026
     
     Test generate_to_string returns complete markdown."""
     result = create_mock_analysis_result()
@@ -766,9 +764,9 @@ def test_string_output() -> None:
     assert "```mermaid" in output
 
 
-# SWUT_GENERATOR_00027: Empty Call Tree Error
+# SWUT_GEN_00027: Empty Call Tree Error
 def test_empty_call_tree_error(tmp_path: Path) -> None:
-    """SWUT_GENERATOR_00027
+    """SWUT_GEN_00027
     
     Test ValueError raised for empty call tree."""
     result = create_mock_analysis_result(has_tree=False)
@@ -779,9 +777,9 @@ def test_empty_call_tree_error(tmp_path: Path) -> None:
         gen.generate(result, str(output_path))
 
 
-# SWUT_GENERATOR_00028: Optional Content Sections
+# SWUT_GEN_00028: Optional Content Sections
 def test_optional_sections(tmp_path: Path) -> None:
-    """SWUT_GENERATOR_00028
+    """SWUT_GEN_00028
     
     Test optional sections can be disabled."""
     result = create_mock_analysis_result()
@@ -803,9 +801,9 @@ def test_optional_sections(tmp_path: Path) -> None:
     assert "## Sequence Diagram" in content  # Always included
 
 
-# SWUT_GENERATOR_00029: Unique Functions in Table
+# SWUT_GEN_00029: Unique Functions in Table
 def test_unique_functions_in_table() -> None:
-    """SWUT_GENERATOR_00029
+    """SWUT_GEN_00029
     
     Test function table shows each function only once."""
     # Create tree where same function appears multiple times
@@ -838,9 +836,9 @@ def test_unique_functions_in_table() -> None:
     assert len(lines) == 1
 
 
-# SWUT_GENERATOR_00030: Sorted Function Table
+# SWUT_GEN_00030: Sorted Function Table
 def test_sorted_function_table() -> None:
-    """SWUT_GENERATOR_00030
+    """SWUT_GEN_00030
     
     Test function table is sorted alphabetically."""
     root = create_mock_call_tree(
@@ -869,9 +867,9 @@ def test_sorted_function_table() -> None:
     assert func_names == sorted(func_names)
 
 
-# SWUT_GENERATOR_00031: Parent Directory Creation
+# SWUT_GEN_00031: Parent Directory Creation
 def test_parent_directory_creation(tmp_path: Path) -> None:
-    """SWUT_GENERATOR_00031
+    """SWUT_GEN_00031
     
     Test output creates parent directories if needed."""
     result = create_mock_analysis_result()
@@ -1119,9 +1117,9 @@ def test_mixed_modules_and_filenames() -> None:
     assert len(participants) == 3
 
 
-# SWUT_GENERATOR_00032: Optional Call - Opt Block Generation
+# SWUT_GEN_00032: Optional Call - Opt Block Generation
 def test_opt_block_generation() -> None:
-    """SWUT_GENERATOR_00032
+    """SWUT_GEN_00032
     
     Test that optional calls are wrapped in opt blocks."""
     root = create_mock_call_tree(
@@ -1149,9 +1147,9 @@ def test_opt_block_generation() -> None:
     assert "    end" in lines
 
 
-# SWUT_GENERATOR_00033: Optional Call - Multiple Optional Calls
+# SWUT_GEN_00033: Optional Call - Multiple Optional Calls
 def test_multiple_optional_calls() -> None:
-    """SWUT_GENERATOR_00033
+    """SWUT_GEN_00033
     
     Test that multiple optional calls each get their own opt block."""
     root = create_mock_call_tree(
@@ -1183,9 +1181,9 @@ def test_multiple_optional_calls() -> None:
     assert end_count == 2
 
 
-# SWUT_GENERATOR_00034: Optional Call - Mixed Optional and Regular
+# SWUT_GEN_00034: Optional Call - Mixed Optional and Regular
 def test_mixed_optional_and_regular() -> None:
-    """SWUT_GENERATOR_00034
+    """SWUT_GEN_00034
     
     Test diagram with both optional and regular calls."""
     root = create_mock_call_tree(
@@ -1220,9 +1218,9 @@ def test_mixed_optional_and_regular() -> None:
     assert "MainMod->>AnotherMod: AnotherRegular" in diagram
 
 
-# SWUT_GENERATOR_00035: Optional Call - Nested Optional
+# SWUT_GEN_00035: Optional Call - Nested Optional
 def test_nested_optional() -> None:
-    """SWUT_GENERATOR_00035
+    """SWUT_GEN_00035
     
     Test that optional calls in nested levels also get opt blocks."""
     root = create_mock_call_tree(
@@ -1256,9 +1254,9 @@ def test_nested_optional() -> None:
     assert "    ParentMod->>ChildMod: ChildOptional" in diagram
 
 
-# SWUT_GENERATOR_00036: Optional Call - Recursive Not Optional
+# SWUT_GEN_00036: Optional Call - Recursive Not Optional
 def test_recursive_not_opt() -> None:
-    """SWUT_GENERATOR_00036
+    """SWUT_GEN_00036
     
     Test that recursive calls are not wrapped in opt blocks unless marked."""
     root = create_mock_call_tree(
@@ -1287,9 +1285,9 @@ def test_recursive_not_opt() -> None:
     assert "-->>x" in diagram
 
 
-# SWUT_GENERATOR_00037: Optional Call - Optional with Returns
+# SWUT_GEN_00037: Optional Call - Optional with Returns
 def test_optional_with_returns() -> None:
-    """SWUT_GENERATOR_00037
+    """SWUT_GEN_00037
     
     Test optional calls with return statements."""
     root = create_mock_call_tree(
@@ -1317,9 +1315,9 @@ def test_optional_with_returns() -> None:
     # Current implementation puts return after end of opt block
 
 
-# SWUT_GENERATOR_00038: Optional Call - Function Mode
+# SWUT_GEN_00038: Optional Call - Function Mode
 def test_optional_function_mode() -> None:
-    """SWUT_GENERATOR_00038
+    """SWUT_GEN_00038
     
     Test optional calls work in function mode (not module mode)."""
     root = create_mock_call_tree(
@@ -1346,9 +1344,9 @@ def test_optional_function_mode() -> None:
     # Should use function names as participants
 
 
-# SWUT_GENERATOR_00039: Loop Block Generation
+# SWUT_GEN_00039: Loop Block Generation
 def test_loop_block_generation() -> None:
-    """SWUT_GENERATOR_00039"""
+    """SWUT_GEN_00039"""
     """Test that loop calls are wrapped in loop blocks.
 
     SWR_GEN_00005: Loop Block Generation
@@ -1377,9 +1375,9 @@ def test_loop_block_generation() -> None:
     assert "    end" in diagram
 
 
-# SWUT_GENERATOR_00040: Multiple Loop Calls
+# SWUT_GEN_00040: Multiple Loop Calls
 def test_multiple_loop_calls() -> None:
-    """SWUT_GENERATOR_00040"""
+    """SWUT_GEN_00040"""
     """Test that multiple loop calls each get their own loop block.
 
     SWR_GEN_00005: Multiple Loop Calls
@@ -1412,9 +1410,9 @@ def test_multiple_loop_calls() -> None:
     assert "    loop j < 20" in diagram
 
 
-# SWUT_GENERATOR_00041: Mixed Loop and Optional
+# SWUT_GEN_00041: Mixed Loop and Optional
 def test_mixed_loop_and_optional() -> None:
-    """SWUT_GENERATOR_00041"""
+    """SWUT_GEN_00041"""
     """Test diagram with both loop and optional calls.
 
     SWR_GEN_00005: Mixed Loop and Optional
@@ -1452,7 +1450,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
     """Tests to cover missing lines in mermaid_generator.py."""
 
     def test_rte_participant_abbreviation(self):
-        """SWUT_GENERATOR_00042
+        """SWUT_GEN_00042
         
         Test RTE participant abbreviation in participant map (lines 143-145)."""
         root = create_mock_call_tree(
@@ -1479,7 +1477,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert gen.participant_map["Rte_Read_P_Voltage_Value"] == "Rte_Read_PVV"
 
     def test_parameter_pointer_backtick(self):
-        """SWUT_GENERATOR_00043
+        """SWUT_GEN_00043
         
         Test parameter formatting with pointer and backtick (line 374)."""
         func = create_mock_function(
@@ -1497,7 +1495,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "`uint8* buffer`" in params
 
     def test_parameter_type_asterisk_for_diagram(self):
-        """SWUT_GENERATOR_00044
+        """SWUT_GEN_00044
         
         Test parameter type with asterisk for diagram when no name (line 399)."""
         func = create_mock_function(
@@ -1515,7 +1513,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "uint8*" in params
 
     def test_generate_to_string_none_call_tree(self):
-        """SWUT_GENERATOR_00045
+        """SWUT_GEN_00045
         
         Test generate_to_string raises ValueError for None call tree (line 479)."""
         result = create_mock_analysis_result(has_tree=False)
@@ -1526,7 +1524,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
             gen.generate_to_string(result)
 
     def test_circular_deps_section_generation(self):
-        """SWUT_GENERATOR_00046
+        """SWUT_GEN_00046
         
         Test circular dependencies section is generated (line 504)."""
         from autosar_calltree.database.models import CircularDependency
@@ -1548,7 +1546,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "FuncA → FuncB → FuncA" in output
 
     def test_generate_non_recursive_call_with_params_line_227(self):
-        """SWUT_GENERATOR_00047
+        """SWUT_GEN_00047
         
         Test generate non-recursive call with parameters (line 227)."""
         root = create_mock_call_tree(
@@ -1581,7 +1579,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "CallerModule->>CalleeModule:" in output
 
     def test_generate_non_recursive_call_without_modules_line_227(self):
-        """SWUT_GENERATOR_00051
+        """SWUT_GEN_00051
         
         Test generate non-recursive call without module names (line 227)."""
         root = create_mock_call_tree(
@@ -1608,7 +1606,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "CallerFunc->>CalleeFunc: call" in output
 
     def test_format_parameters_adds_backtick_line_374(self):
-        """SWUT_GENERATOR_00048
+        """SWUT_GEN_00048
         
         Test _format_parameters adds backtick when no param name (line 374)."""
         func = create_mock_function(
@@ -1626,7 +1624,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "`uint8*`" in params
 
     def test_format_parameters_with_name(self):
-        """SWUT_GENERATOR_00049
+        """SWUT_GEN_00049
         
         Test _format_parameters with parameter name."""
         func = create_mock_function(
@@ -1644,7 +1642,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "`uint32 value`" in params
 
     def test_format_parameters_multiple_params(self):
-        """SWUT_GENERATOR_00050
+        """SWUT_GEN_00050
         
         Test _format_parameters with multiple parameters."""
         func = create_mock_function(

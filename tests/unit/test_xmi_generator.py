@@ -1,8 +1,6 @@
-"""
-Unit tests for XMI Generator module.
+"""Tests for generators/xmi_generator.py (SWUT_GEN_00016-00025)
 
-Tests the XmiGenerator class which generates XMI 2.5 compliant
-UML sequence diagrams from call trees.
+Tests the XmiGenerator class which generates XMI 2.5 compliant UML sequence diagrams from call trees.
 """
 
 import tempfile

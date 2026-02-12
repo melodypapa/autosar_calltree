@@ -1,9 +1,4 @@
-"""
-Unit tests for FunctionDatabase module.
-
-Tests cover database initialization, building, indexing, smart lookup,
-caching, and query methods.
-"""
+"""Tests for database/function_database.py (SWUT_DB_00011-00035)"""
 
 import sys
 import tempfile
@@ -36,12 +31,13 @@ def create_function(
 
 
 class TestFunctionDatabaseInitialization:
-    """Test database initialization and setup (SWR_DB_00001, SWR_DB_00002)."""
+    """Test database initialization and setup (SWUT_DB_00011)."""
 
     def test_database_initialization(self):
-        """SWUT_DB_00001
-        
-        Test database can be initialized with source directory (SWR_DB_00001)."""
+        """SWUT_DB_00011
+
+        Test that FunctionDatabase can be initialized with source directory.
+        """
         db = FunctionDatabase(source_dir="./demo")
 
         assert db.source_dir == Path("./demo")
@@ -52,9 +48,10 @@ class TestFunctionDatabaseInitialization:
         assert db.functions_by_file == {}
 
     def test_custom_cache_directory(self):
-        """SWUT_DB_00001
-        
-        Test database can be initialized with custom cache directory."""
+        """SWUT_DB_00011
+
+        Test that FunctionDatabase can be initialized with custom cache directory.
+        """
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = Path(temp_dir) / "custom_cache"
             db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_path))
@@ -63,9 +60,10 @@ class TestFunctionDatabaseInitialization:
             assert db.cache_file == cache_path / "function_db.pkl"
 
     def test_with_module_config(self):
-        """SWUT_DB_00001
-        
-        Test database can be initialized with module configuration."""
+        """SWUT_DB_00011
+
+        Test that FunctionDatabase can be initialized with module configuration.
+        """
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
             config_file.write_text(
@@ -84,7 +82,7 @@ file_mappings:
     def test_cache_directory_creation(self):
         """SWUT_DB_00002
         
-        Test cache directory is created automatically (SWR_DB_00002)."""
+        Test cache directory is created automatically (SWUT_DB_00012)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = Path(temp_dir) / "test_cache"
             assert not cache_path.exists()
@@ -96,12 +94,12 @@ file_mappings:
 
 
 class TestDatabaseIndexing:
-    """Test three-index database structure (SWR_DB_00003)."""
+    """Test three-index database structure (SWUT_DB_00012)."""
 
     def test_three_index_structure(self):
         """SWUT_DB_00003
         
-        Test database maintains three indexing structures (SWR_DB_00003)."""
+        Test database maintains three indexing structures (SWUT_DB_00012)."""
         db = FunctionDatabase(source_dir="./demo")
 
         func = create_function(
@@ -170,12 +168,12 @@ class TestDatabaseIndexing:
 
 
 class TestDatabaseBuilding:
-    """Test database building from source files (SWR_DB_00004, SWR_DB_00005)."""
+    """Test database building from source files (SWUT_DB_00013)."""
 
     def test_source_file_discovery(self):
         """SWUT_DB_00004
         
-        Test database discovers all .c files recursively (SWR_DB_00004)."""
+        Test database discovers all .c files recursively (SWUT_DB_00013)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
@@ -208,7 +206,7 @@ class TestDatabaseBuilding:
     def test_database_building(self):
         """SWUT_DB_00005
         
-        Test database builds correctly from demo directory (SWR_DB_00005)."""
+        Test database builds correctly from demo directory (SWUT_DB_00013)."""
         import shutil
         import tempfile
 
@@ -234,7 +232,7 @@ class TestDatabaseBuilding:
     def test_parse_error_collection(self):
         """SWUT_DB_00005
         
-        Test parse errors are collected without stopping scan (SWR_DB_00021)."""
+        Test parse errors are collected without stopping scan (SWUT_DB_00022)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
 
@@ -261,12 +259,12 @@ void valid_func(void) {
 
 
 class TestModuleConfiguration:
-    """Test module configuration integration (SWR_DB_00006, SWR_DB_00007)."""
+    """Test module configuration integration (SWUT_DB_00017)."""
 
     def test_module_config_integration(self):
         """SWUT_DB_00006
         
-        Test module configuration is applied to functions (SWR_DB_00006)."""
+        Test module configuration is applied to functions (SWUT_DB_00017)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
             config_file.write_text(
@@ -317,7 +315,7 @@ file_mappings:
     def test_module_statistics_tracking(self):
         """SWUT_DB_00007
         
-        Test module statistics are tracked correctly (SWR_DB_00007)."""
+        Test module statistics are tracked correctly (SWUT_DB_00017)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
             config_file.write_text(
@@ -354,12 +352,12 @@ file_mappings:
 
 
 class TestSmartFunctionLookup:
-    """Test smart function lookup strategies (SWR_DB_00009-00012)."""
+    """Test smart function lookup strategies (SWUT_DB_00015)."""
 
     def test_smart_lookup_implementation_preference(self):
         """SWUT_DB_00009
         
-        Test prefer functions with implementations (SWR_DB_00009)."""
+        Test prefer functions with implementations (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
         # Declaration (no calls)
@@ -387,7 +385,7 @@ class TestSmartFunctionLookup:
     def test_smart_lookup_filename_heuristics(self):
         """SWUT_DB_00010
         
-        Test prefer functions from files matching function name (SWR_DB_00010)."""
+        Test prefer functions from files matching function name (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
         # Function in matching file
@@ -417,7 +415,7 @@ class TestSmartFunctionLookup:
     def test_smart_lookup_cross_module_awareness(self):
         """SWUT_DB_00011
         
-        Test avoid functions from calling file (SWR_DB_00011)."""
+        Test avoid functions from calling file (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
         # Declaration in calling file
@@ -445,7 +443,7 @@ class TestSmartFunctionLookup:
     def test_smart_lookup_module_preference(self):
         """SWUT_DB_00012
         
-        Test prefer functions with modules assigned (SWR_DB_00012)."""
+        Test prefer functions with modules assigned (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
         # Function with module
@@ -485,12 +483,12 @@ class TestSmartFunctionLookup:
 
 
 class TestCaching:
-    """Test cache save/load functionality (SWR_DB_00013-00016)."""
+    """Test cache save/load functionality (SWUT_DB_00018)."""
 
     def test_cache_save_load(self):
         """SWUT_DB_00010
         
-        Test cache can be saved and loaded (SWR_DB_00014)."""
+        Test cache can be saved and loaded (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
             db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
@@ -513,7 +511,7 @@ class TestCaching:
     def test_cache_metadata_validation(self):
         """SWUT_DB_00013
         
-        Test cache loading validates metadata (SWR_DB_00013)."""
+        Test cache loading validates metadata (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
 
@@ -533,7 +531,7 @@ class TestCaching:
     def test_cache_error_handling(self):
         """SWUT_DB_00012
         
-        Test cache loading handles errors gracefully (SWR_DB_00016)."""
+        Test cache loading handles errors gracefully (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
             db = FunctionDatabase(source_dir="./demo", cache_dir=str(cache_dir))
@@ -551,7 +549,7 @@ class TestCaching:
     def test_cache_loading_progress(self):
         """SWUT_DB_00015
         
-        Test cache loading shows file-by-file progress (SWR_DB_00015)."""
+        Test cache loading shows file-by-file progress (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
 
@@ -581,7 +579,7 @@ class TestCaching:
     def test_cache_clearing(self):
         """SWUT_DB_00020
         
-        Test cache file can be deleted (SWR_DB_00022)."""
+        Test cache file can be deleted (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
 
@@ -610,12 +608,12 @@ class TestCaching:
 
 
 class TestFileSizeFormatting:
-    """Test file size formatting in processing messages (SWR_DB_00025)."""
+    """Test file size formatting in processing messages (SWUT_DB_00025)."""
 
     def test_file_size_bytes(self):
         """SWUT_DB_00021
         
-        Test file size formatting for bytes (< 1KB) (SWR_DB_00025)."""
+        Test file size formatting for bytes (< 1KB) (SWUT_DB_00025)."""
         # Files smaller than 1KB should display raw bytes
         assert _format_file_size(512) == "512"
         assert _format_file_size(0) == "0"
@@ -624,7 +622,7 @@ class TestFileSizeFormatting:
     def test_file_size_kilobytes(self):
         """SWUT_DB_00021
         
-        Test file size formatting for KB (1KB to 1MB) (SWR_DB_00025)."""
+        Test file size formatting for KB (1KB to 1MB) (SWUT_DB_00025)."""
         # Files 1KB to 1MB should display in KB with 2 decimal places
         assert _format_file_size(1024) == "1.00K"
         assert _format_file_size(5120) == "5.00K"  # 5 KB
@@ -635,7 +633,7 @@ class TestFileSizeFormatting:
     def test_file_size_megabytes(self):
         """SWUT_DB_00021
         
-        Test file size formatting for MB (>= 1MB) (SWR_DB_00025)."""
+        Test file size formatting for MB (>= 1MB) (SWUT_DB_00025)."""
         # Files 1MB and larger should display in MB with 2 decimal places
         assert _format_file_size(1024 * 1024) == "1.00M"
         assert _format_file_size(2 * 1024 * 1024) == "2.00M"  # 2 MB
@@ -646,7 +644,7 @@ class TestFileSizeFormatting:
     def test_file_size_display_in_processing(self):
         """SWUT_DB_00021
         
-        Test file size is displayed during database building (SWR_DB_00025)."""
+        Test file size is displayed during database building (SWUT_DB_00025)."""
         import sys
         import tempfile
         from io import StringIO
@@ -677,12 +675,12 @@ class TestFileSizeFormatting:
 
 
 class TestQueryMethods:
-    """Test database query methods (SWR_DB_00017-00020, SWR_DB_00023-00024)."""
+    """Test database query methods (SWUT_DB_00016)."""
 
     def test_function_lookup_by_name(self):
         """SWUT_DB_00013
         
-        Test functions can be looked up by name (SWR_DB_00017)."""
+        Test functions can be looked up by name (SWUT_DB_00016)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
 
@@ -705,7 +703,7 @@ class TestQueryMethods:
     def test_qualified_function_lookup(self):
         """SWUT_DB_00014
         
-        Test functions can be looked up by qualified name (SWR_DB_00018)."""
+        Test functions can be looked up by qualified name (SWUT_DB_00016)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
 
@@ -729,7 +727,7 @@ class TestQueryMethods:
     def test_function_search_pattern(self):
         """SWUT_DB_00015
         
-        Test functions can be searched by pattern (SWR_DB_00019)."""
+        Test functions can be searched by pattern (SWUT_DB_00016)."""
         import shutil
         import tempfile
 
@@ -779,7 +777,7 @@ class TestQueryMethods:
     def test_database_statistics(self):
         """SWUT_DB_00016
         
-        Test database returns accurate statistics (SWR_DB_00020)."""
+        Test database returns accurate statistics (SWUT_DB_00016)."""
         import shutil
         import tempfile
 
@@ -813,7 +811,7 @@ class TestQueryMethods:
     def test_get_all_function_names(self):
         """SWUT_DB_00017
         
-        Test database returns sorted list of function names (SWR_DB_00023)."""
+        Test database returns sorted list of function names (SWUT_DB_00016)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
 
@@ -838,7 +836,7 @@ class TestQueryMethods:
     def test_get_functions_by_file(self):
         """SWUT_DB_00018
         
-        Test database can return functions in a file (SWR_DB_00024)."""
+        Test database can return functions in a file (SWUT_DB_00018)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
 
