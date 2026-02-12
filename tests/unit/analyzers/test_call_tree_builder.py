@@ -1,11 +1,9 @@
 """Tests for analyzers/call_tree_builder.py (SWUT_ANALYZER_00001-00015)"""
 
 from pathlib import Path
-import pytest
 
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.database.function_database import FunctionDatabase
-from autosar_calltree.database.models import FunctionInfo, CallTreeNode, FunctionType
 
 
 # SWUT_ANALYZER_00001: Builder Initialization
@@ -342,7 +340,7 @@ def test_qualified_name_usage():
 
     builder = CallTreeBuilder(db)
 
-    result = builder.build_tree("Demo_Init", max_depth=5, verbose=False)
+    _ = builder.build_tree("Demo_Init", max_depth=5, verbose=False)
 
     # Qualified names prevent false cycle detection across files
     # This is verified by checking call_stack operations

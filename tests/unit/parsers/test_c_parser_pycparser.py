@@ -25,13 +25,9 @@ def test_pycparser_optional_dependency():
     # If pycparser is not installed, this test module is skipped
     # The pytestmark at module level handles this
 
-    # When installed, verify parser can be imported
-    try:
-        from autosar_calltree.parsers.c_parser_pycparser import CParserPyCParser  # type: ignore
-        # If we get here, pycparser is installed
-        assert True
-    except ImportError:
-        pytest.fail("pycparser should be installed for this test")
+    # When installed, verify parser class is available
+    # (If we reach here, module-level import succeeded)
+    assert CParserPyCParser is not None
 
 
 # SWUT_PARSER_00027: AST-Based Parsing

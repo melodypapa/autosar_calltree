@@ -1,7 +1,6 @@
 """Tests for parsers/autosar_parser.py (SWUT_PARSER_00001-00010)"""
 
 from pathlib import Path
-import pytest
 
 from autosar_calltree.database.models import FunctionType
 from autosar_calltree.parsers.autosar_parser import AutosarParser

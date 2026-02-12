@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from pathlib import Path
-import pytest
 
 from autosar_calltree.database.models import (
     AnalysisResult,
@@ -10,7 +9,6 @@ from autosar_calltree.database.models import (
     CallTreeNode,
     CircularDependency,
     FunctionCall,
-    FunctionDict,
     FunctionInfo,
     FunctionType,
     Parameter,
