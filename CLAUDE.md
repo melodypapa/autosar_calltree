@@ -8,7 +8,7 @@ AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR c
 
 **Key capability**: Handles AUTOSAR's proprietary macros that traditional C parsers cannot understand. Use this when working with automotive embedded systems code.
 
-**Latest feature (v0.6.0)**: Loop detection and multi-line if condition extraction for complex AUTOSAR code.
+**Latest feature (v0.6.1)**: Alternative pycparser-based C parser for more reliable parsing of standard C code.
 
 ## Development Commands
 
@@ -45,6 +45,9 @@ flake8 src/ tests/
 
 # Build package
 python -m build
+
+# Install with pycparser support (optional, for enhanced C parsing)
+pip install -e ".[parser]"
 
 # Test CLI entry point
 calltree --help
@@ -95,9 +98,10 @@ Source Files → Parsers → Database → Analyzer → Generator → Output
 
 1. **Parsers** (`src/autosar_calltree/parsers/`)
    - `AutosarParser`: Handles AUTOSAR-specific macros (`FUNC`, `FUNC_P2VAR`, `FUNC_P2CONST`, `VAR`, `P2VAR`, `P2CONST`, etc.)
-   - `CParser`: Fallback for traditional C function declarations; also extracts function calls with conditional context (if/else blocks)
+   - `CParser`: Regex-based fallback for traditional C function declarations; also extracts function calls with conditional context (if/else blocks)
+   - `CParserPyCParser` (optional, requires pycparser): AST-based parser using pycparser for more reliable parsing of standard C code
+   - **Progressive Enhancement**: Try AUTOSAR parser first, fall back to C parser (regex-based or pycparser-based if installed)
    - Both extract: function signatures, parameters, return types, and function calls within bodies
-   - **Progressive Enhancement**: Try AUTOSAR parser first, fall back to C parser
 
 2. **Database** (`src/autosar_calltree/database/`)
    - `FunctionDatabase`: Scans source directory, parses all files, builds in-memory index
@@ -329,7 +333,7 @@ The CI workflow (`.github/workflows/ci.yml`) runs these checks in sequence:
    - `flake8` - Style guide enforcement (checks for newlines at EOF, etc.)
    - `mypy` - Static type checking
 
-2. **Tests** (matrix: Python 3.8-3.12):
+2. **Tests** (matrix: Python 3.10-3.13):
    - `pytest` with coverage reporting
    - Uploads coverage to Codecov
 
@@ -358,7 +362,7 @@ tests/
 └── conftest.py              # Shared pytest fixtures
 ```
 
-**Test coverage**: 89% overall (298 tests). See README.md for module-by-module breakdown.
+**Test coverage**: See README.md for current statistics.
 
 ## File Locations
 
@@ -373,7 +377,36 @@ tests/
 
 ## Version History
 
+- **v0.6.1** (2026-02-11): Alternative pycparser-based C parser for more reliable standard C parsing
 - **v0.6.0** (2026-02-10): Loop detection and multi-line if condition extraction for complex AUTOSAR code
 - **v0.5.0** (2026-02-04): Conditional function call tracking with opt/alt/else blocks
 - **v0.4.0**: XMI/UML 2.5 output format implementation
 - **v0.3.0**: SW module configuration system
+
+## Optional: pycparser Integration
+
+The project includes an optional pycparser-based C parser (`CParserPyCParser`) that provides more reliable parsing of standard C code through AST analysis.
+
+**Installation**:
+```bash
+pip install -e ".[parser]"  # Includes pycparser
+```
+
+**Benefits over regex-based CParser**:
+- More accurate function signature extraction (handles complex types, nested pointers)
+- Better const/volatile qualifier preservation
+- Reliable parameter parsing for complex declarations
+- Fewer false positives from C keywords
+
+**Limitations**:
+- Requires pycparser installation (not in core dependencies)
+- Does not track conditional/loop context (TODO: `# TODO: Track if/else context` in code)
+- Still requires AutosarParser for AUTOSAR macros (pycparser cannot parse them)
+
+**Usage**: The parser is not yet integrated into the main CLI. To use it programmatically:
+```python
+from autosar_calltree.parsers.c_parser_pycparser import CParserPyCParser
+
+parser = CParserPyCParser()
+functions = parser.parse_file(Path("example.c"))
+```

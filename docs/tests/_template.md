@@ -2,63 +2,59 @@
 
 ## Overview
 
-This document describes the test cases for the [Module] module.
+This document describes test cases for the [Module] module, organized by requirement structure.
 
 **Requirements Document**: [../requirements/[module].md](../requirements/[module].md)
 
-**Requirement IDs**: SWR_[MODULE]_00001 - SWR_[MODULE]_000XX
-
-**Test IDs**: SWUT_[MODULE]_00001 - SWUT_[MODULE]_000XX
-
+**Package**: `autosar_calltree.[module]`
+**Requirement IDs**: SWR_[MODULE_CODE]_00001 - SWR_[MODULE_CODE]_000XX
 **Coverage**: XX%
 
 ## Test Cases
 
-### SWUT_[MODULE]_00001 - [Test Case Title]
+### SWUT_[MODULE_CODE]_00001 - [Test Case Title]
 
-**Requirement:** SWR_[MODULE]_00001
-**Priority:** High/Medium/Low
-**Status:** ✅ Pass / ❌ Fail / ⚠️ Skip
+**Requirement**: SWR_[MODULE_CODE]_00001
+**Priority**: High/Medium/Low
+**Status**: ✅ Pass / ❌ Fail / ⚠️ Skip
 
-**Test Purpose:**
-[Description of what this test validates...]
+**Description**
+[Natural language description of what this test validates and why it matters...]
 
-**Test Function:** `test_SWUT_[MODULE]_00001_[description]()`
+**Test Approach**
+The test verifies that [describe the behavior being tested] by:
+1. [First test step or scenario]
+2. [Second test step or scenario]
+3. [Third test step or scenario]
 
-**Test Steps:**
-1. [Setup test data]
-2. [Execute function under test]
-3. [Verify expected behavior]
+**Expected Behavior**
+[Clear description of what should happen when the test runs correctly...]
 
-**Expected Result:**
-[Clear description of expected outcome...]
-
-**Edge Cases Covered:**
+**Edge Cases**
 - [Edge case 1]
 - [Edge case 2]
 
 ---
 
-### SWUT_[MODULE]_00002 - [Test Case Title]
+### SWUT_[MODULE_CODE]_00002 - [Test Case Title]
 
-**Requirement:** SWR_[MODULE]_00002
-**Priority:** High/Medium/Low
-**Status:** ✅ Pass / ❌ Fail / ⚠️ Skip
+**Requirement**: SWR_[MODULE_CODE]_00002
+**Priority**: High/Medium/Low
+**Status**: ✅ Pass / ❌ Fail / ⚠️ Skip
 
-**Test Purpose:**
-[Description of what this test validates...]
+**Description**
+[Natural language description of what this test validates and why it matters...]
 
-**Test Function:** `test_SWUT_[MODULE]_00002_[description]()`
+**Test Approach**
+The test verifies that [describe the behavior being tested] by:
+1. [First test step or scenario]
+2. [Second test step or scenario]
+3. [Third test step or scenario]
 
-**Test Steps:**
-1. [Setup test data]
-2. [Execute function under test]
-3. [Verify expected behavior]
+**Expected Behavior**
+[Clear description of what should happen when the test runs correctly...]
 
-**Expected Result:**
-[Clear description of expected outcome...]
-
-**Edge Cases Covered:**
+**Edge Cases**
 - [Edge case 1]
 - [Edge case 2]
 
@@ -66,10 +62,10 @@ This document describes the test cases for the [Module] module.
 
 ## Requirements Traceability Matrix
 
-| Requirement ID | Test ID | Test Function | Status |
-|----------------|---------|---------------|--------|
-| SWR_[MODULE]_00001 | SWUT_[MODULE]_00001 | test_SWUT_[MODULE]_00001_[description] | ✅ Pass |
-| SWR_[MODULE]_00002 | SWUT_[MODULE]_00002 | test_SWUT_[MODULE]_00002_[description] | ✅ Pass |
+| Requirement ID | Test ID | Status | Notes |
+|----------------|---------|--------|-------|
+| SWR_[MODULE_CODE]_00001 | SWUT_[MODULE_CODE]_00001 | ✅ Pass | [Optional notes] |
+| SWR_[MODULE_CODE]_00002 | SWUT_[MODULE_CODE]_00002 | ✅ Pass | [Optional notes] |
 
 ## Coverage Summary
 
@@ -85,7 +81,7 @@ This document describes the test cases for the [Module] module.
 pytest tests/test_[module].py
 
 # Run specific test case
-pytest tests/test_[module].py::TestClass::test_SWUT_[MODULE]_00001_[description]
+pytest tests/test_[module].py::TestClass::test_SWUT_[MODULE_CODE]_00001
 
 # Run with coverage
 pytest tests/test_[module].py --cov=src/autosar_calltree/[module] --cov-report=term-missing

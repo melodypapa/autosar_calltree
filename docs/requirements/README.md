@@ -6,15 +6,15 @@ This directory contains all software requirements for the AUTOSAR Call Tree Anal
 
 ## Overview
 
-| Package | File | Requirements | Status |
-|---------|------|--------------|--------|
-| `autosar_calltree.database` | [requirements_database.md](requirements_database.md) | 35 | ✅ Complete |
-| `autosar_calltree.parsers` | [requirements_parsers.md](requirements_parsers.md) | 40 | ✅ Complete |
-| `autosar_calltree.analyzers` | [requirements_analyzers.md](requirements_analyzers.md) | 15 | ✅ Complete |
-| `autosar_calltree.config` | [requirements_config.md](requirements_config.md) | 8 | ✅ Complete |
-| `autosar_calltree.generators` | [requirements_generators.md](requirements_generators.md) | 25 | ✅ Complete |
-| `autosar_calltree.cli` | [requirements_cli.md](requirements_cli.md) | 18 | ✅ Complete |
-| **Total** | **6 files** | **141** | **✅ 100% Traceable** |
+| Package                       | File                                                     | Requirements | Status               |
+| ----------------------------- | -------------------------------------------------------- | ------------ | -------------------- |
+| `autosar_calltree.database`   | [requirements_database.md](requirements_database.md)     | 35           | ✅ Complete           |
+| `autosar_calltree.parsers`    | [requirements_parsers.md](requirements_parsers.md)       | 40           | ✅ Complete           |
+| `autosar_calltree.analyzers`  | [requirements_analyzers.md](requirements_analyzers.md)   | 15           | ✅ Complete           |
+| `autosar_calltree.config`     | [requirements_config.md](requirements_config.md)         | 8            | ✅ Complete           |
+| `autosar_calltree.generators` | [requirements_generators.md](requirements_generators.md) | 25           | ✅ Complete           |
+| `autosar_calltree.cli`        | [requirements_cli.md](requirements_cli.md)               | 18           | ✅ Complete           |
+| **Total**                     | **6 files**                                              | **141**      | **✅ 100% Traceable** |
 
 ---
 
@@ -75,12 +75,6 @@ This directory contains all software requirements for the AUTOSAR Call Tree Anal
 
 ---
 
-## Traceability
-
-See [TRACEABILITY.md](../TRACEABILITY.md) for the complete traceability matrix linking requirements to test cases.
-
----
-
 ## Document Structure
 
 Each requirements document follows this structure:
@@ -98,10 +92,10 @@ Each requirement includes:
 
 ## Change History
 
-| Date | Version | Changes |
-|------|---------|---------|
-| 2026-02-10 | 2.0 | **Major reorganization**: Consolidated from 16 files to 6 package-based files. Reduced from 158+ requirements to 141 core requirements by combining similar ones. |
-| 2026-02-10 | 1.3 | Added COMBINED_REQUIREMENTS.md with package organization |
-| 2026-02-10 | 1.2 | Added pycparser integration requirements |
-| 2026-02-04 | 1.1 | Added conditional call tracking requirements |
-| 2026-01-30 | 1.0 | Initial requirements index |
+| Date       | Version | Changes                                                                        |
+| ---------- | ------- | ------------------------------------------------------------------------------ |
+| 2026-02-10 | 2.0     | **Major reorganization**: Consolidated from 16 files to 6 package-based files. |
+| 2026-02-10 | 1.3     | Added COMBINED_REQUIREMENTS.md with package organization                       |
+| 2026-02-10 | 1.2     | Added pycparser integration requirements                                       |
+| 2026-02-04 | 1.1     | Added conditional call tracking requirements                                   |
+| 2026-01-30 | 1.0     | Initial requirements index                                                     |

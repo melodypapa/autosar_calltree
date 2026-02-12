@@ -1,206 +1,182 @@
 # Test Documentation Index
 
-This directory contains test case documentation for the AUTOSAR Call Tree Analyzer project. Each test document maps directly to its corresponding requirements document in `../requirements/`.
+This directory contains test case documentation for the AUTOSAR Call Tree Analyzer project. Each test document maps directly to its corresponding requirements document in `../requirements/`, organized by Python package structure.
 
 ## Overview
 
-| Module | Requirements | Test ID Range | Test Count | Status | Coverage |
-|--------|-------------|---------------|------------|--------|----------|
-| Models | SWR_MODEL_00001-00028 | SWUT_MODEL_00001-00028 | 28 | ✅ Pass | 100% |
-| AUTOSAR Parser | SWR_PARSER_AUTOSAR_00001-00015 | SWUT_PARSER_AUTOSAR_00001-00015 | 15 | ✅ Pass | 97% |
-| C Parser | SWR_PARSER_C_00001-00023 | SWUT_PARSER_C_00001-00028 | 28 | ✅ Pass | 87% |
-| Database | SWR_DB_00001-00025 | SWUT_DB_00001-00021 | 21 | ✅ Pass | 80% |
-| Analyzers | SWR_ANALYZER_00001-00020 | SWUT_ANALYZER_00001-00020 | 20 | ✅ Pass | 94% |
-| Config | SWR_CONFIG_00001-00010 | SWUT_CONFIG_00001-00025 | 25 | ✅ Pass | 97% |
-| Generators (Mermaid) | SWR_GENERATOR_00001-00031, SWR_MERMAID_00001-00005 | SWUT_GENERATOR_00001-00041 | 41 | ✅ Pass | 89% |
-| XMI Generator | SWR_XMI_00001-00003 | SWUT_XMI_00001-00003 | 3 | ✅ Pass | 70% |
-| CLI | SWR_CLI_00001-00014 | SWUT_CLI_00001-00014 | 14 | ✅ Pass | ~90% |
+| Package | Requirements | Test ID Range | Test Count | Status | Coverage |
+|----------|-------------|-----------------|-------------|----------|-----------|
+| Database | SWR_DB_00001-00035 | SWUT_DB_00001-00036 | 36 | ✅ Pass | 80% |
+| Parsers | SWR_PARSER_00001-00040 | SWUT_PARSER_00001-00040 | 40 | ✅ Pass | 92% |
+| Analyzers | SWR_ANALYZER_00001-00015 | SWUT_ANALYZER_00001-00015 | 15 | ✅ Pass | 94% |
+| Config | SWR_CONFIG_00001-00008 | SWUT_CONFIG_00001-00008 | 8 | ✅ Pass | 97% |
+| Generators | SWR_GEN_00001-00025 | SWUT_GEN_00001-00025 | 25 | ✅ Pass | 89% |
+| CLI | SWR_CLI_00001-00018 | SWUT_CLI_00001-00018 | 18 | ✅ Pass | ~90% |
 | E2E | SWR_E2E_00001-00018 | SWUT_E2E_00001-00018 | 18 | ✅ Pass | integration |
-| **Total** | **173** | | **213** | **✅ 100% Passing** | **89%** |
+| **Total** | **141** | | **160** | **✅ 100% Passing** | **89%** |
 
-## Test Documents by Module
+## Test Documents by Package
 
-### Data Model Tests
+### Database Package Tests
 
-**Requirements Document**: [models.md](../requirements/models.md)
+**Requirements Document**: [requirements_database.md](../requirements/requirements_database.md)
 
-**Test Document**: [models.md](models.md)
+**Test Document**: [test_database.md](test_database.md)
 
-- **Requirement IDs**: SWR_MODEL_00001 - SWR_MODEL_00028 (28 requirements)
-- **Test IDs**: SWUT_MODEL_00001 - SWUT_MODEL_00028 (28 tests)
-- **Coverage**: 100%
-- **Key Areas**:
-  - FunctionType enum values and validation
-  - Parameter dataclass fields and string representation
-  - FunctionInfo attributes, equality, hashing, and disambiguation
-  - CallTreeNode structure, manipulation, and depth tracking
-  - CircularDependency representation
-  - AnalysisStatistics and AnalysisResult containers
-  - FunctionCall conditional tracking
-
-### AUTOSAR Parser Tests
-
-**Requirements Document**: [autosar_parser.md](../requirements/autosar_parser.md)
-
-**Test Document**: [autosar_parser.md](autosar_parser.md)
-
-- **Requirement IDs**: SWR_PARSER_AUTOSAR_00001 - SWR_PARSER_AUTOSAR_00015 (15 requirements)
-- **Test IDs**: SWUT_PARSER_AUTOSAR_00001 - SWUT_PARSER_AUTOSAR_00015 (15 tests)
-- **Coverage**: 97%
-- **Key Areas**:
-  - FUNC, FUNC_P2VAR, FUNC_P2CONST macro pattern recognition
-  - Parameter string extraction (VAR, P2VAR, P2CONST, CONST)
-  - Function declaration parsing
-  - AUTOSAR function detection
-  - Empty parameter list handling
-  - Whitespace tolerance
-
-### C Parser Tests
-
-**Requirements Document**: [c_parser.md](../requirements/c_parser.md)
-
-**Test Document**: [c_parser.md](c_parser.md)
-
-- **Requirement IDs**: SWR_PARSER_C_00001 - SWR_PARSER_C_00023 (23 requirements)
-- **Test IDs**: SWUT_PARSER_C_00001 - SWUT_PARSER_C_00028 (28 tests)
-- **Coverage**: 87%
-- **Key Areas**:
-  - Traditional C function pattern recognition
-  - C keyword and AUTOSAR type filtering
-  - File-level parsing and comment removal
-  - Parameter string parsing and smart splitting
-  - Function body and call extraction
-  - Static function detection and line number calculation
-  - Progressive enhancement strategy
-  - Loop detection (SWR_PARSER_C_00021)
-  - Multi-line if condition extraction (SWR_PARSER_C_00022)
-  - Multi-line function call extraction (SWR_PARSER_C_00023)
-
-### Function Database Tests
-
-**Requirements Document**: [function_database.md](../requirements/function_database.md)
-
-**Test Document**: [function_database.md](function_database.md)
-
-- **Requirement IDs**: SWR_DB_00001 - SWR_DB_00025 (25 requirements)
-- **Test IDs**: SWUT_DB_00001 - SWUT_DB_00021 (21 tests)
+- **Requirement IDs**: SWR_DB_00001 - SWR_DB_00035 (35 requirements)
+- **Test IDs**: SWUT_DB_00001 - SWUT_DB_00036 (36 tests)
 - **Coverage**: 80%
+- **Source Files**: `models.py`, `function_database.py`
 - **Key Areas**:
-  - Database initialization and cache directory creation
-  - Three-index structure (functions, qualified_functions, functions_by_file)
-  - Source file discovery (.c files only)
-  - Smart function lookup strategy (4-level selection)
-  - Module configuration integration and statistics
-  - Cache metadata validation, save/load, error handling
-  - Cache loading progress reporting (file-by-file)
-  - Function lookup methods (by name, qualified, search)
-  - Parse error collection and database statistics
-
-### Call Tree Analyzer Tests
-
-**Requirements Document**: [call_tree_builder.md](../requirements/call_tree_builder.md)
-
-**Test Document**: [call_tree_builder.md](call_tree_builder.md)
-
-- **Requirement IDs**: SWR_ANALYZER_00001 - SWR_ANALYZER_00020 (20 requirements)
-- **Test IDs**: SWUT_ANALYZER_00001 - SWUT_ANALYZER_00020 (20 tests)
-- **Coverage**: 94%
-- **Key Areas**:
-  - Builder initialization and state reset
-  - Start function lookup and multiple definition warnings
-  - Depth-first traversal algorithm
-  - Cycle detection and handling in tree
-  - Max depth enforcement and node depth tracking
-  - Missing function handling
-  - Statistics collection and unique function tracking
-  - Qualified name generation
-  - Result object creation (success and error cases)
-  - Helper methods and text tree generation
-  - Verbose progress logging
-
-### Module Configuration Tests
-
-**Requirements Document**: [requirements_module_config.md](../requirements/requirements_module_config.md)
-
-**Test Document**: [module_config.md](module_config.md)
-
-- **Requirement IDs**: SWR_CONFIG_00001 - SWR_CONFIG_00010 (10 requirements)
-- **Test IDs**: SWUT_CONFIG_00001 - SWUT_CONFIG_00025 (25 tests)
-- **Coverage**: 97%
-- **Key Areas**:
-  - Configuration loading (valid and missing files)
-  - Version validation (missing, wrong type, unsupported)
-  - File mappings validation
-  - Pattern mappings validation
-  - Default module validation
-  - Specific file and pattern lookup
-  - Lookup caching
-  - Statistics calculation
-  - Empty configuration initialization
-
-### Mermaid Generator Tests
-
-**Requirements Documents**:
-- [requirements_mermaid_modules.md](../requirements/requirements_mermaid_modules.md)
-- [requirements_mermaid_opt_blocks.md](../requirements/requirements_mermaid_opt_blocks.md)
-
-**Test Document**: [mermaid_generator.md](mermaid_generator.md)
-
-- **Requirement IDs**: SWR_GENERATOR_00001-00031, SWR_MERMAID_00001-00005 (36 requirements)
-- **Test IDs**: SWUT_GENERATOR_00001 - SWUT_GENERATOR_00041 (41 tests)
-- **Coverage**: 89%
-- **Key Areas**:
-  - Initialization (with and without module names)
-  - Mermaid diagram header generation
-  - Participant collection (function mode, module mode)
-  - Module fallback to filename when not mapped
-  - RTE abbreviation (enabled and disabled)
-  - Sequence calls generation (function mode, module mode, recursive)
-  - Parameters on arrows (single, multiple, empty)
-  - Return statements in sequence (enabled and disabled)
-  - Function table format (with and without modules)
-  - Parameter formatting (in table, in diagram)
-  - Text tree generation
-  - Circular dependencies section
-  - Metadata generation
-  - File and string output
-  - Empty call tree error handling
-  - Optional sections control
-  - Opt block generation (SWR_MERMAID_00004)
-  - Loop block generation (SWR_MERMAID_00005)
-
-### XMI Generator Tests
-
-**Requirements Document**: [requirements_xmi.md](../requirements/requirements_xmi.md)
-
-**Test Document**: [xmi_generator.md](xmi_generator.md)
-
-- **Requirement IDs**: SWR_XMI_00001 - SWR_XMI_00003 (3 requirements)
-- **Test IDs**: SWUT_XMI_00001 - SWUT_XMI_00003 (3 tests)
-- **Coverage**: 70%
-- **Key Areas**:
-  - XMI namespace compliance
-  - UML 2.5 sequence diagram representation
-  - Opt block support for conditional calls
-
-### CLI Tests
-
-**Requirements Document**: [cli.md](../requirements/cli.md)
-
-**Test Document**: [cli.md](cli.md)
-
-- **Requirement IDs**: SWR_CLI_00001 - SWR_CLI_00014 (14 requirements)
-- **Test IDs**: SWUT_CLI_00001 - SWUT_CLI_00014 (14 tests)
-- **Coverage**: ~90%
-- **Key Areas**:
-  - Command-line argument parsing
-  - Source directory handling
-  - Output format selection (mermaid, xmi, both)
-  - Start function validation and search
-  - Function listing and searching
+  - Data models (FunctionType, Parameter, FunctionInfo, CallTreeNode, etc.)
+  - Function database initialization and three-index structure
+  - Source file discovery and database building
   - Module configuration integration
-  - Cache management (rebuild, use_cache)
-  - Progress reporting and error handling
+  - Smart function lookup (4-level selection strategy)
+  - Cache management (save, load, validation, error handling)
+  - Parser auto-detection and statistics
+
+### Parsers Package Tests
+
+**Requirements Document**: [requirements_parsers.md](../requirements/requirements_parsers.md)
+
+**Test Document**: [test_parsers.md](test_parsers.md)
+
+- **Requirement IDs**: SWR_PARSER_00001 - SWR_PARSER_00040 (40 requirements)
+- **Test IDs**: SWUT_PARSER_00001 - SWUT_PARSER_00040 (40 tests)
+- **Coverage**: 92%
+- **Source Files**: `autosar_parser.py`, `c_parser.py`, `c_parser_pycparser.py`
+- **Key Areas**:
+  - AUTOSAR macro recognition and parsing
+  - AUTOSAR parameter macro parsing
+  - Parameter string extraction and splitting
+  - Traditional C function pattern recognition
+  - Keyword and type filtering
+  - File-level parsing with comment removal
+  - Line-by-line processing to prevent ReDoS
+  - Multi-line function prototypes
+  - Function body extraction
+  - Function call extraction with conditional/loop context
+  - Multi-line if condition extraction
+  - Loop detection (for/while)
+  - Condition text sanitization
+  - Progressive enhancement (AUTOSAR first, then C)
+  - pycparser-based AST parsing
+  - AUTOSAR macro preprocessing for pycparser
+  - AST visitor pattern
+  - Return type and parameter extraction from AST
+  - Hybrid parsing strategy and deduplication
+  - Preprocessor directive handling
+  - Parse error graceful handling
+  - Common parser interface and file encoding handling
+
+### Analyzers Package Tests
+
+**Requirements Document**: [requirements_analyzers.md](../requirements/requirements_analyzers.md)
+
+**Test Document**: [test_analyzers.md](test_analyzers.md)
+
+- **Requirement IDs**: SWR_ANALYZER_00001 - SWR_ANALYZER_00015 (15 requirements)
+- **Test IDs**: SWUT_ANALYZER_00001 - SWUT_ANALYZER_00015 (15 tests)
+- **Coverage**: 94%
+- **Source Files**: `call_tree_builder.py`
+- **Key Areas**:
+  - Builder initialization with database
+  - State management between builds
+  - Start function validation
+  - Depth-first traversal algorithm
+  - Cycle detection and handling
+  - Max depth enforcement
+  - Node depth tracking
+  - AnalysisResult creation
+  - Statistics collection
+  - Unique function tracking
+  - Missing function handling
+  - RTE call filtering
+  - Qualified name usage for cycles
+  - Verbose logging
+
+### Config Package Tests
+
+**Requirements Document**: [requirements_config.md](../requirements/requirements_config.md)
+
+**Test Document**: [test_config.md](test_config.md)
+
+- **Requirement IDs**: SWR_CONFIG_00001 - SWR_CONFIG_00008 (8 requirements)
+- **Test IDs**: SWUT_CONFIG_00001 - SWUT_CONFIG_00008 (8 tests)
+- **Coverage**: 97%
+- **Source Files**: `module_config.py`
+- **Key Areas**:
+  - YAML configuration file support
+  - Configuration loading and validation
+  - File mappings (exact filename to module)
+  - Pattern mappings (glob-style wildcards)
+  - Default module assignment
+  - Configuration version tracking
+  - Module lookup (priority: exact → pattern → default)
+  - Lookup caching for performance
+
+### Generators Package Tests
+
+**Requirements Document**: [requirements_generators.md](../requirements/requirements_generators.md)
+
+**Test Document**: [test_generators.md](test_generators.md)
+
+- **Requirement IDs**: SWR_GEN_00001 - SWR_GEN_00025 (25 requirements)
+- **Test IDs**: SWUT_GEN_00001 - SWUT_GEN_00025 (25 tests)
+- **Coverage**: 89%
+- **Source Files**: `mermaid_generator.py`, `xmi_generator.py`
+- **Key Areas**:
+  - Mermaid sequence diagram generation
+  - Participant management (function and module-based)
+  - Function names with parameters on arrows
+  - Parameter display
+  - Opt/alt/loop block generation for conditional/loop calls
+  - Function table generation with module column
+  - Metadata section (timestamp, source dir, stats)
+  - ASCII art text tree generation
+  - Statistics display
+  - Circular dependencies section
+  - XMI 2.5 document generation
+  - XMI namespaces and schema compliance
+  - UML lifeline generation
+  - UML message generation
+  - XMI opt block support for conditionals
+  - Module support in XMI
+  - Recursive call handling
+  - XMI metadata
+  - XML formatting and escaping
+  - File extensions (.md, .xmi)
+
+### CLI Package Tests
+
+**Requirements Document**: [requirements_cli.md](../requirements/requirements_cli.md)
+
+**Test Document**: [test_cli.md](test_cli.md)
+
+- **Requirement IDs**: SWR_CLI_00001 - SWR_CLI_00018 (18 requirements)
+- **Test IDs**: SWUT_CLI_00001 - SWUT_CLI_00018 (18 tests)
+- **Coverage**: ~90%
+- **Source Files**: `main.py`
+- **Key Areas**:
+  - Click-based command structure
+  - Start function option (--start-function)
+  - Source directory option (--source-dir)
+  - Output path option (--output)
+  - Max depth option (--max-depth)
+  - Output format option (--format: mermaid, xmi, both)
+  - Cache options (--cache-dir, --no-cache, --rebuild-cache)
+  - Multiple output files with format "both"
+  - Verbose output (--verbose)
+  - List functions command (--list-functions)
+  - Search functions command (--search)
+  - Rich console output (colors, tables, progress)
+  - Module configuration options (--module-config, --use-module-names)
+  - RTE abbreviation control (--no-abbreviate-rte)
+  - Parameter display control
+  - Exit codes (success, error, interrupt)
+  - User-friendly error messages
+  - Keyboard interrupt handling (Ctrl+C)
 
 ### Integration Tests
 
@@ -208,10 +184,12 @@ This directory contains test case documentation for the AUTOSAR Call Tree Analyz
 
 - **Requirement IDs**: SWR_E2E_00001 - SWR_E2E_00018 (18 requirements)
 - **Test IDs**: SWUT_E2E_00001 - SWUT_E2E_00018 (18 tests)
-- **Type**: Integration tests
+- **Type**: Integration / End-to-End Tests
 - **Key Areas**:
-  - Basic workflow (analysis, cache, statistics)
-  - Advanced features (module names, parameters, qualified names)
+  - Basic workflow (source scanning, parsing, analysis, output generation)
+  - Cache functionality (creation, reuse, invalidation)
+  - Module configuration integration
+  - Parameters on diagram arrows
   - Error conditions and edge cases
   - Performance and usability
 
@@ -223,14 +201,15 @@ The project achieves **89% overall code coverage** across all modules:
 
 ```
 src/autosar_calltree/database/models.py          100%
+src/autosar_calltree/database/function_database.py   80%
 src/autosar_calltree/parsers/autosar_parser.py    97%
 src/autosar_calltree/parsers/c_parser.py          87%
-src/autosar_calltree/database/function_db.py      80%
-src/autosar_calltree/analyzers/call_tree.py       94%
-src/autosar_calltree/config/module_config.py      97%
-src/autosar_calltree/generators/mermaid_gen.py    89%
-src/autosar_calltree/generators/xmi_gen.py        70%
-src/autosar_calltree/cli/*.py                     ~90%
+src/autosar_calltree/parsers/c_parser_pycparser.py    90%
+src/autosar_calltree/analyzers/call_tree_builder.py  94%
+src/autosar_calltree/config/module_config.py       97%
+src/autosar_calltree/generators/mermaid_generator.py   89%
+src/autosar_calltree/generators/xmi_generator.py      70%
+src/autosar_calltree/cli/*.py                        ~90%
 --------------------------------------------------------
 TOTAL                                             89%
 ```
@@ -242,13 +221,13 @@ TOTAL                                             89%
 pytest tests/
 
 # Run specific test module
-pytest tests/test_models.py
+pytest tests/unit/test_models.py
 
 # Run with coverage
 pytest --cov=autosar_calltree --cov-report=html --cov-report=term
 
 # Run specific test case
-pytest tests/test_models.py::TestFunctionType::test_function_type_enum_values
+pytest tests/unit/test_models.py::TestFunctionType::test_function_type_enum_values
 
 # Run with verbose output
 pytest -vv -s tests/
@@ -256,29 +235,28 @@ pytest -vv -s tests/
 
 ## Test Case Format
 
-Each test case follows the standard format:
+Each test case follows the natural language format:
 
 ```markdown
 ### SWUT_XXXXX_YYYYY - Test Case Title
 
-**Requirement:** SWR_XXXXX_YYYYY
-**Priority:** High/Medium/Low
-**Status:** ✅ Pass / ❌ Fail / ⚠️ Skip
+**Requirement**: SWR_XXXXX_YYYYY
+**Priority**: High/Medium/Low
+**Status**: ✅ Pass / ❌ Fail / ⚠️ Skip
 
-**Test Purpose**:
-Description of what this test validates...
+**Description**
+Natural language description of what this test validates and why it matters...
 
-**Test Function**: `test_function_name`
+**Test Approach**
+The test verifies that:
+1. First test step or scenario
+2. Second test step or scenario
+3. Third test step or scenario
 
-**Test Steps**:
-1. Setup test data
-2. Execute function under test
-3. Verify expected behavior
+**Expected Behavior**
+Clear description of what should happen when the test runs correctly...
 
-**Expected Result**:
-Clear description of expected outcome...
-
-**Edge Cases Covered**:
+**Edge Cases**
 - Edge case 1
 - Edge case 2
 ```
@@ -287,9 +265,9 @@ Clear description of expected outcome...
 
 Each test document includes a **Requirements Traceability Matrix** at the end, showing:
 
-| Requirement ID | Test ID | Test Function | Status |
-|----------------|---------|---------------|--------|
-| SWR_MODEL_00001 | SWUT_MODEL_00001 | test_SWUT_MODEL_00001_function_type_enum_values | ✅ Pass |
+| Requirement ID | Test ID | Status | Notes |
+| --------------- | --------- | ------ | ----- |
+| SWR_DB_00001 | SWUT_DB_00001 | ✅ Pass | FunctionType enum |
 
 This ensures complete traceability from requirements through implementation to testing.
 
@@ -297,7 +275,8 @@ For detailed requirements documentation, see [requirements/README.md](../require
 
 ## Change History
 
-| Date | Version | Author | Change Description |
-|------|---------|--------|-------------------|
-| 2026-02-10 | 2.0 | Claude | Restructured to align with requirements documents, added traceability matrices, removed reference to TRACEABILITY.md |
-| 2026-01-30 | 1.0 | Claude | Initial test documentation index with all modules |
+| Date       | Version | Author | Change Description |
+| ---------- | ------- | ------ | ------------------- |
+| 2026-02-11 | 3.0     | Reorganized to package structure matching requirements, removed Test Function labels, using natural language |
+| 2026-02-10 | 2.0     | Restructured to align with requirements documents, added traceability matrices |
+| 2026-01-30 | 1.0     | Initial test documentation index with all modules |
