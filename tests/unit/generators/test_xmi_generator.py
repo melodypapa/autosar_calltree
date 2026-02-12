@@ -132,7 +132,7 @@ class TestXmiGeneratorInitialization:
 
     def test_initialization_default(self):
         """SWUT_XMI_00001
-        
+
         Test XMI generator initialization with default settings."""
         gen = XmiGenerator()
 
@@ -142,7 +142,7 @@ class TestXmiGeneratorInitialization:
 
     def test_initialization_with_module_names(self):
         """SWUT_XMI_00001
-        
+
         Test XMI generator initialization with module names enabled."""
         gen = XmiGenerator(use_module_names=True)
 
@@ -156,7 +156,7 @@ class TestXmiGeneratorGenerate:
 
     def test_generate_creates_file(self):
         """SWUT_XMI_00002
-        
+
         Test generate creates XMI file (line 63-72)."""
         result = create_mock_analysis_result()
 
@@ -174,7 +174,7 @@ class TestXmiGeneratorGenerate:
 
     def test_generate_raises_error_no_call_tree(self):
         """SWUT_XMI_00002
-        
+
         Test generate raises ValueError when call tree is None (line 63)."""
         result = create_mock_analysis_result(has_tree=False)
 
@@ -188,7 +188,7 @@ class TestXmiGeneratorGenerate:
 
     def test_generate_creates_parent_directory(self):
         """SWUT_XMI_00002
-        
+
         Test generate creates parent directory if needed (line 70)."""
         result = create_mock_analysis_result()
 
@@ -210,7 +210,7 @@ class TestXmiGeneratorDocumentGeneration:
 
     def test_generate_xmi_document_root_element(self):
         """SWUT_XMI_00003
-        
+
         Test _generate_xmi_document creates root element (lines 88-107)."""
         result = create_mock_analysis_result()
         tree = result.call_tree
@@ -225,7 +225,7 @@ class TestXmiGeneratorDocumentGeneration:
 
     def test_generate_xmi_document_model_element(self):
         """SWUT_XMI_00003
-        
+
         Test _generate_xmi_document creates model element (lines 109-117)."""
         result = create_mock_analysis_result()
         tree = result.call_tree
@@ -245,7 +245,7 @@ class TestXmiGeneratorDocumentGeneration:
 
     def test_generate_xmi_document_interaction_element(self):
         """SWUT_XMI_00003
-        
+
         Test _generate_xmi_document creates interaction (lines 119-124)."""
         result = create_mock_analysis_result()
         tree = result.call_tree
@@ -263,13 +263,14 @@ class TestXmiGeneratorCreateInteraction:
 
     def test_create_interaction_element(self):
         """SWUT_XMI_00004
-        
+
         Test _create_interaction creates interaction element (lines 126-136)."""
         result = create_mock_analysis_result()
 
         gen = XmiGenerator()
         # Create a parent element
         from xml.etree.ElementTree import Element
+
         parent = Element("test")
 
         interaction = gen._create_interaction(parent, result)
@@ -284,7 +285,7 @@ class TestXmiGeneratorCollectParticipants:
 
     def test_collect_participants_function_names(self):
         """SWUT_XMI_00005
-        
+
         Test _collect_participants collects function names (lines 138-153)."""
         tree = create_mock_call_tree(
             [
@@ -311,7 +312,7 @@ class TestXmiGeneratorCollectParticipants:
 
     def test_collect_participants_module_names(self):
         """SWUT_XMI_00005
-        
+
         Test _collect_participants collects module names (lines 138-153)."""
         tree = create_mock_call_tree(
             [
@@ -342,7 +343,7 @@ class TestXmiGeneratorCreateLifelines:
 
     def test_create_lifelines_elements(self):
         """SWUT_XMI_00006
-        
+
         Test _create_lifelines creates lifeline elements (lines 155-176)."""
         tree = create_mock_call_tree(
             [
@@ -362,6 +363,7 @@ class TestXmiGeneratorCreateLifelines:
 
         # Create a parent interaction element
         from xml.etree.ElementTree import Element
+
         parent = Element("interaction")
 
         lifelines = gen._create_lifelines(parent, participants)
@@ -374,7 +376,7 @@ class TestXmiGeneratorCreateLifelines:
 
     def test_lifeline_has_id_and_name(self):
         """SWUT_XMI_00006
-        
+
         Test lifelines have id and name attributes (lines 159-172)."""
         tree = create_mock_call_tree(
             [
@@ -386,6 +388,7 @@ class TestXmiGeneratorCreateLifelines:
         participants = gen._collect_participants(tree)
 
         from xml.etree.ElementTree import Element
+
         parent = Element("interaction")
 
         lifelines = gen._create_lifelines(parent, participants)
@@ -403,7 +406,7 @@ class TestXmiGeneratorCreateMessages:
 
     def test_create_messages_sync_call(self):
         """SWUT_XMI_00007
-        
+
         Test _create_messages creates synchronous call (lines 178-250)."""
         tree = create_mock_call_tree(
             [
@@ -420,6 +423,7 @@ class TestXmiGeneratorCreateMessages:
         participants = gen._collect_participants(tree)
 
         from xml.etree.ElementTree import Element
+
         parent = Element("interaction")
         lifelines = gen._create_lifelines(parent, participants)
 
@@ -434,8 +438,9 @@ class TestXmiGeneratorCreateMessages:
 
     def test_create_messages_with_opt_block(self):
         """SWUT_XMI_00007
-        
-        Test _create_messages creates opt block for conditional calls (lines 199-219)."""
+
+        Test _create_messages creates opt block for conditional calls (lines 199-219).
+        """
         # Create a tree with a conditional call
         root_func = create_mock_function(
             name="CallerFunc",
@@ -468,6 +473,7 @@ class TestXmiGeneratorCreateMessages:
         participants = gen._collect_participants(tree)
 
         from xml.etree.ElementTree import Element
+
         parent = Element("interaction")
         lifelines = gen._create_lifelines(parent, participants)
 
@@ -483,7 +489,7 @@ class TestXmiGeneratorUtilityMethods:
 
     def test_generate_id_increments_counter(self):
         """SWUT_XMI_00008
-        
+
         Test _generate_id increments counter (line 252-254)."""
         gen = XmiGenerator()
 
@@ -495,7 +501,7 @@ class TestXmiGeneratorUtilityMethods:
 
     def test_prettify_xml_formats_output(self):
         """SWUT_XMI_00009
-        
+
         Test _prettify_xml formats XML output (lines 256-266)."""
         from xml.etree.ElementTree import Element
 
@@ -516,7 +522,7 @@ class TestXmiGeneratorEdgeCases:
 
     def test_empty_call_tree(self):
         """SWUT_XMI_00010
-        
+
         Test handling of empty call tree."""
         # Create a tree with no children
         tree = create_mock_call_tree([("RootFunc", "root.c", "RootModule", [])])
@@ -543,7 +549,7 @@ class TestXmiGeneratorEdgeCases:
 
     def test_recursive_call_handling(self):
         """SWUT_XMI_00011
-        
+
         Test handling of recursive calls."""
         root_func = create_mock_function(
             name="RecursiveFunc",
@@ -581,7 +587,7 @@ class TestXmiGeneratorEdgeCases:
 
     def test_deep_call_tree(self):
         """SWUT_XMI_00012
-        
+
         Test handling of deep call trees."""
         # Create a deep tree
         tree = create_mock_call_tree(
@@ -635,7 +641,7 @@ class TestXmiGeneratorNamespaces:
 
     def test_xmi_namespace_attributes(self):
         """SWUT_XMI_00013
-        
+
         Test XMI namespace attributes are set (lines 63-72)."""
         result = create_mock_analysis_result()
 
@@ -652,7 +658,7 @@ class TestXmiGeneratorNamespaces:
 
     def test_uml_namespace_elements(self):
         """SWUT_XMI_00014
-        
+
         Test UML namespace elements are created."""
         result = create_mock_analysis_result()
 
@@ -673,7 +679,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_message_with_parameters(self):
         """SWUT_XMI_00015
-        
+
         Test messages include function parameters."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -687,8 +693,12 @@ class TestXmiGeneratorParameterHandling:
             file_path="callee.c",
             sw_module="CalleeModule",
             parameters=[
-                Parameter(name="param1", param_type="uint32", is_pointer=False, is_const=False),
-                Parameter(name="param2", param_type="char*", is_pointer=True, is_const=False),
+                Parameter(
+                    name="param1", param_type="uint32", is_pointer=False, is_const=False
+                ),
+                Parameter(
+                    name="param2", param_type="char*", is_pointer=True, is_const=False
+                ),
             ],
         )
 
@@ -732,7 +742,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_with_loop_fragment(self):
         """SWUT_XMI_00016
-        
+
         Test _create_messages creates loop fragments for loop calls (lines 291-365)."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -804,7 +814,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_nested_loop_children(self):
         """SWUT_XMI_00017
-        
+
         Test _create_messages handles nested children in loop blocks (lines 312-365)."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -887,8 +897,9 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_with_opt_fragment(self):
         """SWUT_XMI_00018
-        
-        Test _create_messages creates opt fragments for optional calls (lines 368-442)."""
+
+        Test _create_messages creates opt fragments for optional calls (lines 368-442).
+        """
         root_func = create_mock_function(
             name="CallerFunc",
             file_path="caller.c",
@@ -959,7 +970,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_nested_opt_children(self):
         """SWUT_XMI_00019
-        
+
         Test _create_messages handles nested children in opt blocks (lines 389-442)."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -1042,7 +1053,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_format_message_signature_no_params(self):
         """SWUT_XMI_00020
-        
+
         Test _format_message_signature with no parameters (line 463)."""
         gen = XmiGenerator()
 
@@ -1063,7 +1074,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_format_message_signature_no_param_names(self):
         """SWUT_XMI_00021
-        
+
         Test _format_message_signature with parameters but no names (lines 470-473)."""
         gen = XmiGenerator()
 
@@ -1071,8 +1082,12 @@ class TestXmiGeneratorParameterHandling:
             name="TestFunc",
             file_path="test.c",
             parameters=[
-                Parameter(name="", param_type="uint32", is_pointer=False, is_const=False),
-                Parameter(name="", param_type="uint8*", is_pointer=True, is_const=False),
+                Parameter(
+                    name="", param_type="uint32", is_pointer=False, is_const=False
+                ),
+                Parameter(
+                    name="", param_type="uint8*", is_pointer=True, is_const=False
+                ),
             ],
         )
 
@@ -1089,7 +1104,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_generate_to_string(self):
         """SWUT_XMI_00022
-        
+
         Test generate_to_string method (lines 517-521)."""
         result = create_mock_analysis_result()
 
@@ -1103,7 +1118,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_generate_to_string_no_call_tree(self):
         """SWUT_XMI_00023
-        
+
         Test generate_to_string raises ValueError when call tree is None."""
         result = create_mock_analysis_result(has_tree=False)
 
@@ -1114,7 +1129,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_with_module_names(self):
         """SWUT_XMI_00024
-        
+
         Test _create_messages with use_module_names=True (lines 242, 285, 316, 393)."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -1187,7 +1202,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_opt_with_module_names(self):
         """SWUT_XMI_00025
-        
+
         Test _create_messages with opt blocks and use_module_names=True."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -1260,7 +1275,7 @@ class TestXmiGeneratorParameterHandling:
 
     def test_create_messages_recursive_call(self):
         """SWUT_XMI_00026
-        
+
         Test _create_messages marks recursive calls (line 285)."""
         root_func = create_mock_function(
             name="CallerFunc",
@@ -1320,4 +1335,3 @@ class TestXmiGeneratorParameterHandling:
             # Should contain messageSort="reply" for recursive call
             assert "messageSort" in content
             assert "reply" in content
-

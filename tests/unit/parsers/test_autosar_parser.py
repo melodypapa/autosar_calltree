@@ -5,8 +5,8 @@ from pathlib import Path
 from autosar_calltree.database.models import FunctionType
 from autosar_calltree.parsers.autosar_parser import AutosarParser
 
-
 # SWUT_PARSER_00001: FUNC Macro Pattern Recognition
+
 
 def test_func_macro_pattern_recognition():
     """SWUT_PARSER_00001
@@ -40,6 +40,7 @@ def test_func_macro_pattern_recognition():
 
 # SWUT_PARSER_00002: FUNC_P2VAR Macro Pattern Recognition
 
+
 def test_func_p2var_macro_pattern_recognition():
     """SWUT_PARSER_00002
 
@@ -61,6 +62,7 @@ def test_func_p2var_macro_pattern_recognition():
 
 # SWUT_PARSER_00003: FUNC_P2CONST Macro Pattern Recognition
 
+
 def test_func_p2const_macro_pattern_recognition():
     """SWUT_PARSER_00003
 
@@ -81,6 +83,7 @@ def test_func_p2const_macro_pattern_recognition():
 
 
 # SWUT_PARSER_00004: STATIC Keyword Detection
+
 
 def test_static_keyword_detection():
     """SWUT_PARSER_00004
@@ -115,6 +118,7 @@ def test_static_keyword_detection():
 
 # SWUT_PARSER_00005: VAR Parameter Pattern Recognition
 
+
 def test_var_parameter_pattern_recognition():
     """SWUT_PARSER_00005
 
@@ -144,6 +148,7 @@ def test_var_parameter_pattern_recognition():
 
 # SWUT_PARSER_00006: P2VAR Parameter Pattern Recognition
 
+
 def test_p2var_parameter_pattern_recognition():
     """SWUT_PARSER_00006
 
@@ -164,6 +169,7 @@ def test_p2var_parameter_pattern_recognition():
 
 
 # SWUT_PARSER_00007: P2CONST Parameter Pattern Recognition
+
 
 def test_p2const_parameter_pattern_recognition():
     """SWUT_PARSER_00007
@@ -187,6 +193,7 @@ def test_p2const_parameter_pattern_recognition():
 
 # SWUT_PARSER_00008: CONST Parameter Pattern Recognition
 
+
 def test_const_parameter_pattern_recognition():
     """SWUT_PARSER_00008
 
@@ -208,6 +215,7 @@ def test_const_parameter_pattern_recognition():
 
 
 # SWUT_PARSER_00009: Parameter String Extraction
+
 
 def test_parameter_string_extraction():
     """SWUT_PARSER_00003
@@ -237,6 +245,7 @@ def test_parameter_string_extraction():
 
 
 # SWUT_PARSER_00010: Function Declaration Parsing
+
 
 def test_function_declaration_parsing():
     """SWUT_PARSER_00005
@@ -270,6 +279,7 @@ def test_function_declaration_parsing():
 
 
 # SWUT_PARSER_00010: Return Type Conversion
+
 
 def test_return_type_conversion():
     """SWUT_PARSER_00006

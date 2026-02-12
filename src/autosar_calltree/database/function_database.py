@@ -27,6 +27,7 @@ from .models import FunctionInfo
 # Try to import pycparser-based parser (optional dependency)
 try:
     from ..parsers.c_parser_pycparser import CParserPyCParser
+
     PYCPARSER_AVAILABLE = True
 except ImportError:
     PYCPARSER_AVAILABLE = False
@@ -509,9 +510,14 @@ class FunctionDatabase:
 
             # Check parser type matches (invalidate cache if parser changed)
             # This ensures consistency when pycparser is installed/uninstalled
-            if hasattr(metadata, "parser_type") and metadata.parser_type != self.parser_type:
+            if (
+                hasattr(metadata, "parser_type")
+                and metadata.parser_type != self.parser_type
+            ):
                 if verbose:
-                    print(f"Cache invalid: parser type mismatch (cached: {metadata.parser_type}, current: {self.parser_type})")
+                    print(
+                        f"Cache invalid: parser type mismatch (cached: {metadata.parser_type}, current: {self.parser_type})"
+                    )
                 return False
 
             # Load data

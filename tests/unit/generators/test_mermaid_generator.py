@@ -160,7 +160,7 @@ def create_mock_analysis_result(
 # SWUT_GEN_00001: Generator Initialization
 def test_initialization() -> None:
     """SWUT_GEN_00001
-    
+
     Test MermaidGenerator initialization with various options."""
     # Default initialization
     gen1 = MermaidGenerator()
@@ -184,7 +184,7 @@ def test_initialization() -> None:
 # SWUT_GEN_00002: Mermaid Sequence Diagram Header
 def test_mermaid_header() -> None:
     """SWUT_GEN_00002
-    
+
     Test that generated Mermaid diagram starts with correct header."""
     result = create_mock_analysis_result()
     gen = MermaidGenerator()
@@ -198,7 +198,7 @@ def test_mermaid_header() -> None:
 # SWUT_GEN_00003: Participant Collection - Function Names
 def test_collect_participants_functions() -> None:
     """SWUT_GEN_00003
-    
+
     Test participants collected as function names when use_module_names=False."""
     root = create_mock_call_tree(
         [
@@ -226,7 +226,7 @@ def test_collect_participants_functions() -> None:
 # SWUT_GEN_00004: Participant Collection - Module Names
 def test_collect_participants_modules() -> None:
     """SWUT_GEN_00004
-    
+
     Test participants collected as module names when use_module_names=True."""
     root = create_mock_call_tree(
         [
@@ -254,7 +254,7 @@ def test_collect_participants_modules() -> None:
 # SWUT_GEN_00005: Module Fallback to Filename
 def test_module_fallback_to_filename() -> None:
     """SWUT_GEN_00005
-    
+
     Test functions without module assignment use filename as participant."""
     root = create_mock_call_tree(
         [
@@ -280,7 +280,7 @@ def test_module_fallback_to_filename() -> None:
 # SWUT_GEN_00006: RTE Function Abbreviation
 def test_rte_abbreviation() -> None:
     """SWUT_GEN_00006
-    
+
     Test that long RTE function names are abbreviated."""
     gen = MermaidGenerator(abbreviate_rte=True)
 
@@ -294,7 +294,7 @@ def test_rte_abbreviation() -> None:
 # SWUT_GEN_00007: RTE Abbreviation Disabled
 def test_rte_abbreviation_disabled() -> None:
     """SWUT_GEN_00007
-    
+
     Test that RTE abbreviation can be disabled."""
     gen = MermaidGenerator(abbreviate_rte=False)
 
@@ -305,7 +305,7 @@ def test_rte_abbreviation_disabled() -> None:
 # SWUT_GEN_00008: Short RTE Name Not Abbreviated
 def test_short_rte_not_abbreviated() -> None:
     """SWUT_GEN_00008
-    
+
     Test that short RTE names are not abbreviated."""
     gen = MermaidGenerator(abbreviate_rte=True)
 
@@ -319,7 +319,7 @@ def test_short_rte_not_abbreviated() -> None:
 # SWUT_GEN_00009: Sequence Call Generation - Function Mode
 def test_sequence_calls_function_mode() -> None:
     """SWUT_GEN_00009
-    
+
     Test sequence calls are generated correctly with function participants."""
     root = create_mock_call_tree(
         [
@@ -345,7 +345,7 @@ def test_sequence_calls_function_mode() -> None:
 # SWUT_GEN_00010: Sequence Call Generation - Module Mode
 def test_sequence_calls_module_mode() -> None:
     """SWUT_GEN_00010
-    
+
     Test sequence calls show function names on arrows in module mode."""
     root = create_mock_call_tree(
         [
@@ -371,7 +371,7 @@ def test_sequence_calls_module_mode() -> None:
 # SWUT_GEN_00011: Parameter Display on Arrows
 def test_parameters_on_arrows() -> None:
     """SWUT_GEN_00011
-    
+
     Test that function parameters are displayed on sequence arrows."""
     params = [Parameter("timerId", "uint32", False, False)]
     root = create_mock_call_tree_with_params(
@@ -399,7 +399,7 @@ def test_parameters_on_arrows() -> None:
 # SWUT_GEN_00012: Multiple Parameters Display
 def test_multiple_parameters() -> None:
     """SWUT_GEN_00012
-    
+
     Test that multiple parameters are comma-separated."""
     params = [
         Parameter("value", "uint32", False, False),
@@ -430,7 +430,7 @@ def test_multiple_parameters() -> None:
 # SWUT_GEN_00013: Recursive Call Handling
 def test_recursive_call_handling() -> None:
     """SWUT_GEN_00013
-    
+
     Test that recursive calls use special arrow syntax."""
     root = create_mock_call_tree(
         [
@@ -460,7 +460,7 @@ def test_recursive_call_handling() -> None:
 # SWUT_GEN_00052: Recursive Call Without Module Names (Line 227)
 def test_recursive_call_without_module_names_line_227() -> None:
     """SWUT_GEN_00052
-    
+
     Test recursive call with use_module_names=False (covers line 227)."""
     root = create_mock_call_tree(
         [
@@ -490,7 +490,7 @@ def test_recursive_call_without_module_names_line_227() -> None:
 # SWUT_GEN_00014: Return Statement Generation
 def test_return_statements() -> None:
     """SWUT_GEN_00014
-    
+
     Test that return statements are generated when include_returns=True."""
     root = create_mock_call_tree(
         [
@@ -516,7 +516,7 @@ def test_return_statements() -> None:
 # SWUT_GEN_00015: Return Statements Disabled by Default
 def test_returns_disabled_default() -> None:
     """SWUT_GEN_00015
-    
+
     Test that return statements are not generated by default."""
     root = create_mock_call_tree(
         [
@@ -542,7 +542,7 @@ def test_returns_disabled_default() -> None:
 # SWUT_GEN_00016: Function Table - Function Mode
 def test_function_table_format() -> None:
     """SWUT_GEN_00016
-    
+
     Test function table has correct format when use_module_names=False."""
     root = create_mock_call_tree([("Demo_Init", "demo.c", None)])
 
@@ -558,7 +558,7 @@ def test_function_table_format() -> None:
 # SWUT_GEN_00017: Function Table - Module Mode
 def test_function_table_module_column() -> None:
     """SWUT_GEN_00017
-    
+
     Test function table includes Module column when use_module_names=True."""
     root = create_mock_call_tree(
         [
@@ -586,7 +586,7 @@ def test_function_table_module_column() -> None:
 # SWUT_GEN_00018: Function Table - N/A for Unmapped
 def test_function_table_na_for_unmapped() -> None:
     """SWUT_GEN_00018
-    
+
     Test unmapped functions show 'N/A' in Module column."""
     root = create_mock_call_tree(
         [
@@ -610,7 +610,7 @@ def test_function_table_na_for_unmapped() -> None:
 # SWUT_GEN_00019: Parameter Formatting for Table
 def test_parameter_formatting_table() -> None:
     """SWUT_GEN_00019
-    
+
     Test parameters formatted correctly for function table."""
     params = [
         Parameter("value", "uint32", False, False),
@@ -629,7 +629,7 @@ def test_parameter_formatting_table() -> None:
 # SWUT_GEN_00020: Void Parameter Display
 def test_void_parameters() -> None:
     """SWUT_GEN_00020
-    
+
     Test functions with no parameters show 'void'."""
     func = create_mock_function("Func", "file.c", [])
 
@@ -642,7 +642,7 @@ def test_void_parameters() -> None:
 # SWUT_GEN_00021: Parameter Formatting for Diagram
 def test_parameter_formatting_diagram() -> None:
     """SWUT_GEN_00021
-    
+
     Test parameters formatted for sequence diagram (names only)."""
     params = [
         Parameter("value", "uint32", False, False),
@@ -659,7 +659,7 @@ def test_parameter_formatting_diagram() -> None:
 # SWUT_GEN_00022: Text Tree Generation
 def test_text_tree_generation() -> None:
     """SWUT_GEN_00022
-    
+
     Test text tree is generated with correct formatting."""
     root = create_mock_call_tree(
         [
@@ -686,7 +686,7 @@ def test_text_tree_generation() -> None:
 # SWUT_GEN_00023: Circular Dependencies Section
 def test_circular_dependencies_section() -> None:
     """SWUT_GEN_00023
-    
+
     Test circular dependencies are displayed in section."""
     result = create_mock_analysis_result()
     result.circular_dependencies = [
@@ -708,7 +708,7 @@ def test_circular_dependencies_section() -> None:
 # SWUT_GEN_00024: Metadata Generation
 def test_metadata_generation() -> None:
     """SWUT_GEN_00024
-    
+
     Test metadata section is generated correctly."""
     result = create_mock_analysis_result()
     result.root_function = "Demo_Init"
@@ -731,7 +731,7 @@ def test_metadata_generation() -> None:
 # SWUT_GEN_00025: File Output Generation
 def test_file_output(tmp_path: Path) -> None:
     """SWUT_GEN_00025
-    
+
     Test generate() creates markdown file with all sections."""
     result = create_mock_analysis_result()
     gen = MermaidGenerator()
@@ -751,7 +751,7 @@ def test_file_output(tmp_path: Path) -> None:
 # SWUT_GEN_00026: String Output Generation
 def test_string_output() -> None:
     """SWUT_GEN_00026
-    
+
     Test generate_to_string returns complete markdown."""
     result = create_mock_analysis_result()
     gen = MermaidGenerator()
@@ -767,7 +767,7 @@ def test_string_output() -> None:
 # SWUT_GEN_00027: Empty Call Tree Error
 def test_empty_call_tree_error(tmp_path: Path) -> None:
     """SWUT_GEN_00027
-    
+
     Test ValueError raised for empty call tree."""
     result = create_mock_analysis_result(has_tree=False)
     gen = MermaidGenerator()
@@ -780,7 +780,7 @@ def test_empty_call_tree_error(tmp_path: Path) -> None:
 # SWUT_GEN_00028: Optional Content Sections
 def test_optional_sections(tmp_path: Path) -> None:
     """SWUT_GEN_00028
-    
+
     Test optional sections can be disabled."""
     result = create_mock_analysis_result()
     gen = MermaidGenerator()
@@ -804,7 +804,7 @@ def test_optional_sections(tmp_path: Path) -> None:
 # SWUT_GEN_00029: Unique Functions in Table
 def test_unique_functions_in_table() -> None:
     """SWUT_GEN_00029
-    
+
     Test function table shows each function only once."""
     # Create tree where same function appears multiple times
     root = create_mock_call_tree(
@@ -839,7 +839,7 @@ def test_unique_functions_in_table() -> None:
 # SWUT_GEN_00030: Sorted Function Table
 def test_sorted_function_table() -> None:
     """SWUT_GEN_00030
-    
+
     Test function table is sorted alphabetically."""
     root = create_mock_call_tree(
         [
@@ -870,7 +870,7 @@ def test_sorted_function_table() -> None:
 # SWUT_GEN_00031: Parent Directory Creation
 def test_parent_directory_creation(tmp_path: Path) -> None:
     """SWUT_GEN_00031
-    
+
     Test output creates parent directories if needed."""
     result = create_mock_analysis_result()
     gen = MermaidGenerator()
@@ -1120,7 +1120,7 @@ def test_mixed_modules_and_filenames() -> None:
 # SWUT_GEN_00032: Optional Call - Opt Block Generation
 def test_opt_block_generation() -> None:
     """SWUT_GEN_00032
-    
+
     Test that optional calls are wrapped in opt blocks."""
     root = create_mock_call_tree(
         [
@@ -1150,7 +1150,7 @@ def test_opt_block_generation() -> None:
 # SWUT_GEN_00033: Optional Call - Multiple Optional Calls
 def test_multiple_optional_calls() -> None:
     """SWUT_GEN_00033
-    
+
     Test that multiple optional calls each get their own opt block."""
     root = create_mock_call_tree(
         [
@@ -1184,7 +1184,7 @@ def test_multiple_optional_calls() -> None:
 # SWUT_GEN_00034: Optional Call - Mixed Optional and Regular
 def test_mixed_optional_and_regular() -> None:
     """SWUT_GEN_00034
-    
+
     Test diagram with both optional and regular calls."""
     root = create_mock_call_tree(
         [
@@ -1221,7 +1221,7 @@ def test_mixed_optional_and_regular() -> None:
 # SWUT_GEN_00035: Optional Call - Nested Optional
 def test_nested_optional() -> None:
     """SWUT_GEN_00035
-    
+
     Test that optional calls in nested levels also get opt blocks."""
     root = create_mock_call_tree(
         [
@@ -1257,7 +1257,7 @@ def test_nested_optional() -> None:
 # SWUT_GEN_00036: Optional Call - Recursive Not Optional
 def test_recursive_not_opt() -> None:
     """SWUT_GEN_00036
-    
+
     Test that recursive calls are not wrapped in opt blocks unless marked."""
     root = create_mock_call_tree(
         [
@@ -1288,7 +1288,7 @@ def test_recursive_not_opt() -> None:
 # SWUT_GEN_00037: Optional Call - Optional with Returns
 def test_optional_with_returns() -> None:
     """SWUT_GEN_00037
-    
+
     Test optional calls with return statements."""
     root = create_mock_call_tree(
         [
@@ -1318,7 +1318,7 @@ def test_optional_with_returns() -> None:
 # SWUT_GEN_00038: Optional Call - Function Mode
 def test_optional_function_mode() -> None:
     """SWUT_GEN_00038
-    
+
     Test optional calls work in function mode (not module mode)."""
     root = create_mock_call_tree(
         [
@@ -1451,7 +1451,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_rte_participant_abbreviation(self):
         """SWUT_GEN_00042
-        
+
         Test RTE participant abbreviation in participant map (lines 143-145)."""
         root = create_mock_call_tree(
             [
@@ -1478,13 +1478,15 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_parameter_pointer_backtick(self):
         """SWUT_GEN_00043
-        
+
         Test parameter formatting with pointer and backtick (line 374)."""
         func = create_mock_function(
             name="test_func",
             file_path="test.c",
             parameters=[
-                Parameter(name="buffer", param_type="uint8", is_pointer=True, is_const=False),
+                Parameter(
+                    name="buffer", param_type="uint8", is_pointer=True, is_const=False
+                ),
             ],
         )
 
@@ -1496,7 +1498,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_parameter_type_asterisk_for_diagram(self):
         """SWUT_GEN_00044
-        
+
         Test parameter type with asterisk for diagram when no name (line 399)."""
         func = create_mock_function(
             name="test_func",
@@ -1514,7 +1516,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_generate_to_string_none_call_tree(self):
         """SWUT_GEN_00045
-        
+
         Test generate_to_string raises ValueError for None call tree (line 479)."""
         result = create_mock_analysis_result(has_tree=False)
 
@@ -1525,16 +1527,14 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_circular_deps_section_generation(self):
         """SWUT_GEN_00046
-        
+
         Test circular dependencies section is generated (line 504)."""
         from autosar_calltree.database.models import CircularDependency
 
         result = create_mock_analysis_result()
 
         # Add circular dependencies
-        circ_dep = CircularDependency(
-            cycle=["FuncA", "FuncB", "FuncA"], depth=2
-        )
+        circ_dep = CircularDependency(cycle=["FuncA", "FuncB", "FuncA"], depth=2)
         result.circular_dependencies = [circ_dep]
 
         gen = MermaidGenerator()
@@ -1547,7 +1547,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_generate_non_recursive_call_with_params_line_227(self):
         """SWUT_GEN_00047
-        
+
         Test generate non-recursive call with parameters (line 227)."""
         root = create_mock_call_tree(
             [
@@ -1564,8 +1564,12 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
         # Add parameters to the callee
         root.children[0].function_info.parameters = [
-            Parameter(name="param1", param_type="int", is_pointer=False, is_const=False),
-            Parameter(name="param2", param_type="char", is_pointer=True, is_const=False),
+            Parameter(
+                name="param1", param_type="int", is_pointer=False, is_const=False
+            ),
+            Parameter(
+                name="param2", param_type="char", is_pointer=True, is_const=False
+            ),
         ]
 
         # Use the public generate method
@@ -1580,7 +1584,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_generate_non_recursive_call_without_modules_line_227(self):
         """SWUT_GEN_00051
-        
+
         Test generate non-recursive call without module names (line 227)."""
         root = create_mock_call_tree(
             [
@@ -1607,7 +1611,7 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_format_parameters_adds_backtick_line_374(self):
         """SWUT_GEN_00048
-        
+
         Test _format_parameters adds backtick when no param name (line 374)."""
         func = create_mock_function(
             name="test_func",
@@ -1625,13 +1629,15 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_format_parameters_with_name(self):
         """SWUT_GEN_00049
-        
+
         Test _format_parameters with parameter name."""
         func = create_mock_function(
             name="test_func",
             file_path="test.c",
             parameters=[
-                Parameter(name="value", param_type="uint32", is_pointer=False, is_const=False),
+                Parameter(
+                    name="value", param_type="uint32", is_pointer=False, is_const=False
+                ),
             ],
         )
 
@@ -1643,14 +1649,18 @@ class TestMermaidGeneratorMissingLinesCoverage:
 
     def test_format_parameters_multiple_params(self):
         """SWUT_GEN_00050
-        
+
         Test _format_parameters with multiple parameters."""
         func = create_mock_function(
             name="test_func",
             file_path="test.c",
             parameters=[
-                Parameter(name="id", param_type="uint32", is_pointer=False, is_const=False),
-                Parameter(name="data", param_type="uint8", is_pointer=True, is_const=False),
+                Parameter(
+                    name="id", param_type="uint32", is_pointer=False, is_const=False
+                ),
+                Parameter(
+                    name="data", param_type="uint8", is_pointer=True, is_const=False
+                ),
             ],
         )
 
@@ -1661,4 +1671,3 @@ class TestMermaidGeneratorMissingLinesCoverage:
         assert "`uint32 id`" in params
         assert "`uint8* data`" in params
         assert "<br>" in params
-

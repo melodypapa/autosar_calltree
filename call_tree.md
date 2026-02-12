@@ -1,40 +1,82 @@
-# Call Tree: Demo_Update
+# Call Tree: Demo_Init
 
 ## Metadata
 
-- **Root Function**: `Demo_Update`
-- **Generated**: 2026-02-04 23:00:38
-- **Total Functions**: 3
-- **Unique Functions**: 3
-- **Max Depth**: 1
+- **Root Function**: `Demo_Init`
+- **Generated**: 2026-02-10 22:17:37
+- **Total Functions**: 14
+- **Unique Functions**: 14
+- **Max Depth**: 2
 - **Circular Dependencies**: 0
 
 ## Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant Demo_Update
-    participant COM_SendLINMessage
-    participant SW_UpdateState
+    participant Demo_Init
+    participant COM_InitCommunication
+    participant COM_InitCAN
+    participant COM_InitEthernet
+    participant COM_InitLIN
+    participant Demo_InitVariables
+    participant HW_InitHardware
+    participant HW_InitADC
+    participant HW_InitClock
+    participant HW_InitGPIO
+    participant HW_InitPWM
+    participant SW_InitSoftware
+    participant SW_InitConfig
+    participant SW_InitState
 
-    opt Optional call
-    Demo_Update->>COM_SendLINMessage: call(msg_id, data)
-    end
-    Demo_Update->>SW_UpdateState: call(new_state)
+    Demo_Init->>COM_InitCommunication: call(baud_rate, buffer_size)
+    COM_InitCommunication->>COM_InitCAN: call
+    COM_InitCommunication->>COM_InitEthernet: call
+    COM_InitCommunication->>COM_InitLIN: call
+    Demo_Init->>Demo_InitVariables: call(config_mode)
+    Demo_Init->>HW_InitHardware: call(clock_freq, gpio_mask)
+    HW_InitHardware->>HW_InitADC: call
+    HW_InitHardware->>HW_InitClock: call
+    HW_InitHardware->>HW_InitGPIO: call
+    HW_InitHardware->>HW_InitPWM: call
+    Demo_Init->>SW_InitSoftware: call(state, config)
+    SW_InitSoftware->>SW_InitConfig: call
+    SW_InitSoftware->>SW_InitState: call
 ```
 
 ## Function Details
 
 | Function | File | Line | Return Type | Parameters |
 |----------|------|------|-------------|------------|
-| `COM_SendLINMessage` | communication.c | 42 | `void` | `uint32 msg_id`<br>`uint8* data` |
-| `Demo_Update` | demo.c | 38 | `void` | `uint32 update_mode` |
-| `SW_UpdateState` | software.c | 38 | `void` | `uint32 new_state` |
+| `COM_InitCAN` | communication.c | 9 | `void` | `void` |
+| `COM_InitCommunication` | communication.c | 27 | `void` | `uint32 baud_rate`<br>`uint16 buffer_size` |
+| `COM_InitEthernet` | communication.c | 21 | `void` | `void` |
+| `COM_InitLIN` | communication.c | 15 | `void` | `void` |
+| `Demo_Init` | demo.c | 8 | `void` | `void` |
+| `Demo_InitVariables` | demo.c | 19 | `void` | `uint32 config_mode` |
+| `HW_InitADC` | hardware.c | 27 | `void` | `void` |
+| `HW_InitClock` | hardware.c | 9 | `void` | `void` |
+| `HW_InitGPIO` | hardware.c | 15 | `void` | `void` |
+| `HW_InitHardware` | hardware.c | 33 | `void` | `uint32 clock_freq`<br>`uint32 gpio_mask` |
+| `HW_InitPWM` | hardware.c | 21 | `void` | `void` |
+| `SW_InitConfig` | software.c | 15 | `void` | `void` |
+| `SW_InitSoftware` | software.c | 21 | `void` | `uint8 state`<br>`uint8 config` |
+| `SW_InitState` | software.c | 9 | `void` | `void` |
 
 ## Call Tree (Text)
 
 ```
-Demo_Update (demo.c:38)
-├── COM_SendLINMessage (communication.c:42)
-└── SW_UpdateState (software.c:38)
+Demo_Init (demo.c:8)
+├── COM_InitCommunication (communication.c:27)
+│   ├── COM_InitCAN (communication.c:9)
+│   ├── COM_InitEthernet (communication.c:21)
+│   └── COM_InitLIN (communication.c:15)
+├── Demo_InitVariables (demo.c:19)
+├── HW_InitHardware (hardware.c:33)
+│   ├── HW_InitADC (hardware.c:27)
+│   ├── HW_InitClock (hardware.c:9)
+│   ├── HW_InitGPIO (hardware.c:15)
+│   └── HW_InitPWM (hardware.c:21)
+└── SW_InitSoftware (software.c:21)
+    ├── SW_InitConfig (software.c:15)
+    └── SW_InitState (software.c:9)
 ```

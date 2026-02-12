@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+
 import pytest
 
 from autosar_calltree.database.models import FunctionType
@@ -15,6 +16,7 @@ pytestmark = pytest.mark.skipif(
 
 
 # SWUT_PARSER_00026: Optional Dependency
+
 
 def test_pycparser_optional_dependency():
     """SWUT_PARSER_00026
@@ -32,6 +34,7 @@ def test_pycparser_optional_dependency():
 
 # SWUT_PARSER_00027: AST-Based Parsing
 
+
 def test_ast_based_parsing():
     """SWUT_PARSER_00027
 
@@ -41,8 +44,10 @@ def test_ast_based_parsing():
 
     # Create test file
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
-        f.write("""
+        f.write(
+            """
         int add(int a, int b) {
             return a + b;
         }
@@ -50,7 +55,8 @@ def test_ast_based_parsing():
         void caller(void) {
             add(1, 2);
         }
-        """)
+        """
+        )
 
     fixture_path = Path(f.name)
 
@@ -74,6 +80,7 @@ def test_ast_based_parsing():
 
 # SWUT_PARSER_00028: AUTOSAR Macro Preprocessing
 
+
 def test_autosar_macro_preprocessing():
     """SWUT_PARSER_00028
 
@@ -84,6 +91,7 @@ def test_autosar_macro_preprocessing():
 
     # Test FUNC macro conversion
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         # AUTOSAR macros that need preprocessing
         f.write("FUNC(void, RTE_CODE) TestFunc(void)")
@@ -119,6 +127,7 @@ def test_autosar_macro_preprocessing():
 
 # SWUT_PARSER_00029: AST Visitor Pattern
 
+
 def test_ast_visitor_pattern():
     """SWUT_PARSER_00029
 
@@ -129,12 +138,15 @@ def test_ast_visitor_pattern():
 
     # Create test file with multiple functions
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
-        f.write("""
+        f.write(
+            """
         void first(void) {}
         void second(int x) {}
         void third(float y) {}
-        """)
+        """
+        )
 
     fixture_path = Path(f.name)
 
@@ -152,6 +164,7 @@ def test_ast_visitor_pattern():
 
 # SWUT_PARSER_00030: Return Type Extraction from AST
 
+
 def test_ast_return_type_extraction():
     """SWUT_PARSER_00030
 
@@ -162,6 +175,7 @@ def test_ast_return_type_extraction():
 
     # Test various return types
     import tempfile
+
     test_cases = [
         ("void func(void) {}", "void"),
         ("int func(int x) {}", "int"),
@@ -183,6 +197,7 @@ def test_ast_return_type_extraction():
 
 # SWUT_PARSER_00031: Parameter Extraction from AST
 
+
 def test_ast_parameter_extraction():
     """SWUT_PARSER_00031
 
@@ -193,15 +208,18 @@ def test_ast_parameter_extraction():
 
     # Create test function with multiple parameter types
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
-        f.write("""
+        f.write(
+            """
         void complex_func(
             uint8 value,
             uint16* buffer,
             const uint32 limit,
             int array[256])
         {}
-        """)
+        """
+        )
 
     fixture_path = Path(f.name)
     functions = parser.parse_file(fixture_path)
@@ -238,6 +256,7 @@ def test_ast_parameter_extraction():
 
 # SWUT_PARSER_00032: Function Call Extraction via AST
 
+
 def test_ast_function_call_extraction():
     """SWUT_PARSER_00032
 
@@ -248,14 +267,17 @@ def test_ast_function_call_extraction():
 
     # Create test file with function calls
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
-        f.write("""
+        f.write(
+            """
         void caller(void) {
             helper1();
             helper2(42);
             Rte_Call_MyFunc();  // AUTOSAR-style call
         }
-        """)
+        """
+        )
 
     fixture_path = Path(f.name)
     functions = parser.parse_file(fixture_path)
@@ -276,6 +298,7 @@ def test_ast_function_call_extraction():
 
 # SWUT_PARSER_00033: Hybrid Parsing Strategy
 
+
 def test_hybrid_parsing_strategy():
     """SWUT_PARSER_00033
 
@@ -286,14 +309,17 @@ def test_hybrid_parsing_strategy():
 
     # Create test file with mixed AUTOSAR and traditional C
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
-        f.write("""
+        f.write(
+            """
         FUNC(void, RTE_CODE) AutosarFunc(void) {
             TradFunc(42);
         }
 
         void TradFunc(void) {}
-        """)
+        """
+        )
 
     fixture_path = Path(f.name)
     functions = parser.parse_file(fixture_path)
@@ -306,7 +332,10 @@ def test_hybrid_parsing_strategy():
     assert autosar_func.name == "AutosarFunc"
     assert autosar_func.return_type == "void"
     # AUTOSAR functions should have AUTOSAR_FUNC type from pycparser (not TRADITIONAL_C)
-    assert autosar_func.function_type in [FunctionType.AUTOSAR_FUNC, FunctionType.AUTOSAR_FUNC_P2VAR]
+    assert autosar_func.function_type in [
+        FunctionType.AUTOSAR_FUNC,
+        FunctionType.AUTOSAR_FUNC_P2VAR,
+    ]
 
     # Check traditional function
     trad_func = [f for f in functions if f.name == "TradFunc"][0]
@@ -316,6 +345,7 @@ def test_hybrid_parsing_strategy():
 
 
 # SWUT_PARSER_00034: Preprocessor Directive Handling
+
 
 def test_preprocessor_directive_handling():
     """SWUT_PARSER_00034
@@ -327,12 +357,13 @@ def test_preprocessor_directive_handling():
 
     # Create test file with preprocessor directives
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         # Write directives that should be removed
         f.write("#pragma once\n")
-        f.write("#line 1000 \"file.c\"\n")
-        f.write("#error \"Unsupported feature\"\n")
-        f.write("#warning \"Deprecated function\"\n")
+        f.write('#line 1000 "file.c"\n')
+        f.write('#error "Unsupported feature"\n')
+        f.write('#warning "Deprecated function"\n')
         # Write function after directives
         f.write("void test_func(void) {}\n")
 
@@ -346,6 +377,7 @@ def test_preprocessor_directive_handling():
 
 # SWUT_PARSER_00035: Parse Error Graceful Handling
 
+
 def test_parse_error_graceful_handling():
     """SWUT_PARSER_00035
 
@@ -356,6 +388,7 @@ def test_parse_error_graceful_handling():
 
     # Create test file with syntax error
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         # Invalid C syntax
         f.write("void func(void {\n")  # Missing closing brace

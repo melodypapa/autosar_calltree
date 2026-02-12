@@ -4,9 +4,10 @@ from pathlib import Path
 
 from autosar_calltree.analyzers.call_tree_builder import CallTreeBuilder
 from autosar_calltree.database.function_database import FunctionDatabase
-
+from autosar_calltree.database.models import CallTreeNode
 
 # SWUT_ANALYZER_00001: Builder Initialization
+
 
 def test_builder_initialization():
     """SWUT_ANALYZER_00001
@@ -25,6 +26,7 @@ def test_builder_initialization():
 
 
 # SWUT_ANALYZER_00002: State Management
+
 
 def test_state_reset_between_builds():
     """SWUT_ANALYZER_00002
@@ -55,6 +57,7 @@ def test_state_reset_between_builds():
 
 # SWUT_ANALYZER_00003: Start Function Validation
 
+
 def test_start_function_validation():
     """SWUT_ANALYZER_00003
 
@@ -79,6 +82,7 @@ def test_start_function_validation():
 
 # SWUT_ANALYZER_00004: Depth-First Traversal Algorithm
 
+
 def test_depth_first_traversal():
     """SWUT_ANALYZER_00004
 
@@ -97,6 +101,7 @@ def test_depth_first_traversal():
 
 
 # SWUT_ANALYZER_00005: Cycle Detection
+
 
 def test_cycle_detection():
     """SWUT_ANALYZER_00005
@@ -120,6 +125,7 @@ def test_cycle_detection():
 
 
 # SWUT_ANALYZER_00006: Cycle Handling in Tree
+
 
 def test_cycle_handling_in_tree():
     """SWUT_ANALYZER_00006
@@ -150,6 +156,7 @@ def test_cycle_handling_in_tree():
 
 
 # SWUT_ANALYZER_00007: Max Depth Enforcement
+
 
 def test_max_depth_enforcement():
     """SWUT_ANALYZER_00007
@@ -188,6 +195,7 @@ def test_max_depth_enforcement():
 
 # SWUT_ANALYZER_00008: Node Depth Tracking
 
+
 def test_node_depth_tracking():
     """SWUT_ANALYZER_00008
 
@@ -213,6 +221,7 @@ def test_node_depth_tracking():
 
 
 # SWUT_ANALYZER_00009: AnalysisResult Creation
+
 
 def test_analysis_result_creation():
     """SWUT_ANALYZER_00009
@@ -243,6 +252,7 @@ def test_analysis_result_creation():
 
 # SWUT_ANALYZER_00010: Statistics Collection
 
+
 def test_statistics_collection():
     """SWUT_ANALYZER_00010
 
@@ -263,6 +273,7 @@ def test_statistics_collection():
 
 
 # SWUT_ANALYZER_00011: Unique Function Tracking
+
 
 def test_unique_function_tracking():
     """SWUT_ANALYZER_00011
@@ -285,6 +296,7 @@ def test_unique_function_tracking():
 
 # SWUT_ANALYZER_00012: Missing Function Handling
 
+
 def test_missing_function_handling():
     """SWUT_ANALYZER_00012
 
@@ -304,6 +316,7 @@ def test_missing_function_handling():
 
 
 # SWUT_ANALYZER_00013: RTE Call Filtering
+
 
 def test_rte_call_filtering():
     """SWUT_ANALYZER_00013
@@ -329,6 +342,7 @@ def test_rte_call_filtering():
 
 # SWUT_ANALYZER_00014: Qualified Name Usage
 
+
 def test_qualified_name_usage():
     """SWUT_ANALYZER_00014
 
@@ -348,6 +362,7 @@ def test_qualified_name_usage():
 
 
 # SWUT_ANALYZER_00015: Verbose Logging
+
 
 def test_verbose_logging():
     """SWUT_ANALYZER_00015

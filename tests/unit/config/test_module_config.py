@@ -39,7 +39,7 @@ def only_default_config_path(test_fixtures_dir: Path) -> Path:
 # SWUT_CONFIG_00001: Configuration File Loading
 def test_load_valid_config(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00001
-    
+
     Test loading a valid YAML configuration file."""
     config = ModuleConfig(valid_config_path)
 
@@ -63,7 +63,7 @@ def test_load_valid_config(valid_config_path: Path) -> None:
 # SWUT_CONFIG_00002: Missing Configuration File
 def test_missing_config_file(tmp_path: Path) -> None:
     """SWUT_CONFIG_00002
-    
+
     Test FileNotFoundError when configuration file doesn't exist."""
     config_path = tmp_path / "nonexistent_config.yaml"
 
@@ -74,7 +74,7 @@ def test_missing_config_file(tmp_path: Path) -> None:
 # SWUT_CONFIG_00003: Invalid YAML Format
 def test_invalid_yaml(tmp_path: Path) -> None:
     """SWUT_CONFIG_00003
-    
+
     Test ValueError for malformed YAML."""
     config_path = tmp_path / "invalid.yaml"
     config_path.write_text(
@@ -94,7 +94,7 @@ file_mappings:
 # SWUT_CONFIG_00004: Non-Dictionary Root
 def test_invalid_root_type(test_fixtures_dir: Path) -> None:
     """SWUT_CONFIG_00004
-    
+
     Test ValueError when root element is not a dictionary."""
     config_path = test_fixtures_dir / "config" / "invalid_root_list.yaml"
 
@@ -105,7 +105,7 @@ def test_invalid_root_type(test_fixtures_dir: Path) -> None:
 # SWUT_CONFIG_00005: Invalid File Mappings Type
 def test_invalid_file_mappings_type(test_fixtures_dir: Path) -> None:
     """SWUT_CONFIG_00005
-    
+
     Test ValueError when file_mappings is not a dictionary."""
     config_path = test_fixtures_dir / "config" / "invalid_file_mappings_list.yaml"
 
@@ -127,7 +127,7 @@ def test_SWUT_CONFIG_00006_empty_module_name_file_mappings(
 # SWUT_CONFIG_00007: Non-String File Mapping Values
 def test_non_string_file_mappings(test_fixtures_dir: Path) -> None:
     """SWUT_CONFIG_00007
-    
+
     Test ValueError for non-string mapping values."""
     config_path = test_fixtures_dir / "config" / "non_string_mappings.yaml"
 
@@ -138,7 +138,7 @@ def test_non_string_file_mappings(test_fixtures_dir: Path) -> None:
 # SWUT_CONFIG_00008: Pattern Mappings Compilation
 def test_pattern_compilation(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00008
-    
+
     Test that glob patterns are correctly compiled to regex."""
     config = ModuleConfig(valid_config_path)
 
@@ -181,7 +181,7 @@ def test_SWUT_CONFIG_00010_empty_module_name_pattern_mappings(
 # SWUT_CONFIG_00011: Default Module Assignment
 def test_default_module(only_default_config_path: Path) -> None:
     """SWUT_CONFIG_00011
-    
+
     Test that default_module is correctly loaded."""
     config = ModuleConfig(only_default_config_path)
 
@@ -191,7 +191,7 @@ def test_default_module(only_default_config_path: Path) -> None:
 # SWUT_CONFIG_00012: Invalid Default Module Type
 def test_invalid_default_module_type(test_fixtures_dir: Path) -> None:
     """SWUT_CONFIG_00012
-    
+
     Test ValueError when default_module is not a string."""
     config_path = test_fixtures_dir / "config" / "invalid_default_module.yaml"
 
@@ -202,7 +202,7 @@ def test_invalid_default_module_type(test_fixtures_dir: Path) -> None:
 # SWUT_CONFIG_00013: Empty Default Module
 def test_empty_default_module(test_fixtures_dir: Path) -> None:
     """SWUT_CONFIG_00013
-    
+
     Test ValueError when default_module is whitespace only."""
     config_path = test_fixtures_dir / "config" / "empty_default_module.yaml"
 
@@ -213,7 +213,7 @@ def test_empty_default_module(test_fixtures_dir: Path) -> None:
 # SWUT_CONFIG_00014: Specific File Mapping Lookup
 def test_specific_file_lookup(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00014
-    
+
     Test get_module_for_file returns correct module for exact filename match."""
     config = ModuleConfig(valid_config_path)
 
@@ -226,7 +226,7 @@ def test_specific_file_lookup(valid_config_path: Path) -> None:
 # SWUT_CONFIG_00015: Pattern Mapping Lookup
 def test_pattern_lookup(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00015
-    
+
     Test get_module_for_file matches glob patterns correctly."""
     config = ModuleConfig(valid_config_path)
 
@@ -241,7 +241,7 @@ def test_pattern_lookup(valid_config_path: Path) -> None:
 # SWUT_CONFIG_00016: Specific Mapping Takes Precedence Over Pattern
 def test_specific_overrides_pattern(tmp_path: Path) -> None:
     """SWUT_CONFIG_00016
-    
+
     Test that specific file mappings take precedence over pattern mappings."""
     config_path = tmp_path / "precedence_test.yaml"
     config_path.write_text(
@@ -266,7 +266,7 @@ pattern_mappings:
 # SWUT_CONFIG_00017: Default Module Fallback
 def test_default_module_fallback(minimal_config_path: Path) -> None:
     """SWUT_CONFIG_00017
-    
+
     Test that default module is returned when no match."""
     config = ModuleConfig(minimal_config_path)
 
@@ -288,7 +288,7 @@ def test_SWUT_CONFIG_00017_default_module_fallback_with_default(
 # SWUT_CONFIG_00018: No Match Returns None
 def test_no_match_returns_none(minimal_config_path: Path) -> None:
     """SWUT_CONFIG_00018
-    
+
     Test get_module_for_file returns None when no match and no default."""
     config = ModuleConfig(minimal_config_path)
 
@@ -299,7 +299,7 @@ def test_no_match_returns_none(minimal_config_path: Path) -> None:
 # SWUT_CONFIG_00019: Lookup Caching
 def test_lookup_caching(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00019
-    
+
     Test that lookup results are cached for performance."""
     config = ModuleConfig(valid_config_path)
     file_path = Path("demo.c")
@@ -318,7 +318,7 @@ def test_lookup_caching(valid_config_path: Path) -> None:
 # SWUT_CONFIG_00020: Cache Stores None Results
 def test_cache_stores_none(minimal_config_path: Path) -> None:
     """SWUT_CONFIG_00020
-    
+
     Test that cache stores None for unmapped files."""
     config = ModuleConfig(minimal_config_path)
     file_path = Path("unmapped.c")
@@ -337,7 +337,7 @@ def test_cache_stores_none(minimal_config_path: Path) -> None:
 # SWUT_CONFIG_00021: Configuration Validation Success
 def test_validate_success(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00021
-    
+
     Test validate_config returns empty list for valid configuration."""
     config = ModuleConfig(valid_config_path)
 
@@ -348,7 +348,7 @@ def test_validate_success(valid_config_path: Path) -> None:
 # SWUT_CONFIG_00022: Configuration Validation Failure
 def test_validate_empty_config(tmp_path: Path) -> None:
     """SWUT_CONFIG_00022
-    
+
     Test validate_config detects empty configuration."""
     config_path = tmp_path / "empty_config.yaml"
     config_path.write_text("{}")
@@ -363,7 +363,7 @@ def test_validate_empty_config(tmp_path: Path) -> None:
 # SWUT_CONFIG_00023: Configuration Statistics
 def test_statistics(valid_config_path: Path) -> None:
     """SWUT_CONFIG_00023
-    
+
     Test get_statistics returns correct counts."""
     config = ModuleConfig(valid_config_path)
 
@@ -377,7 +377,7 @@ def test_statistics(valid_config_path: Path) -> None:
 # SWUT_CONFIG_00024: Empty Configuration Initialization
 def test_empty_initialization() -> None:
     """SWUT_CONFIG_00024
-    
+
     Test ModuleConfig initialization without config file."""
     config = ModuleConfig()  # No config_path
 
@@ -390,7 +390,7 @@ def test_empty_initialization() -> None:
 # SWUT_CONFIG_00025: Multiple Pattern Match Order
 def test_pattern_match_order(tmp_path: Path) -> None:
     """SWUT_CONFIG_00025
-    
+
     Test that first matching pattern in configuration is used."""
     config_path = tmp_path / "pattern_order.yaml"
     config_path.write_text(
@@ -599,4 +599,3 @@ pattern_mappings:
 
     with pytest.raises(ValueError, match="Module name cannot be empty for pattern"):
         ModuleConfig(config_path)
-

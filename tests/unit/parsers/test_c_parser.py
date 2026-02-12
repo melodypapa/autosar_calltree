@@ -5,8 +5,8 @@ from pathlib import Path
 from autosar_calltree.database.models import FunctionType
 from autosar_calltree.parsers.c_parser import CParser
 
-
 # SWUT_PARSER_00011: Traditional C Function Pattern Recognition
+
 
 def test_traditional_c_function_pattern():
     """SWUT_PARSER_00011
@@ -39,6 +39,7 @@ def test_traditional_c_function_pattern():
 
 # SWUT_PARSER_00012: C Keyword Filtering
 
+
 def test_c_keyword_filtering():
     """SWUT_PARSER_00012
 
@@ -69,6 +70,7 @@ def test_c_keyword_filtering():
 
 # SWUT_PARSER_00013: File-Level Parsing
 
+
 def test_file_level_parsing():
     """SWUT_PARSER_00013
 
@@ -78,6 +80,7 @@ def test_file_level_parsing():
 
     # Create temporary file with test content
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("void func1(void);\n")
         f.write("uint32 func2(uint32 value);\n")
@@ -99,6 +102,7 @@ def test_file_level_parsing():
 
 # SWUT_PARSER_00014: Comment Removal
 
+
 def test_comment_removal():
     """SWUT_PARSER_00014
 
@@ -119,12 +123,13 @@ def test_comment_removal():
     assert "void func(void);" in line_clean
 
     # Test comment in string
-    line_string = "char* ptr = \"//\";  /* comment starts here"
+    line_string = 'char* ptr = "//";  /* comment starts here'
     line_clean = parser._remove_comments(line_string)
-    assert "char* ptr = \"//\";" in line_clean  # Rest should remain
+    assert 'char* ptr = "//";' in line_clean  # Rest should remain
 
 
 # SWUT_PARSER_00015: Line-by-Line Processing
+
 
 def test_line_by_line_processing():
     """SWUT_PARSER_00015
@@ -139,6 +144,7 @@ def test_line_by_line_processing():
 
     # Create file and parse
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         # Write many function declarations
         for i in range(100):
@@ -155,6 +161,7 @@ def test_line_by_line_processing():
 
 # SWUT_PARSER_00016: Multi-Line Function Prototypes
 
+
 def test_multiline_function_prototypes():
     """SWUT_PARSER_00016
 
@@ -164,6 +171,7 @@ def test_multiline_function_prototypes():
 
     # Create multi-line declaration
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("uint32\n")
         f.write("get_value(\n")
@@ -186,6 +194,7 @@ def test_multiline_function_prototypes():
 
 
 # SWUT_PARSER_00017: Parameter String Parsing
+
 
 def test_parameter_string_parsing():
     """SWUT_PARSER_00017
@@ -221,6 +230,7 @@ def test_parameter_string_parsing():
 
 # SWUT_PARSER_00018: Smart Split Parameters
 
+
 def test_smart_split_parameters():
     """SWUT_PARSER_00018
 
@@ -252,6 +262,7 @@ def test_smart_split_parameters():
 
 # SWUT_PARSER_00019: Function Body Extraction
 
+
 def test_function_body_extraction():
     """SWUT_PARSER_00019
 
@@ -261,6 +272,7 @@ def test_function_body_extraction():
 
     # Create function with body
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("void func(void) {\n")
         f.write("    int x = 5;\n")
@@ -289,6 +301,7 @@ def test_function_body_extraction():
 
 # SWUT_PARSER_00020: Function Call Extraction
 
+
 def test_function_call_extraction():
     """SWUT_PARSER_00020
 
@@ -298,6 +311,7 @@ def test_function_call_extraction():
 
     # Create test file with function call
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("void caller(void) {\n")
         f.write("    callee();\n")  # Direct call
@@ -317,6 +331,7 @@ def test_function_call_extraction():
 
 # SWUT_PARSER_00021: Conditional Call Detection
 
+
 def test_conditional_call_detection():
     """SWUT_PARSER_00021
 
@@ -327,6 +342,7 @@ def test_conditional_call_detection():
 
     # Create test with conditional call
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("void test(void) {\n")
         f.write("    if (condition) {\n")
@@ -348,6 +364,7 @@ def test_conditional_call_detection():
 
 # SWUT_PARSER_00022: Multi-Line If Condition Extraction
 
+
 def test_multiline_if_condition_extraction():
     """SWUT_PARSER_00022
 
@@ -357,6 +374,7 @@ def test_multiline_if_condition_extraction():
 
     # Create test with multi-line condition
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("void test(void) {\n")
         f.write("    if (complex_condition &&\n")
@@ -379,6 +397,7 @@ def test_multiline_if_condition_extraction():
 
 # SWUT_PARSER_00023: Loop Detection
 
+
 def test_loop_detection():
     """SWUT_PARSER_00023
 
@@ -388,6 +407,7 @@ def test_loop_detection():
 
     # Create test with for loop
     import tempfile
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".c", delete=False) as f:
         f.write("void test(void) {\n")
         f.write("    for (int i = 0; i < 10; i++) {\n")
@@ -409,6 +429,7 @@ def test_loop_detection():
 
 # SWUT_PARSER_00024: Condition Text Sanitization
 
+
 def test_condition_sanitization():
     """SWUT_PARSER_00024
 
@@ -429,6 +450,7 @@ def test_condition_sanitization():
 
 # SWUT_PARSER_00025: Progressive Enhancement
 
+
 def test_progressive_enhancement():
     """SWUT_PARSER_00025
 
@@ -445,13 +467,17 @@ def test_progressive_enhancement():
     # Test that AUTOSAR functions are handled by AUTOSAR parser
     autosar_parser = AutosarParser()
     line_autosar = "FUNC(void, RTE_CODE) AutosarFunc(void)"
-    result_autosar = autosar_parser.parse_function_declaration(line_autosar, Path("test.c"), 1)
+    result_autosar = autosar_parser.parse_function_declaration(
+        line_autosar, Path("test.c"), 1
+    )
     assert result_autosar is not None
     assert result_autosar.function_type == FunctionType.AUTOSAR_FUNC
 
     # Test that traditional C functions fall back to C parser
     c_parser = CParser()
     line_traditional = "void TradFunc(void)"
-    result_traditional = c_parser.parse_function_declaration(line_traditional, Path("test.c"), 10)
+    result_traditional = c_parser.parse_function_declaration(
+        line_traditional, Path("test.c"), 10
+    )
     assert result_traditional is not None
     assert result_traditional.function_type == FunctionType.TRADITIONAL_C

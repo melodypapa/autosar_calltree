@@ -81,7 +81,7 @@ file_mappings:
 
     def test_cache_directory_creation(self):
         """SWUT_DB_00002
-        
+
         Test cache directory is created automatically (SWUT_DB_00012)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_path = Path(temp_dir) / "test_cache"
@@ -98,7 +98,7 @@ class TestDatabaseIndexing:
 
     def test_three_index_structure(self):
         """SWUT_DB_00003
-        
+
         Test database maintains three indexing structures (SWUT_DB_00012)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -125,7 +125,7 @@ class TestDatabaseIndexing:
 
     def test_multiple_functions_same_name(self):
         """SWUT_DB_00003
-        
+
         Test indexing handles multiple functions with same name."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -151,7 +151,7 @@ class TestDatabaseIndexing:
 
     def test_qualified_key_generation(self):
         """SWUT_DB_00003
-        
+
         Test qualified key format is file_stem::function_name."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -172,7 +172,7 @@ class TestDatabaseBuilding:
 
     def test_source_file_discovery(self):
         """SWUT_DB_00004
-        
+
         Test database discovers all .c files recursively (SWUT_DB_00013)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -194,7 +194,7 @@ class TestDatabaseBuilding:
 
     def test_empty_directory(self):
         """SWUT_DB_00004
-        
+
         Test database handles empty source directory."""
         with tempfile.TemporaryDirectory() as temp_dir:
             db = FunctionDatabase(source_dir=temp_dir)
@@ -205,7 +205,7 @@ class TestDatabaseBuilding:
 
     def test_database_building(self):
         """SWUT_DB_00005
-        
+
         Test database builds correctly from demo directory (SWUT_DB_00013)."""
         import shutil
         import tempfile
@@ -231,7 +231,7 @@ class TestDatabaseBuilding:
 
     def test_parse_error_collection(self):
         """SWUT_DB_00005
-        
+
         Test parse errors are collected without stopping scan (SWUT_DB_00022)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -263,7 +263,7 @@ class TestModuleConfiguration:
 
     def test_module_config_integration(self):
         """SWUT_DB_00006
-        
+
         Test module configuration is applied to functions (SWUT_DB_00017)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
@@ -289,7 +289,7 @@ file_mappings:
 
     def test_file_not_in_config(self):
         """SWUT_DB_00006
-        
+
         Test function without module mapping has no module assigned."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
@@ -314,7 +314,7 @@ file_mappings:
 
     def test_module_statistics_tracking(self):
         """SWUT_DB_00007
-        
+
         Test module statistics are tracked correctly (SWUT_DB_00017)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             config_file = Path(temp_dir) / "config.yaml"
@@ -356,7 +356,7 @@ class TestSmartFunctionLookup:
 
     def test_smart_lookup_implementation_preference(self):
         """SWUT_DB_00009
-        
+
         Test prefer functions with implementations (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -384,7 +384,7 @@ class TestSmartFunctionLookup:
 
     def test_smart_lookup_filename_heuristics(self):
         """SWUT_DB_00010
-        
+
         Test prefer functions from files matching function name (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -414,7 +414,7 @@ class TestSmartFunctionLookup:
 
     def test_smart_lookup_cross_module_awareness(self):
         """SWUT_DB_00011
-        
+
         Test avoid functions from calling file (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -442,7 +442,7 @@ class TestSmartFunctionLookup:
 
     def test_smart_lookup_module_preference(self):
         """SWUT_DB_00012
-        
+
         Test prefer functions with modules assigned (SWUT_DB_00015)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -469,7 +469,7 @@ class TestSmartFunctionLookup:
 
     def test_single_candidate(self):
         """SWUT_DB_00009
-        
+
         Test smart lookup returns single candidate."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -487,7 +487,7 @@ class TestCaching:
 
     def test_cache_save_load(self):
         """SWUT_DB_00010
-        
+
         Test cache can be saved and loaded (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
@@ -510,7 +510,7 @@ class TestCaching:
 
     def test_cache_metadata_validation(self):
         """SWUT_DB_00013
-        
+
         Test cache loading validates metadata (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
@@ -530,7 +530,7 @@ class TestCaching:
 
     def test_cache_error_handling(self):
         """SWUT_DB_00012
-        
+
         Test cache loading handles errors gracefully (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
@@ -548,7 +548,7 @@ class TestCaching:
 
     def test_cache_loading_progress(self):
         """SWUT_DB_00015
-        
+
         Test cache loading shows file-by-file progress (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
@@ -578,7 +578,7 @@ class TestCaching:
 
     def test_cache_clearing(self):
         """SWUT_DB_00020
-        
+
         Test cache file can be deleted (SWUT_DB_00018)."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
@@ -594,7 +594,7 @@ class TestCaching:
 
     def test_clear_nonexistent_cache(self):
         """SWUT_DB_00020
-        
+
         Test clearing nonexistent cache doesn't fail."""
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
@@ -612,7 +612,7 @@ class TestFileSizeFormatting:
 
     def test_file_size_bytes(self):
         """SWUT_DB_00021
-        
+
         Test file size formatting for bytes (< 1KB) (SWUT_DB_00025)."""
         # Files smaller than 1KB should display raw bytes
         assert _format_file_size(512) == "512"
@@ -621,7 +621,7 @@ class TestFileSizeFormatting:
 
     def test_file_size_kilobytes(self):
         """SWUT_DB_00021
-        
+
         Test file size formatting for KB (1KB to 1MB) (SWUT_DB_00025)."""
         # Files 1KB to 1MB should display in KB with 2 decimal places
         assert _format_file_size(1024) == "1.00K"
@@ -632,7 +632,7 @@ class TestFileSizeFormatting:
 
     def test_file_size_megabytes(self):
         """SWUT_DB_00021
-        
+
         Test file size formatting for MB (>= 1MB) (SWUT_DB_00025)."""
         # Files 1MB and larger should display in MB with 2 decimal places
         assert _format_file_size(1024 * 1024) == "1.00M"
@@ -643,7 +643,7 @@ class TestFileSizeFormatting:
 
     def test_file_size_display_in_processing(self):
         """SWUT_DB_00021
-        
+
         Test file size is displayed during database building (SWUT_DB_00025)."""
         import sys
         import tempfile
@@ -679,7 +679,7 @@ class TestQueryMethods:
 
     def test_function_lookup_by_name(self):
         """SWUT_DB_00013
-        
+
         Test functions can be looked up by name (SWUT_DB_00016)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -691,7 +691,7 @@ class TestQueryMethods:
 
     def test_lookup_nonexistent_function(self):
         """SWUT_DB_00013
-        
+
         Test lookup returns empty list for nonexistent function."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -702,7 +702,7 @@ class TestQueryMethods:
 
     def test_qualified_function_lookup(self):
         """SWUT_DB_00014
-        
+
         Test functions can be looked up by qualified name (SWUT_DB_00016)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -715,7 +715,7 @@ class TestQueryMethods:
 
     def test_qualified_lookup_not_found(self):
         """SWUT_DB_00014
-        
+
         Test qualified lookup returns None for nonexistent function."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -726,7 +726,7 @@ class TestQueryMethods:
 
     def test_function_search_pattern(self):
         """SWUT_DB_00015
-        
+
         Test functions can be searched by pattern (SWUT_DB_00016)."""
         import shutil
         import tempfile
@@ -752,7 +752,7 @@ class TestQueryMethods:
 
     def test_search_case_insensitive(self):
         """SWUT_DB_00015
-        
+
         Test search is case-insensitive."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -764,7 +764,7 @@ class TestQueryMethods:
 
     def test_search_empty_pattern(self):
         """SWUT_DB_00015
-        
+
         Test search with empty pattern returns all functions."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -776,7 +776,7 @@ class TestQueryMethods:
 
     def test_database_statistics(self):
         """SWUT_DB_00016
-        
+
         Test database returns accurate statistics (SWUT_DB_00016)."""
         import shutil
         import tempfile
@@ -810,7 +810,7 @@ class TestQueryMethods:
 
     def test_get_all_function_names(self):
         """SWUT_DB_00017
-        
+
         Test database returns sorted list of function names (SWUT_DB_00016)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -823,7 +823,7 @@ class TestQueryMethods:
 
     def test_empty_database_function_names(self):
         """SWUT_DB_00017
-        
+
         Test get_all_function_names on empty database."""
         with tempfile.TemporaryDirectory() as temp_dir:
             db = FunctionDatabase(source_dir=temp_dir)
@@ -835,7 +835,7 @@ class TestQueryMethods:
 
     def test_get_functions_by_file(self):
         """SWUT_DB_00018
-        
+
         Test database can return functions in a file (SWUT_DB_00018)."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -856,7 +856,7 @@ class TestQueryMethods:
 
     def test_get_functions_nonexistent_file(self):
         """SWUT_DB_00018
-        
+
         Test get_functions_in_file for nonexistent file."""
         db = FunctionDatabase(source_dir="./demo")
         db.build_database(use_cache=False, verbose=False)
@@ -903,7 +903,7 @@ class TestParseErrorHandling:
 
     def test_parse_error_collection_with_verbose(self):
         """SWUT_DB_00021
-        
+
         Test parse error collection and verbose warning (lines 151-155)."""
         from io import StringIO
 
@@ -952,8 +952,9 @@ class TestQualifiedFunctionLookup:
 
     def test_qualified_lookup_with_context_not_found(self):
         """SWUT_DB_00013
-        
-        Test qualified lookup with context returns empty list when not found (lines 235-237)."""
+
+        Test qualified lookup with context returns empty list when not found (lines 235-237).
+        """
         db = FunctionDatabase(source_dir="./demo")
 
         # Add a function to qualified functions
@@ -973,7 +974,7 @@ class TestSmartFunctionLookupEdgeCases:
 
     def test_smart_lookup_filename_match_without_module(self):
         """SWUT_DB_00009
-        
+
         Test filename match when function has no module assigned (line 275)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1004,7 +1005,7 @@ class TestSmartFunctionLookupEdgeCases:
 
     def test_smart_lookup_cross_module_no_context(self):
         """SWUT_DB_00011
-        
+
         Test cross-module strategy when no context file provided (lines 298-299)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1019,14 +1020,16 @@ class TestSmartFunctionLookupEdgeCases:
         db.functions["test_func"] = [func1, func2]
 
         # No context file provided, should skip strategy 3
-        result = db._select_best_function_match(db.functions["test_func"], context_file=None)
+        result = db._select_best_function_match(
+            db.functions["test_func"], context_file=None
+        )
 
         # Should return first candidate
         assert result == func1
 
     def test_smart_lookup_multiple_others(self):
         """SWUT_DB_00011
-        
+
         Test cross-module strategy when multiple 'others' found (lines 303-309)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1050,14 +1053,16 @@ class TestSmartFunctionLookupEdgeCases:
         db.functions["test_func"] = [local_func, ext_func1, ext_func2]
 
         # Should filter out local, then continue to strategy 4
-        result = db._select_best_function_match(db.functions["test_func"], context_file=context_file)
+        result = db._select_best_function_match(
+            db.functions["test_func"], context_file=context_file
+        )
 
         # Since none have modules, should return first of the remaining
         assert result in [ext_func1, ext_func2]
 
     def test_smart_lookup_no_module_preference(self):
         """SWUT_DB_00012
-        
+
         Test fallback when no module preference can be made (line 316)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1087,7 +1092,7 @@ class TestFileChecksumErrorHandling:
 
     def test_checksum_error_handling(self):
         """SWUT_DB_00013
-        
+
         Test checksum computation handles file access errors (lines 409-416)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1099,7 +1104,7 @@ class TestFileChecksumErrorHandling:
 
     def test_checksum_success(self):
         """SWUT_DB_00013
-        
+
         Test checksum computation works for valid file."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -1119,7 +1124,7 @@ class TestCacheSaveErrorHandling:
 
     def test_cache_save_error_with_verbose(self):
         """SWUT_DB_00014
-        
+
         Test cache save error handling with verbose mode (lines 449-453)."""
         import sys
         from io import StringIO
@@ -1151,7 +1156,7 @@ class TestCacheLoadErrorHandling:
 
     def test_cache_load_missing_metadata_verbose(self):
         """SWUT_DB_00013
-        
+
         Test cache load with missing metadata and verbose mode (lines 479-481)."""
         import pickle
         import sys
@@ -1190,7 +1195,7 @@ class TestCacheLoadErrorHandling:
 
     def test_cache_load_verbose_progress(self):
         """SWUT_DB_00015
-        
+
         Test cache load verbose progress output (line 486)."""
         import sys
         from io import StringIO
@@ -1220,7 +1225,7 @@ class TestCacheLoadErrorHandling:
 
     def test_cache_load_exception_verbose(self):
         """SWUT_DB_00016
-        
+
         Test cache load exception handling with verbose mode (line 513)."""
         import sys
         from io import StringIO
@@ -1254,7 +1259,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_parse_error_exception_in_verbose_mode(self):
         """SWUT_DB_00021
-        
+
         Test parse error exception handling in verbose mode (lines 151-155)."""
         import sys
         from io import StringIO
@@ -1295,7 +1300,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_qualified_lookup_returns_qualified_info(self):
         """SWUT_DB_00013
-        
+
         Test qualified lookup returns qualified_info when found (line 237)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1314,7 +1319,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_smart_lookup_returns_none_for_empty_candidates(self):
         """SWUT_DB_00009
-        
+
         Test smart lookup returns None when candidates list is empty (line 275)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1324,8 +1329,9 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_smart_lookup_returns_func_info_in_strategy_2(self):
         """SWUT_DB_00010
-        
-        Test smart lookup returns func_info when file matches in strategy 2 (line 299)."""
+
+        Test smart lookup returns func_info when file matches in strategy 2 (line 299).
+        """
         db = FunctionDatabase(source_dir="./demo")
 
         # Create functions where one matches the file name pattern
@@ -1354,8 +1360,9 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_smart_lookup_returns_others_first_in_strategy_3(self):
         """SWUT_DB_00011
-        
-        Test smart lookup returns others[0] when single other function exists (line 307)."""
+
+        Test smart lookup returns others[0] when single other function exists (line 307).
+        """
         db = FunctionDatabase(source_dir="./demo")
 
         # Create functions in different files
@@ -1380,7 +1387,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_smart_lookup_sets_candidates_to_with_modules(self):
         """SWUT_DB_00012
-        
+
         Test smart lookup sets candidates to with_modules in strategy 4 (line 316)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1414,7 +1421,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_cache_save_verbose_message(self):
         """SWUT_DB_00014
-        
+
         Test cache save prints message in verbose mode (line 449)."""
         import sys
         from io import StringIO
@@ -1439,7 +1446,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_cache_invalid_missing_metadata_verbose(self):
         """SWUT_DB_00015
-        
+
         Test cache load prints invalid message for missing metadata (line 486)."""
         import pickle
         import sys
@@ -1475,8 +1482,9 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_build_database_loads_cache_with_verbose(self):
         """SWUT_DB_00010
-        
-        Test build_database loads cache and prints message in verbose mode (lines 122-124)."""
+
+        Test build_database loads cache and prints message in verbose mode (lines 122-124).
+        """
         import sys
         from io import StringIO
 
@@ -1504,8 +1512,9 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_build_database_loads_cache_without_verbose(self):
         """SWUT_DB_00010
-        
-        Test build_database loads cache without verbose message (line 122-124 not executed)."""
+
+        Test build_database loads cache without verbose message (line 122-124 not executed).
+        """
         with tempfile.TemporaryDirectory() as temp_dir:
             cache_dir = Path(temp_dir) / "cache"
 
@@ -1523,7 +1532,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_load_from_cache_missing_metadata_no_verbose(self):
         """SWUT_DB_00013
-        
+
         Test cache load missing metadata without verbose mode (line 486)."""
         import pickle
 
@@ -1551,7 +1560,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_load_from_cache_source_dir_mismatch_verbose_line_486(self):
         """SWUT_DB_00013
-        
+
         Test cache load with source directory mismatch in verbose mode (line 486)."""
         import pickle
         import sys
@@ -1599,7 +1608,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_smart_lookup_returns_none_in_strategy(self):
         """SWUT_DB_00009
-        
+
         Test smart lookup returns None in strategy (lines 245-247)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1620,7 +1629,7 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_smart_lookup_returns_func_info_when_file_matches_line_299(self):
         """SWUT_DB_00010
-        
+
         Test smart lookup returns func_info when file name matches (line 299)."""
         db = FunctionDatabase(source_dir="./demo")
 
@@ -1652,8 +1661,9 @@ class TestFunctionDatabaseMissingLinesCoverage:
 
     def test_cache_load_source_directory_mismatch_no_verbose_line_486(self):
         """SWUT_DB_00013
-        
-        Test cache load with source directory mismatch without verbose (line 486 not executed)."""
+
+        Test cache load with source directory mismatch without verbose (line 486 not executed).
+        """
         import pickle
         import sys
         from datetime import datetime
@@ -1697,4 +1707,3 @@ class TestFunctionDatabaseMissingLinesCoverage:
             # Should fail but not print anything (line 486 not executed)
             assert loaded is False
             assert output == ""  # No output in non-verbose mode
-
