@@ -39,6 +39,7 @@ class FunctionCall:
     loop_condition: Optional[str] = (
         None  # The for/while loop condition (e.g., "i < 10")
     )
+    line_number: Optional[int] = None  # Line number where this call occurs
 
     def __str__(self) -> str:
         """String representation."""
@@ -79,7 +80,7 @@ class FunctionInfo:
     file_path: Path
     line_number: int
     is_static: bool
-    function_type: FunctionType
+    function_type: FunctionType = FunctionType.UNKNOWN
     memory_class: Optional[str] = None  # AUTOSAR memory class (RTE_CODE, etc.)
     parameters: List[Parameter] = field(default_factory=list)
     calls: List[FunctionCall] = field(default_factory=list)  # Functions called within

@@ -190,7 +190,8 @@ class CParser:
             line_length = len(line) + 1  # +1 for newline
 
             # Skip empty lines and lines that don't look like function declarations
-            if not line or "(" not in line or ";" in line:
+            # Don't skip lines that contain '{' as they might be function definitions
+            if not line or "(" not in line or (";" in line and "{" not in line):
                 current_pos += line_length
                 i += 1
                 continue
@@ -416,7 +417,7 @@ class CParser:
         return content
 
     def _parse_function_match(
-        self, match: re.Match, content: str, file_path: Path
+        self, match: re.Match, content: str, file_path: Path, line_number: Optional[int] = None
     ) -> Optional[FunctionInfo]:
         """
         Parse a regex match into a FunctionInfo object.
@@ -425,6 +426,7 @@ class CParser:
             match: Regex match object for function declaration
             content: Full file content
             file_path: Path to source file
+            line_number: Optional line number (if not provided, calculated from content)
 
         Returns:
             FunctionInfo object or None if parsing fails
@@ -473,8 +475,9 @@ class CParser:
         if function_body:
             called_functions = self._extract_function_calls(function_body)
 
-        # Determine line number
-        line_number = content[: match.start()].count("\n") + 1
+        # Determine line number - use provided value or calculate from content
+        if line_number is None:
+            line_number = content[: match.start()].count("\n") + 1
 
         return FunctionInfo(
             name=function_name,
@@ -632,7 +635,7 @@ class CParser:
         multiline_condition_buffer = ""
         multiline_paren_depth = 0
 
-        for line in lines:
+        for line_idx, line in enumerate(lines, start=1):
             stripped = line.strip()
 
             # Check if we're collecting a multi-line condition
@@ -878,6 +881,7 @@ class CParser:
                             condition=current_condition if is_conditional else None,
                             is_loop=is_loop,
                             loop_condition=current_loop_condition if is_loop else None,
+                            line_number=line_idx,
                         )
                     )
 
@@ -909,6 +913,7 @@ class CParser:
                             condition=current_condition if is_conditional else None,
                             is_loop=is_loop,
                             loop_condition=current_loop_condition if is_loop else None,
+                            line_number=line_idx,
                         )
                     )
 
@@ -997,12 +1002,16 @@ class CParser:
 
         return sanitized
 
-    def parse_function_declaration(self, declaration: str) -> Optional[FunctionInfo]:
+    def parse_function_declaration(
+        self, declaration: str, file_path: Path = Path("unknown"), line_number: int = 1
+    ) -> Optional[FunctionInfo]:
         """
         Parse a single function declaration string.
 
         Args:
             declaration: Function declaration as a string
+            file_path: Path to the source file (for error reporting)
+            line_number: Line number of the declaration
 
         Returns:
             FunctionInfo object or None if parsing fails
@@ -1011,4 +1020,4 @@ class CParser:
         if not match:
             return None
 
-        return self._parse_function_match(match, declaration, Path("unknown"))
+        return self._parse_function_match(match, declaration, file_path, line_number)

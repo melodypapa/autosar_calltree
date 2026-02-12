@@ -1,7 +1,3 @@
-- create the unit test cases based on the current implementation and requirements.
-- all the unit test cases document in the `docs\tests`
-- all the unit test cases start with "SWUT_"
-- all the unit test implemented in `tests`
-- create the traceability between the requirements and tests. 
-- add the github check action for each pull request
-- i copied the custom slash command from other project and please help me adapt them for this project and create the nessary scripts to support them.
+循环一下任务100次
+- please fix all the failed test case
+- please make the test not skipped.

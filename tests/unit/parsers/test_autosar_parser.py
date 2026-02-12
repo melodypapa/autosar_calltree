@@ -110,7 +110,7 @@ def test_static_keyword_detection():
     assert result.macro_type == "FUNC_P2VAR"
 
     # Test STATIC FUNC_P2CONST
-    line = "STATIC FUNC_P2CONST(ConfigType, AUTOMATIC) GetConfig(void)"
+    line = "STATIC FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_CONST) GetConfig(void)"
     result = parser.parse_function_declaration(line, Path("test.c"), 20)
     assert result.is_static is True
     assert result.macro_type == "FUNC_P2CONST"
@@ -203,7 +203,7 @@ def test_const_parameter_pattern_recognition():
     parser = AutosarParser()
 
     # Test CONST parameter
-    line = "FUNC(void, RTE_CODE) TestFunc(VAR(CONST(uint16, AUTOMATIC) limit) void)"
+    line = "FUNC(void, RTE_CODE) TestFunc(CONST(uint16, AUTOMATIC) limit)"
     result = parser.parse_function_declaration(line, Path("test.c"), 1)
     assert result is not None
     assert len(result.parameters) == 1
@@ -227,7 +227,7 @@ def test_parameter_string_extraction():
 
     # Test simple parameter list
     line = "FUNC(void, RTE_CODE) TestFunc(VAR(uint32, AUTOMATIC) value)"
-    start = line.find("VAR")
+    start = line.find("TestFunc")
     param_string = parser._extract_param_string(line, start)
     assert param_string == "VAR(uint32, AUTOMATIC) value"
 
@@ -239,7 +239,7 @@ def test_parameter_string_extraction():
 
     # Test nested parentheses
     line = "FUNC(void, RTE_CODE) ComplexFunc(VAR(void (*)(int), AUTOMATIC) callback)"
-    start = line.find("VAR")
+    start = line.find("ComplexFunc")
     param_string = parser._extract_param_string(line, start)
     assert "(void (*)(int)" in param_string
 
@@ -294,11 +294,11 @@ def test_return_type_conversion():
     assert result.return_type == "void"
 
     # Test FUNC_P2VAR (pointer return)
-    line = "FUNC_P2VAR(uint8, AUTOMATIC) GetBuffer(void)"
+    line = "FUNC_P2VAR(uint8, AUTOMATIC, APPL_VAR) GetBuffer(void)"
     result = parser.parse_function_declaration(line, Path("test.c"), 1)
     assert result.return_type == "uint8*"
 
     # Test FUNC_P2CONST (const pointer return)
-    line = "FUNC_P2CONST(ConfigType, AUTOMATIC) GetConfig(void)"
+    line = "FUNC_P2CONST(ConfigType, AUTOMATIC, APPL_CONST) GetConfig(void)"
     result = parser.parse_function_declaration(line, Path("test.c"), 1)
     assert result.return_type == "const ConfigType*"
