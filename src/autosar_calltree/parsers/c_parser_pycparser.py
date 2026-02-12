@@ -18,6 +18,7 @@ from typing import List, Optional
 
 try:
     from pycparser import c_ast, c_parser
+
     PYCPARSER_AVAILABLE = True
 except ImportError:
     PYCPARSER_AVAILABLE = False
@@ -238,7 +239,9 @@ class FunctionVisitor(c_ast.NodeVisitor):
                     quals = list(type_node.qualifiers)
 
             # Get the underlying type name
-            underlying_name = self._get_type_name(type_node.type, include_quals=include_quals)
+            underlying_name = self._get_type_name(
+                type_node.type, include_quals=include_quals
+            )
 
             # Prepend qualifiers if any
             if quals:
@@ -353,6 +356,7 @@ class FunctionVisitor(c_ast.NodeVisitor):
         Returns:
             List of FunctionCall objects
         """
+
         # Walk the AST to find all function calls
         class CallVisitor(c_ast.NodeVisitor):
             def __init__(self, parent_visitor: FunctionVisitor):
@@ -406,28 +410,75 @@ class CParserPyCParser:
 
     # C keywords to exclude from function call extraction
     C_KEYWORDS = {
-        "if", "else", "while", "for", "do", "switch", "case", "default",
-        "return", "break", "continue", "goto", "sizeof", "typedef", "struct",
-        "union", "enum", "const", "volatile", "static", "extern", "auto",
-        "register", "inline", "__inline", "__inline__", "restrict",
-        "__restrict", "__restrict__", "_Bool", "_Complex", "_Imaginary",
+        "if",
+        "else",
+        "while",
+        "for",
+        "do",
+        "switch",
+        "case",
+        "default",
+        "return",
+        "break",
+        "continue",
+        "goto",
+        "sizeof",
+        "typedef",
+        "struct",
+        "union",
+        "enum",
+        "const",
+        "volatile",
+        "static",
+        "extern",
+        "auto",
+        "register",
+        "inline",
+        "__inline",
+        "__inline__",
+        "restrict",
+        "__restrict",
+        "__restrict__",
+        "_Bool",
+        "_Complex",
+        "_Imaginary",
     }
 
     # AUTOSAR and standard C macros to exclude
     AUTOSAR_MACROS = {
-        "INT8_C", "INT16_C", "INT32_C", "INT64_C",
-        "UINT8_C", "UINT16_C", "UINT32_C", "UINT64_C",
-        "INTMAX_C", "UINTMAX_C",
-        "TS_MAKEREF2CFG", "TS_MAKENULLREF2CFG", "TS_MAKEREFLIST2CFG",
-        "STD_ON", "STD_OFF",
+        "INT8_C",
+        "INT16_C",
+        "INT32_C",
+        "INT64_C",
+        "UINT8_C",
+        "UINT16_C",
+        "UINT32_C",
+        "UINT64_C",
+        "INTMAX_C",
+        "UINTMAX_C",
+        "TS_MAKEREF2CFG",
+        "TS_MAKENULLREF2CFG",
+        "TS_MAKEREFLIST2CFG",
+        "STD_ON",
+        "STD_OFF",
     }
 
     # Common AUTOSAR types
     AUTOSAR_TYPES = {
-        "uint8", "uint16", "uint32", "uint64",
-        "sint8", "sint16", "sint32", "sint64",
-        "boolean", "Boolean", "float32", "float64",
-        "Std_ReturnType", "StatusType",
+        "uint8",
+        "uint16",
+        "uint32",
+        "uint64",
+        "sint8",
+        "sint16",
+        "sint32",
+        "sint64",
+        "boolean",
+        "Boolean",
+        "float32",
+        "float64",
+        "Std_ReturnType",
+        "StatusType",
     }
 
     def __init__(self):
@@ -479,12 +530,16 @@ class CParserPyCParser:
                             line_start = content.find(line)
                             if line_start != -1:
                                 body_start = line_start + len(line)
-                                function_body = self._extract_function_body_from_content(
-                                    content, body_start
+                                function_body = (
+                                    self._extract_function_body_from_content(
+                                        content, body_start
+                                    )
                                 )
                                 if function_body:
-                                    called_functions = self._extract_function_calls_from_body(
-                                        function_body
+                                    called_functions = (
+                                        self._extract_function_calls_from_body(
+                                            function_body
+                                        )
                                     )
                                     autosar_func.calls = called_functions
                             all_functions.append(autosar_func)
@@ -605,7 +660,9 @@ typedef unsigned long ulong;
         # Remove other problematic preprocessor directives
         # (keep includes for now, they'll be handled by cpp if needed)
         # Remove #pragma, #line, etc.
-        preprocessed = re.sub(r"^#\s*(pragma|line|error|warning).*$", "", preprocessed, flags=re.MULTILINE)
+        preprocessed = re.sub(
+            r"^#\s*(pragma|line|error|warning).*$", "", preprocessed, flags=re.MULTILINE
+        )
 
         return preprocessed
 
@@ -645,7 +702,9 @@ typedef unsigned long ulong;
 
         return None
 
-    def _extract_function_calls_from_body(self, function_body: str) -> List[FunctionCall]:
+    def _extract_function_calls_from_body(
+        self, function_body: str
+    ) -> List[FunctionCall]:
         """
         Extract function calls from a function body.
 
@@ -765,7 +824,9 @@ typedef unsigned long ulong;
             line = line.strip()
             # Look for patterns like: "return_type func_name("
             # but not "FUNC(...)"
-            if re.match(r"^[a-zA-Z_][a-zA-Z0-9_*\s]+\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(", line):
+            if re.match(
+                r"^[a-zA-Z_][a-zA-Z0-9_*\s]+\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(", line
+            ):
                 if not line.startswith("FUNC"):
                     return True
 

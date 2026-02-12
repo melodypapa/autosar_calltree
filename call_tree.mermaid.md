@@ -1,8 +1,8 @@
-# Call Tree: test_func
+# Call Tree: func1
 
 ## Metadata
 
-- **Root Function**: `test_func`
+- **Root Function**: `func1`
 - **Generated**: 2026-02-12 21:20:37
 - **Total Functions**: 1
 - **Unique Functions**: 1
@@ -13,7 +13,7 @@
 
 ```mermaid
 sequenceDiagram
-    participant test_func
+    participant func1
 
 ```
 
@@ -21,10 +21,10 @@ sequenceDiagram
 
 | Function | File | Line | Return Type | Parameters |
 |----------|------|------|-------------|------------|
-| `test_func` | test.c | 13 | `void` | `void` |
+| `func1` | func1.c | 13 | `void` | `void` |
 
 ## Call Tree (Text)
 
 ```
-test_func (test.c:13)
+func1 (func1.c:13)
 ```

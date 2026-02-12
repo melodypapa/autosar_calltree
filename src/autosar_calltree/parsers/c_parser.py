@@ -190,7 +190,8 @@ class CParser:
             line_length = len(line) + 1  # +1 for newline
 
             # Skip empty lines and lines that don't look like function declarations
-            if not line or "(" not in line or ";" in line:
+            # Don't skip lines that contain '{' as they might be function definitions
+            if not line or "(" not in line or (";" in line and "{" not in line):
                 current_pos += line_length
                 i += 1
                 continue
@@ -416,7 +417,7 @@ class CParser:
         return content
 
     def _parse_function_match(
-        self, match: re.Match, content: str, file_path: Path
+        self, match: re.Match, content: str, file_path: Path, line_number: Optional[int] = None
     ) -> Optional[FunctionInfo]:
         """
         Parse a regex match into a FunctionInfo object.
@@ -425,6 +426,7 @@ class CParser:
             match: Regex match object for function declaration
             content: Full file content
             file_path: Path to source file
+            line_number: Optional line number (if not provided, calculated from content)
 
         Returns:
             FunctionInfo object or None if parsing fails
@@ -473,8 +475,9 @@ class CParser:
         if function_body:
             called_functions = self._extract_function_calls(function_body)
 
-        # Determine line number
-        line_number = content[: match.start()].count("\n") + 1
+        # Determine line number - use provided value or calculate from content
+        if line_number is None:
+            line_number = content[: match.start()].count("\n") + 1
 
         return FunctionInfo(
             name=function_name,
@@ -632,7 +635,7 @@ class CParser:
         multiline_condition_buffer = ""
         multiline_paren_depth = 0
 
-        for line in lines:
+        for line_idx, line in enumerate(lines, start=1):
             stripped = line.strip()
 
             # Check if we're collecting a multi-line condition
@@ -664,7 +667,9 @@ class CParser:
                                         condition_part = multiline_condition_buffer[
                                             paren_start + 1 : closing_paren_pos
                                         ]
-                                        current_condition = self._sanitize_condition(condition_part.strip())
+                                        current_condition = self._sanitize_condition(
+                                            condition_part.strip()
+                                        )
                             collecting_multiline_condition = False
                             multiline_condition_buffer = ""
                             multiline_paren_depth = 0
@@ -695,9 +700,13 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(partial_condition)
+                            current_condition = self._sanitize_condition(
+                                partial_condition
+                            )
                     else:
-                        current_condition = self._sanitize_condition(condition_candidate)
+                        current_condition = self._sanitize_condition(
+                            condition_candidate
+                        )
                 else:
                     # Check if the line has an opening '(' but no closing ')'
                     # This indicates a multi-line condition
@@ -712,7 +721,9 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(partial_condition)
+                            current_condition = self._sanitize_condition(
+                                partial_condition
+                            )
                     else:
                         # Fallback: try to extract everything between "if" and the first '{'
                         if_start = stripped.find("if")
@@ -745,9 +756,13 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(partial_condition)
+                            current_condition = self._sanitize_condition(
+                                partial_condition
+                            )
                     else:
-                        current_condition = self._sanitize_condition(f"else if {condition_candidate}")
+                        current_condition = self._sanitize_condition(
+                            f"else if {condition_candidate}"
+                        )
                 else:
                     # Check for multi-line else if condition
                     if "(" in stripped and ")" not in stripped:
@@ -761,9 +776,13 @@ class CParser:
                         paren_start = stripped.find("(")
                         if paren_start != -1:
                             partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(partial_condition)
+                            current_condition = self._sanitize_condition(
+                                partial_condition
+                            )
                     else:
-                        current_condition = self._sanitize_condition("else if condition")
+                        current_condition = self._sanitize_condition(
+                            "else if condition"
+                        )
             elif stripped.startswith("else") and not stripped.startswith("else if"):
                 in_else_block = True
                 current_condition = "else"
@@ -775,7 +794,9 @@ class CParser:
                 # Handle both "for (init; cond; inc)" and "for(init; cond; inc)" formats
                 for_match = re.match(r"for\s*\(\s*[^;]*;\s*(.+?)\s*;\s*", stripped)
                 if for_match:
-                    current_loop_condition = self._sanitize_condition(for_match.group(1).strip())
+                    current_loop_condition = self._sanitize_condition(
+                        for_match.group(1).strip()
+                    )
                 else:
                     # Fallback: extract everything between "for" and first ')'
                     for_start = stripped.find("for")
@@ -785,9 +806,13 @@ class CParser:
                         # Split by semicolons and take the middle part (condition)
                         parts = loop_part.split(";")
                         if len(parts) >= 2:
-                            current_loop_condition = self._sanitize_condition(parts[1].strip())
+                            current_loop_condition = self._sanitize_condition(
+                                parts[1].strip()
+                            )
                         else:
-                            current_loop_condition = self._sanitize_condition("condition")
+                            current_loop_condition = self._sanitize_condition(
+                                "condition"
+                            )
                     else:
                         current_loop_condition = self._sanitize_condition("condition")
 
@@ -796,7 +821,9 @@ class CParser:
                 # Extract condition from while statement
                 while_match = re.match(r"while\s*\(\s*(.+?)\s*\)", stripped)
                 if while_match:
-                    current_loop_condition = self._sanitize_condition(while_match.group(1).strip())
+                    current_loop_condition = self._sanitize_condition(
+                        while_match.group(1).strip()
+                    )
                 else:
                     # Fallback: extract everything between "while" and first ')'
                     while_start = stripped.find("while")
@@ -854,6 +881,7 @@ class CParser:
                             condition=current_condition if is_conditional else None,
                             is_loop=is_loop,
                             loop_condition=current_loop_condition if is_loop else None,
+                            line_number=line_idx,
                         )
                     )
 
@@ -885,6 +913,7 @@ class CParser:
                             condition=current_condition if is_conditional else None,
                             is_loop=is_loop,
                             loop_condition=current_loop_condition if is_loop else None,
+                            line_number=line_idx,
                         )
                     )
 
@@ -925,25 +954,25 @@ class CParser:
         # 1. Remove preprocessor directives and everything after them
         # Patterns like: "condition) #if (FEATURE" or "condition) #endif"
         preprocessor_patterns = [
-            r'\s*#\s*(if|ifdef|ifndef|elif|else|endif|define)\b.*',
-            r'\s*#.*',  # Any other preprocessor directive
+            r"\s*#\s*(if|ifdef|ifndef|elif|else|endif|define)\b.*",
+            r"\s*#.*",  # Any other preprocessor directive
         ]
         for pattern in preprocessor_patterns:
-            sanitized = re.sub(pattern, '', sanitized, flags=re.IGNORECASE)
+            sanitized = re.sub(pattern, "", sanitized, flags=re.IGNORECASE)
 
         # 2. Stop at opening brace - exclude C statements
         # Patterns like: "condition) { statement;" or "condition) { Value = 1; }"
-        brace_match = re.search(r'\s*\{', sanitized)
+        brace_match = re.search(r"\s*\{", sanitized)
         if brace_match:
-            sanitized = sanitized[:brace_match.start()].strip()
+            sanitized = sanitized[: brace_match.start()].strip()
 
         # 3. Remove trailing semicolons
-        sanitized = sanitized.rstrip(';').strip()
+        sanitized = sanitized.rstrip(";").strip()
 
         # 4. Fix unbalanced parentheses by removing extra closing parens
         # Count opening and closing parentheses
-        open_count = sanitized.count('(')
-        close_count = sanitized.count(')')
+        open_count = sanitized.count("(")
+        close_count = sanitized.count(")")
 
         if close_count > open_count:
             # Remove extra closing parentheses from the end
@@ -951,19 +980,19 @@ class CParser:
             chars_to_remove = close_count - open_count
             removed = 0
             for i in range(len(chars) - 1, -1, -1):
-                if chars[i] == ')' and removed < chars_to_remove:
+                if chars[i] == ")" and removed < chars_to_remove:
                     chars.pop(i)
                     removed += 1
-            sanitized = ''.join(chars).strip()
+            sanitized = "".join(chars).strip()
 
         # 5. Remove trailing artifacts like ") {" that might remain
         # This can happen when the condition includes function call syntax
-        artifacts_to_remove = [') {', '){', ') {', ' )', '( ', '{']
+        artifacts_to_remove = [") {", "){", ") {", " )", "( ", "{"]
         for artifact in artifacts_to_remove:
             sanitized = sanitized.rstrip(artifact).strip()
 
         # 6. Clean up any remaining whitespace issues
-        sanitized = re.sub(r'\s+', ' ', sanitized)  # Collapse multiple spaces
+        sanitized = re.sub(r"\s+", " ", sanitized)  # Collapse multiple spaces
         sanitized = sanitized.strip()
 
         # 7. If after sanitization the condition is empty or too short,
@@ -973,12 +1002,16 @@ class CParser:
 
         return sanitized
 
-    def parse_function_declaration(self, declaration: str) -> Optional[FunctionInfo]:
+    def parse_function_declaration(
+        self, declaration: str, file_path: Path = Path("unknown"), line_number: int = 1
+    ) -> Optional[FunctionInfo]:
         """
         Parse a single function declaration string.
 
         Args:
             declaration: Function declaration as a string
+            file_path: Path to the source file (for error reporting)
+            line_number: Line number of the declaration
 
         Returns:
             FunctionInfo object or None if parsing fails
@@ -987,4 +1020,4 @@ class CParser:
         if not match:
             return None
 
-        return self._parse_function_match(match, declaration, Path("unknown"))
+        return self._parse_function_match(match, declaration, file_path, line_number)

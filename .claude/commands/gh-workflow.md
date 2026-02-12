@@ -6,16 +6,18 @@ Automate the complete GitHub workflow for creating issues, feature branches, com
 
 When the user runs `/gh-workflow`, perform the following steps in order:
 
-### 1. Quality Checks (Must Pass Before Proceeding)
+### 1. Quality Checks (MUST ALL PASS Before Proceeding)
 - Run import sorting: `isort --check-only src/ tests/`
 - Run linting: `ruff check src/ tests/`
 - Run type checking: `mypy src/`
 - Run unit tests: `pytest tests/ --cov=autosar_calltree`
-- **All checks must pass** before proceeding to next step
-- If any checks fail, report errors and ask user if they want to:
-  - Abort the workflow
-  - Fix issues and retry
-  - Continue anyway (not recommended)
+- **ALL QUALITY CHECKS MUST PASS** before proceeding to next step
+- **CRITICAL**: pytest MUST pass with 0 failures before committing any changes
+- If any checks fail:
+  - **ABORT the workflow** - do not commit or create PR
+  - Fix all failing tests and quality issues
+  - Re-run quality checks until ALL pass
+  - Only then proceed with workflow
 - Display quality gate summary table:
   ```
   Check        Status    Details
@@ -131,49 +133,18 @@ System: [Step 1] Running quality checks...
         isort        ✅ Pass    No errors
         Ruff         ✅ Pass    No errors
         Mypy         ✅ Pass    No issues
-        Pytest       ✅ Pass    278/278 tests, 94% coverage
+        Pytest       ❌ FAIL    39 failed, 341 passed
+
+        ❌ QUALITY GATE FAILED: pytest has 39 failures
+        Workflow ABORTED. Please fix all failing tests before running /gh-workflow.
+
+        To see test failures:
+        pytest tests/ -v
+
+        To fix specific test:
+        pytest tests/unit/database/test_models.py::test_function_info_identity_fields -v
 
         [Step 2] Analyzing current changes...
-        Modified files:
-          - src/autosar_calltree/models/autosar_models.py
-          - src/autosar_calltree/parser/pdf_parser.py
-          - tests/parser/test_pdf_parser.py
-
-        Commit type: feat (new feature)
-
-        [Step 3] Checking version bump...
-        Does this change require a version bump? (y/n): y
-        Which version part to bump? (MAJOR/MINOR/PATCH): MINOR
-        [INFO] Please manually update version files now.
-        [INFO] Update pyproject.toml and src/autosar_calltree/version.py
-        Press Enter when ready...
-
-        [Step 4] Creating GitHub issue...
-        Issue #53 created: feat: Add support for primitive types
-
-        [Step 5] Creating feature branch...
-        Branch: feature/add-primitive-type-support
-
-        [Step 6] Staging and committing changes...
-        Committed: feat: Add support for primitive types
-        - Added AutosarPrimitive model
-        - Updated parser to recognize 'Primitive <name>' pattern
-        - Version: 0.3.0 -> 0.4.0 (manually bumped)
-        - Files modified:
-          * pyproject.toml
-          * src/autosar_calltree/version.py
-          * src/autosar_calltree/models/autosar_models.py
-          * src/autosar_calltree/parser/pdf_parser.py
-          * tests/parser/test_pdf_parser.py
-        Closes #53
-
-        [Step 7] Pushing to GitHub...
-        Branch pushed to origin
-
-        [Step 8] Creating pull request...
-        PR #54 created: https://github.com/melodypapa/autosar_calltree/pull/54
-
-        ✅ Workflow complete!
 ```
 
 ## Version Bump Examples

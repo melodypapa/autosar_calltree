@@ -864,7 +864,7 @@ class TestCLICoverageGaps:
         """Test module config with permission denied (covers lines 145-147)."""
         # Create a file without read permissions
         restricted_config = tmp_path / "restricted.yaml"
-        restricted_config.write_text("version: \"1.0\"\nfile_mappings: {}")
+        restricted_config.write_text('version: "1.0"\nfile_mappings: {}')
         # Remove read permissions (this may not work on all systems)
         try:
             restricted_config.chmod(0o000)
@@ -897,7 +897,9 @@ class TestCLICoverageGaps:
         runner = CliRunner()
 
         # Mock the build_tree method to raise KeyboardInterrupt
-        with patch('autosar_calltree.cli.main.CallTreeBuilder.build_tree') as mock_build:
+        with patch(
+            "autosar_calltree.cli.main.CallTreeBuilder.build_tree"
+        ) as mock_build:
             mock_build.side_effect = KeyboardInterrupt()
 
             with runner.isolated_filesystem():
@@ -922,7 +924,9 @@ class TestCLICoverageGaps:
         runner = CliRunner()
 
         # Mock the build_tree method to raise a general exception
-        with patch('autosar_calltree.cli.main.CallTreeBuilder.build_tree') as mock_build:
+        with patch(
+            "autosar_calltree.cli.main.CallTreeBuilder.build_tree"
+        ) as mock_build:
             mock_build.side_effect = ValueError("Test error")
 
             with runner.isolated_filesystem():
@@ -948,7 +952,9 @@ class TestCLICoverageGaps:
         runner = CliRunner()
 
         # Mock the build_tree method to raise a general exception
-        with patch('autosar_calltree.cli.main.CallTreeBuilder.build_tree') as mock_build:
+        with patch(
+            "autosar_calltree.cli.main.CallTreeBuilder.build_tree"
+        ) as mock_build:
             mock_build.side_effect = ValueError("Test error with traceback")
 
             with runner.isolated_filesystem():

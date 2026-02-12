@@ -14,8 +14,8 @@ from autosar_calltree.database.models import (
     Parameter,
 )
 
-
 # SWUT_DB_00001: FunctionType Enum Values
+
 
 def test_function_type_enum_values():
     """SWUT_DB_00001
@@ -36,6 +36,7 @@ def test_function_type_enum_values():
 
 
 # SWUT_DB_00002: Parameter Dataclass Core Fields
+
 
 def test_parameter_core_fields():
     """SWUT_DB_00002
@@ -68,6 +69,7 @@ def test_parameter_core_fields():
 
 # SWUT_DB_00003: Parameter String Representation
 
+
 def test_parameter_str_representation():
     """SWUT_DB_00003
 
@@ -89,7 +91,9 @@ def test_parameter_str_representation():
     assert str(param_const_ptr) == "const ConfigType* config"
 
     # Test parameter with memory class
-    param_memclass = Parameter(name="data", param_type="uint32", memory_class="AUTOMATIC")
+    param_memclass = Parameter(
+        name="data", param_type="uint32", memory_class="AUTOMATIC"
+    )
     assert str(param_memclass) == "uint32 data [AUTOMATIC]"
 
     # Test const pointer with memory class
@@ -105,6 +109,7 @@ def test_parameter_str_representation():
 
 # SWUT_DB_00004: FunctionInfo Core Identity Fields
 
+
 def test_function_info_identity_fields():
     """SWUT_DB_00004
 
@@ -117,7 +122,7 @@ def test_function_info_identity_fields():
         return_type="void",
         file_path=Path("/src/demo.c"),
         line_number=42,
-        is_static=False
+        is_static=False,
     )
 
     # Verify field values
@@ -133,12 +138,13 @@ def test_function_info_identity_fields():
         return_type="uint8",
         file_path=Path("/src/demo.c"),
         line_number=100,
-        is_static=True
+        is_static=True,
     )
     assert func_static.is_static is True
 
 
 # SWUT_DB_00005: FunctionInfo Type Classification
+
 
 def test_function_info_type_classification():
     """SWUT_DB_00005
@@ -155,7 +161,7 @@ def test_function_info_type_classification():
         is_static=False,
         function_type=FunctionType.AUTOSAR_FUNC,
         memory_class="RTE_CODE",
-        macro_type="FUNC"
+        macro_type="FUNC",
     )
     assert func_autosar.function_type == FunctionType.AUTOSAR_FUNC
     assert func_autosar.memory_class == "RTE_CODE"
@@ -170,7 +176,7 @@ def test_function_info_type_classification():
         is_static=False,
         function_type=FunctionType.AUTOSAR_FUNC_P2VAR,
         memory_class="AUTOMATIC",
-        macro_type="FUNC_P2VAR"
+        macro_type="FUNC_P2VAR",
     )
     assert func_p2var.function_type == FunctionType.AUTOSAR_FUNC_P2VAR
 
@@ -181,7 +187,7 @@ def test_function_info_type_classification():
         file_path=Path("/src/main.c"),
         line_number=50,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_c.function_type == FunctionType.TRADITIONAL_C
     assert func_c.memory_class is None
@@ -189,6 +195,7 @@ def test_function_info_type_classification():
 
 
 # SWUT_DB_00006: FunctionInfo Equality and Hashing
+
 
 def test_function_info_equality():
     """SWUT_DB_00004
@@ -202,7 +209,7 @@ def test_function_info_equality():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
 
     func2 = FunctionInfo(
@@ -210,7 +217,7 @@ def test_function_info_equality():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
 
     # Hash should be based on identity fields
@@ -232,7 +239,7 @@ def test_function_info_equality():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=20,  # Different line
-        is_static=False
+        is_static=False,
     )
     assert hash(func1) != hash(func3)
 
@@ -241,6 +248,7 @@ def test_function_info_equality():
 
 
 # SWUT_DB_00007: FunctionInfo RTE Detection
+
 
 def test_function_info_rte_detection():
     """SWUT_DB_00004
@@ -253,7 +261,7 @@ def test_function_info_rte_detection():
         return_type="void",
         file_path=Path("/src/rte.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     assert func_rte_call.is_rte_function() is True
 
@@ -264,7 +272,7 @@ def test_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=20,
         is_static=False,
-        function_type=FunctionType.RTE_CALL
+        function_type=FunctionType.RTE_CALL,
     )
     assert func_rte_type.is_rte_function() is True
 
@@ -275,7 +283,7 @@ def test_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=30,
         is_static=False,
-        function_type=FunctionType.RTE_CALL
+        function_type=FunctionType.RTE_CALL,
     )
     assert func_rte_both.is_rte_function() is True
 
@@ -286,7 +294,7 @@ def test_function_info_rte_detection():
         file_path=Path("/src/regular.c"),
         line_number=40,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_regular.is_rte_function() is False
 
@@ -297,12 +305,13 @@ def test_function_info_rte_detection():
         file_path=Path("/src/rte.c"),
         line_number=50,
         is_static=False,
-        function_type=FunctionType.TRADITIONAL_C
+        function_type=FunctionType.TRADITIONAL_C,
     )
     assert func_mixed.is_rte_function() is True  # Due to Rte_ prefix
 
 
 # SWUT_DB_00008: FunctionCall Conditional Fields
+
 
 def test_function_call_conditional_fields():
     """SWUT_DB_00006
@@ -312,9 +321,7 @@ def test_function_call_conditional_fields():
     """
     # Test conditional call
     call_cond = FunctionCall(
-        name="COM_Send",
-        is_conditional=True,
-        condition="update_mode == 0x05"
+        name="COM_Send", is_conditional=True, condition="update_mode == 0x05"
     )
     assert call_cond.is_conditional is True
     assert call_cond.condition == "update_mode == 0x05"
@@ -332,6 +339,7 @@ def test_function_call_conditional_fields():
 
 # SWUT_DB_00009: FunctionCall Loop Fields
 
+
 def test_function_call_loop_fields():
     """SWUT_DB_00006
 
@@ -340,9 +348,7 @@ def test_function_call_loop_fields():
     """
     # Test loop call
     call_loop = FunctionCall(
-        name="ProcessData",
-        is_loop=True,
-        loop_condition="i < count"
+        name="ProcessData", is_loop=True, loop_condition="i < count"
     )
     assert call_loop.is_loop is True
     assert call_loop.loop_condition == "i < count"
@@ -360,6 +366,7 @@ def test_function_call_loop_fields():
 
 # SWUT_DB_00010: CallTreeNode Structure
 
+
 def test_call_tree_node_structure():
     """SWUT_DB_00007
 
@@ -371,16 +378,11 @@ def test_call_tree_node_structure():
         return_type="void",
         file_path=Path("/src/parent.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
 
     # Create node with all core fields
-    node = CallTreeNode(
-        function_info=func_info,
-        depth=0,
-        children=[],
-        parent=None
-    )
+    node = CallTreeNode(function_info=func_info, depth=0, children=[], parent=None)
 
     # Verify field values
     assert node.function_info == func_info
@@ -394,13 +396,10 @@ def test_call_tree_node_structure():
         return_type="void",
         file_path=Path("/src/child.c"),
         line_number=20,
-        is_static=False
+        is_static=False,
     )
     child_node = CallTreeNode(
-        function_info=child_func,
-        depth=1,
-        children=[],
-        parent=node
+        function_info=child_func, depth=1, children=[], parent=node
     )
 
     assert child_node.depth == 1
@@ -408,6 +407,7 @@ def test_call_tree_node_structure():
 
 
 # SWUT_DB_00011: CallTreeNode State Flags
+
 
 def test_call_tree_node_state_flags():
     """SWUT_DB_00007
@@ -420,44 +420,30 @@ def test_call_tree_node_state_flags():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
 
     # Test default values
-    node = CallTreeNode(
-        function_info=func,
-        depth=0
-    )
+    node = CallTreeNode(function_info=func, depth=0)
     assert node.is_recursive is False
     assert node.is_truncated is False
     assert node.call_count == 1
 
     # Test recursive flag
-    node_recursive = CallTreeNode(
-        function_info=func,
-        depth=2,
-        is_recursive=True
-    )
+    node_recursive = CallTreeNode(function_info=func, depth=2, is_recursive=True)
     assert node_recursive.is_recursive is True
 
     # Test truncated flag
-    node_truncated = CallTreeNode(
-        function_info=func,
-        depth=5,
-        is_truncated=True
-    )
+    node_truncated = CallTreeNode(function_info=func, depth=5, is_truncated=True)
     assert node_truncated.is_truncated is True
 
     # Test call count
-    node_called = CallTreeNode(
-        function_info=func,
-        depth=1,
-        call_count=3
-    )
+    node_called = CallTreeNode(function_info=func, depth=1, call_count=3)
     assert node_called.call_count == 3
 
 
 # SWUT_DB_00012: CallTreeNode Recursive Detection
+
 
 def test_call_tree_node_recursive_detection():
     """SWUT_DB_00007
@@ -470,19 +456,16 @@ def test_call_tree_node_recursive_detection():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
 
     # Create recursive node
-    node_recursive = CallTreeNode(
-        function_info=func,
-        depth=2,
-        is_recursive=True
-    )
+    node_recursive = CallTreeNode(function_info=func, depth=2, is_recursive=True)
     assert node_recursive.is_recursive is True
 
 
 # SWUT_DB_00013: CallTreeNode Tree Manipulation
+
 
 def test_call_tree_node_add_child():
     """SWUT_DB_00007
@@ -495,7 +478,7 @@ def test_call_tree_node_add_child():
         return_type="void",
         file_path=Path("/src/parent.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     parent = CallTreeNode(function_info=parent_func, depth=0)
 
@@ -504,7 +487,7 @@ def test_call_tree_node_add_child():
         return_type="void",
         file_path=Path("/src/child1.c"),
         line_number=20,
-        is_static=False
+        is_static=False,
     )
     child1 = CallTreeNode(function_info=child1_func, depth=1)
 
@@ -513,7 +496,7 @@ def test_call_tree_node_add_child():
         return_type="void",
         file_path=Path("/src/child2.c"),
         line_number=30,
-        is_static=False
+        is_static=False,
     )
     child2 = CallTreeNode(function_info=child2_func, depth=1)
 
@@ -537,6 +520,7 @@ def test_call_tree_node_add_child():
 
 # SWUT_DB_00014: CallTreeNode Function Collection
 
+
 def test_call_tree_node_get_all_functions():
     """SWUT_DB_00007
 
@@ -548,21 +532,21 @@ def test_call_tree_node_get_all_functions():
         return_type="void",
         file_path=Path("/src/f1.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     func2 = FunctionInfo(
         name="Func2",
         return_type="void",
         file_path=Path("/src/f2.c"),
         line_number=20,
-        is_static=False
+        is_static=False,
     )
     func3 = FunctionInfo(
         name="Func3",
         return_type="void",
         file_path=Path("/src/f3.c"),
         line_number=30,
-        is_static=False
+        is_static=False,
     )
 
     # Build tree: root -> child1 -> grandchild
@@ -593,6 +577,7 @@ def test_call_tree_node_get_all_functions():
 
 # SWUT_DB_00015: CallTreeNode Depth Calculation
 
+
 def test_call_tree_node_get_max_depth():
     """SWUT_DB_00007
 
@@ -603,7 +588,7 @@ def test_call_tree_node_get_max_depth():
         return_type="void",
         file_path=Path("/src/f.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
 
     # Test leaf node
@@ -641,39 +626,32 @@ def test_call_tree_node_get_max_depth():
 
 # SWUT_DB_00016: CircularDependency Core Structure
 
+
 def test_circular_dependency_structure():
     """SWUT_DB_00008
 
     Test that CircularDependency dataclass has core fields for representing detected cycles.
     """
     # Create circular dependency
-    cycle = CircularDependency(
-        cycle=["FuncA", "FuncB", "FuncC", "FuncA"],
-        depth=3
-    )
+    cycle = CircularDependency(cycle=["FuncA", "FuncB", "FuncC", "FuncA"], depth=3)
 
     # Verify fields
     assert cycle.cycle == ["FuncA", "FuncB", "FuncC", "FuncA"]
     assert cycle.depth == 3
 
     # Test different cycle
-    cycle2 = CircularDependency(
-        cycle=["Init", "Process", "Validate", "Init"],
-        depth=5
-    )
+    cycle2 = CircularDependency(cycle=["Init", "Process", "Validate", "Init"], depth=5)
     assert len(cycle2.cycle) == 4
     assert cycle2.depth == 5
 
     # Test simple 2-function cycle
-    cycle3 = CircularDependency(
-        cycle=["A", "B", "A"],
-        depth=1
-    )
+    cycle3 = CircularDependency(cycle=["A", "B", "A"], depth=1)
     assert len(cycle3.cycle) == 3
     assert cycle3.depth == 1
 
 
 # SWUT_DB_00017: CircularDependency String Representation
+
 
 def test_circular_dependency_str():
     """SWUT_DB_00008
@@ -681,35 +659,24 @@ def test_circular_dependency_str():
     Test that CircularDependency.__str__ method formats cycles in readable arrow notation.
     """
     # Test 3-function cycle
-    cycle1 = CircularDependency(
-        cycle=["FuncA", "FuncB", "FuncC", "FuncA"],
-        depth=3
-    )
+    cycle1 = CircularDependency(cycle=["FuncA", "FuncB", "FuncC", "FuncA"], depth=3)
     assert str(cycle1) == "FuncA -> FuncB -> FuncC -> FuncA"
 
     # Test 2-function cycle
-    cycle2 = CircularDependency(
-        cycle=["Init", "Process", "Init"],
-        depth=2
-    )
+    cycle2 = CircularDependency(cycle=["Init", "Process", "Init"], depth=2)
     assert str(cycle2) == "Init -> Process -> Init"
 
     # Test 4-function cycle
-    cycle3 = CircularDependency(
-        cycle=["A", "B", "C", "D", "A"],
-        depth=5
-    )
+    cycle3 = CircularDependency(cycle=["A", "B", "C", "D", "A"], depth=5)
     assert str(cycle3) == "A -> B -> C -> D -> A"
 
     # Test single function (self-call)
-    cycle4 = CircularDependency(
-        cycle=["RecursiveFunc", "RecursiveFunc"],
-        depth=1
-    )
+    cycle4 = CircularDependency(cycle=["RecursiveFunc", "RecursiveFunc"], depth=1)
     assert str(cycle4) == "RecursiveFunc -> RecursiveFunc"
 
 
 # SWUT_DB_00018: AnalysisStatistics Counters
+
 
 def test_analysis_statistics_counters():
     """SWUT_DB_00009
@@ -736,7 +703,7 @@ def test_analysis_statistics_counters():
         static_functions=30,
         rte_functions=10,
         autosar_functions=40,
-        circular_dependencies_found=2
+        circular_dependencies_found=2,
     )
     assert stats2.total_functions == 100
     assert stats2.unique_functions == 50
@@ -749,6 +716,7 @@ def test_analysis_statistics_counters():
 
 
 # SWUT_DB_00019: AnalysisStatistics Dictionary Conversion
+
 
 def test_analysis_statistics_to_dict():
     """SWUT_DB_00009
@@ -764,7 +732,7 @@ def test_analysis_statistics_to_dict():
         static_functions=30,
         rte_functions=10,
         autosar_functions=40,
-        circular_dependencies_found=2
+        circular_dependencies_found=2,
     )
 
     result = stats.to_dict()
@@ -782,14 +750,20 @@ def test_analysis_statistics_to_dict():
 
     # Verify all keys present
     expected_keys = {
-        "total_functions", "unique_functions", "max_depth_reached",
-        "total_function_calls", "static_functions", "rte_functions",
-        "autosar_functions", "circular_dependencies_found"
+        "total_functions",
+        "unique_functions",
+        "max_depth_reached",
+        "total_function_calls",
+        "static_functions",
+        "rte_functions",
+        "autosar_functions",
+        "circular_dependencies_found",
     }
     assert set(result.keys()) == expected_keys
 
 
 # SWUT_DB_00020: AnalysisResult Result Container
+
 
 def test_analysis_result_container():
     """SWUT_DB_00010
@@ -802,7 +776,7 @@ def test_analysis_result_container():
         return_type="void",
         file_path=Path("/src/root.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     tree = CallTreeNode(function_info=func, depth=0)
     stats = AnalysisStatistics(total_functions=10, unique_functions=8)
@@ -814,7 +788,7 @@ def test_analysis_result_container():
         call_tree=tree,
         statistics=stats,
         circular_dependencies=[cycle],
-        errors=["Warning: unresolved function"]
+        errors=["Warning: unresolved function"],
     )
 
     # Verify fields
@@ -828,15 +802,14 @@ def test_analysis_result_container():
 
     # Test with defaults
     result_default = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats
+        root_function="Test", call_tree=tree, statistics=stats
     )
     assert len(result_default.circular_dependencies) == 0
     assert len(result_default.errors) == 0
 
 
 # SWUT_DB_00021: AnalysisResult Metadata
+
 
 def test_analysis_result_metadata():
     """SWUT_DB_00010
@@ -849,7 +822,7 @@ def test_analysis_result_metadata():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     tree = CallTreeNode(function_info=func, depth=0)
     stats = AnalysisStatistics()
@@ -862,7 +835,7 @@ def test_analysis_result_metadata():
         statistics=stats,
         timestamp=timestamp,
         source_directory=Path("/src"),
-        max_depth_limit=5
+        max_depth_limit=5,
     )
 
     assert result.timestamp == timestamp
@@ -871,9 +844,7 @@ def test_analysis_result_metadata():
 
     # Test defaults (timestamp should be near current time)
     result_default = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats
+        root_function="Test", call_tree=tree, statistics=stats
     )
 
     # Verify timestamp is recent (within 1 second)
@@ -888,6 +859,7 @@ def test_analysis_result_metadata():
 
 # SWUT_DB_00022: AnalysisResult Function Collection
 
+
 def test_analysis_result_get_all_functions():
     """SWUT_DB_00010
 
@@ -899,14 +871,14 @@ def test_analysis_result_get_all_functions():
         return_type="void",
         file_path=Path("/src/root.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     func2 = FunctionInfo(
         name="Child",
         return_type="void",
         file_path=Path("/src/child.c"),
         line_number=20,
-        is_static=False
+        is_static=False,
     )
 
     root = CallTreeNode(function_info=func1, depth=0)
@@ -914,11 +886,7 @@ def test_analysis_result_get_all_functions():
     root.add_child(child)
 
     stats = AnalysisStatistics()
-    result = AnalysisResult(
-        root_function="Root",
-        call_tree=root,
-        statistics=stats
-    )
+    result = AnalysisResult(root_function="Root", call_tree=root, statistics=stats)
 
     # Collect functions
     all_funcs = result.get_all_functions()
@@ -931,6 +899,7 @@ def test_analysis_result_get_all_functions():
 
 # SWUT_DB_00023: AnalysisResult Circular Dependency Check
 
+
 def test_analysis_result_has_circular_dependencies():
     """SWUT_DB_00010
 
@@ -942,25 +911,20 @@ def test_analysis_result_has_circular_dependencies():
         return_type="void",
         file_path=Path("/src/test.c"),
         line_number=10,
-        is_static=False
+        is_static=False,
     )
     tree = CallTreeNode(function_info=func, depth=0)
     stats = AnalysisStatistics()
 
     # Test with no circular dependencies
     result_no_cycles = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats,
-        circular_dependencies=[]
+        root_function="Test", call_tree=tree, statistics=stats, circular_dependencies=[]
     )
     assert result_no_cycles.has_circular_dependencies() is False
 
     # Test with default (empty list)
     result_default = AnalysisResult(
-        root_function="Test",
-        call_tree=tree,
-        statistics=stats
+        root_function="Test", call_tree=tree, statistics=stats
     )
     assert result_default.has_circular_dependencies() is False
 
@@ -970,7 +934,7 @@ def test_analysis_result_has_circular_dependencies():
         root_function="Test",
         call_tree=tree,
         statistics=stats,
-        circular_dependencies=[cycle]
+        circular_dependencies=[cycle],
     )
     assert result_with_cycle.has_circular_dependencies() is True
 
@@ -980,6 +944,6 @@ def test_analysis_result_has_circular_dependencies():
         root_function="Test",
         call_tree=tree,
         statistics=stats,
-        circular_dependencies=[cycle, cycle2]
+        circular_dependencies=[cycle, cycle2],
     )
     assert result_multiple.has_circular_dependencies() is True
