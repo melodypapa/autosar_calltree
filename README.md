@@ -13,6 +13,7 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 - 📊 **Multiple Output Formats**:
   - Mermaid sequence diagrams (Markdown)
   - XMI/UML 2.5 (importable to Enterprise Architect, Visual Paradigm, etc.)
+  - Rhapsody XMI 2.5 (importable to IBM Rhapsody 8.0+)
   - JSON (for custom processing) - *planned*
 - 🏗️ **SW Module Support**: Map C files to SW modules via YAML configuration for architecture-level diagrams
 - 📈 **Module-Aware Diagrams**: Generate diagrams with SW module names as participants
@@ -25,6 +26,45 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 - 📝 **Clean Diagrams**: Return statements omitted by default for cleaner sequence diagrams (configurable)
 
 ## What's New
+
+### Version 0.7.0 (2026-02-14)
+
+**🎉 Major Feature: IBM Rhapsody Export**
+
+This release adds support for generating Rhapsody-compatible XMI 2.5 files that can be imported into IBM Rhapsody 8.0+ for further editing and visualization.
+
+**New Features**:
+- 🎯 **Rhapsody XMI Export**: New `--format rhapsody` option for Rhapsody-compatible XMI 2.5 files
+- 🔑 **UUID-based IDs**: Rhapsody prefers UUID-based element IDs for better compatibility
+- 📊 **Rhapsody Profiles**: Includes Rhapsody-specific profile imports and metadata
+- 🏷️ **AUTOSAR Stereotypes**: Support for AUTOSAR-specific stereotypes in Rhapsody
+- 🌐 **Cross-platform**: Works on Windows, Linux, and macOS (no runtime dependencies)
+
+**CLI Usage**:
+```bash
+# Generate Rhapsody-compatible XMI
+calltree --start-function Demo_Init --format rhapsody --source-dir demo
+
+# With module names for architecture-level diagrams
+calltree --start-function Demo_Init --format rhapsody --module-config demo/module_mapping.yaml --use-module-names
+```
+
+**Implementation**:
+- `RhapsodyXmiGenerator` extends `XmiGenerator` (95% code reuse)
+- Uses only Python standard library (`xml.etree.ElementTree`)
+- No additional runtime dependencies required
+
+**Benefits**:
+- ✅ Cross-platform compatibility (Windows, Linux, macOS)
+- ✅ Manual import via Rhapsody's native XMI import (Tools > Import > OMG UML/XMI)
+- ✅ Leverages existing 521-line XMI infrastructure
+- ✅ Low implementation risk (extends proven XMI generator)
+
+**Limitations**:
+- Manual import step required by user (acceptable trade-off for cross-platform compatibility)
+- Requires IBM Rhapsody 8.0+ license
+
+---
 
 ### Version 0.6.0 (2026-02-10)
 
@@ -312,6 +352,9 @@ calltree --start-function Demo_Init --max-depth 2 -o output.md
 # Generate XMI format (with opt block support)
 calltree --start-function Demo_MainFunction --source-dir demo --format xmi --output demo/demo.xmi
 
+# Generate Rhapsody-compatible XMI
+calltree --start-function Demo_Init --format rhapsody --source-dir demo --output demo/rhapsody_demo.xmi
+
 # Verbose mode with detailed statistics and cache progress
 calltree --start-function Demo_Init --verbose
 ```
@@ -357,7 +400,7 @@ Options:
   --start-function TEXT          Starting function name [required]
   --max-depth INTEGER           Maximum call depth (default: 3)
   --source-dir PATH             Source code directory (default: ./demo)
-  --format [mermaid|xmi|both]   Output format (default: mermaid)
+  --format [mermaid|xmi|rhapsody|both]   Output format (default: mermaid)
   --output PATH                 Output file path (default: call_tree.md)
   --module-config PATH          YAML file mapping C files to SW modules
   --use-module-names            Use SW module names as Mermaid participants

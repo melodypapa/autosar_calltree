@@ -8,7 +8,7 @@ AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR c
 
 **Key capability**: Handles AUTOSAR's proprietary macros that traditional C parsers cannot understand. Use this when working with automotive embedded systems code.
 
-**Latest feature (v0.6.1)**: Alternative pycparser-based C parser for more reliable parsing of standard C code.
+**Latest feature (v0.7.0)**: IBM Rhapsody XMI export for cross-platform compatibility with Rhapsody 8.0+
 
 ## Development Commands
 
@@ -72,6 +72,16 @@ calltree --start-function Demo_Init --source-dir demo \
 
 # Control depth and output format
 calltree --start-function Demo_Init --max-depth 2 --format xmi --output diagrams/demo.xmi
+
+# Generate Rhapsody-compatible XMI
+calltree --start-function Demo_Init --source-dir ./demo --format rhapsody
+
+# Use SW module configuration for architecture-level Rhapsody diagrams
+calltree --start-function Demo_Init --source-dir demo \
+         --module-config demo/module_mapping.yaml \
+         --use-module-names \
+         --format rhapsody \
+         --output demo/rhapsody_demo.xmi
 
 # Generate both Mermaid and XMI
 calltree --start-function Demo_MainFunction --format both --max-depth 4

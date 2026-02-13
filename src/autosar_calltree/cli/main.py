@@ -17,6 +17,7 @@ from ..analyzers.call_tree_builder import CallTreeBuilder
 from ..config.module_config import ModuleConfig
 from ..database.function_database import FunctionDatabase
 from ..generators.mermaid_generator import MermaidGenerator
+from ..generators.rhapsody_generator import RhapsodyXmiGenerator
 from ..generators.xmi_generator import XmiGenerator
 from ..version import __version__
 
@@ -84,6 +85,32 @@ def _generate_xmi_output(result, output_path, use_module_names) -> None:
     )
 
 
+def _generate_rhapsody_output(result, output_path, use_module_names) -> None:
+    """Generate Rhapsody-compatible XMI output."""
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+        transient=True,
+    ) as progress:
+        task = progress.add_task("Generating Rhapsody XMI...", total=None)
+
+        rhapsody_output = (
+            output_path.with_suffix(".xmi")
+            if output_path.suffix != ".xmi"
+            else output_path
+        )
+
+        generator = RhapsodyXmiGenerator(use_module_names=use_module_names)
+        generator.generate(result, str(rhapsody_output))
+
+        progress.update(task, completed=True)
+
+    console.print(
+        f"[green]Generated[/green] Rhapsody XMI: [cyan]{rhapsody_output}[/cyan]"
+    )
+
+
 @click.command()
 @click.option(
     "--start-function",
@@ -115,7 +142,7 @@ def _generate_xmi_output(result, output_path, use_module_names) -> None:
 @click.option(
     "--format",
     "-f",
-    type=click.Choice(["mermaid", "xmi", "both"], case_sensitive=False),
+    type=click.Choice(["mermaid", "xmi", "rhapsody", "both"], case_sensitive=False),
     default="mermaid",
     help="Output format (default: mermaid)",
 )
@@ -336,6 +363,9 @@ def cli(
 
         if format in ["xmi", "both"]:
             _generate_xmi_output(result, output_path, use_module_names)
+
+        if format in ["rhapsody", "both"]:
+            _generate_rhapsody_output(result, output_path, use_module_names)
 
         # Print warnings for circular dependencies
         if result.circular_dependencies:
