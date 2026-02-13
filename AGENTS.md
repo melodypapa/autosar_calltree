@@ -96,7 +96,6 @@ autosar_calltree/
 ├── pyproject.toml        # Project configuration
 ├── requirements.txt      # Production dependencies
 ├── requirements-dev.txt  # Development dependencies
-├── setup.py              # Installation script
 └── README.md             # Project documentation
 ```
 
