@@ -271,6 +271,30 @@ cd autosar-calltree
 pip install -e ".[dev]"
 ```
 
+## Building Distribution Packages
+
+This project uses `pyproject.toml` for modern Python packaging (PEP 621). To build distribution packages:
+
+```bash
+# Install build dependencies
+pip install build
+
+# Build source distribution (sdist) and wheel
+python -m build
+
+# The built packages will be in the dist/ directory:
+# - autosar_calltree-<version>.tar.gz  (source distribution)
+# - autosar_calltree-<version>-py3-none-any.whl  (wheel)
+```
+
+To install from the built packages:
+
+```bash
+pip install dist/autosar_calltree-<version>-py3-none-any.whl
+```
+
+**Note**: This project no longer uses `setup.py`. All configuration is managed through `pyproject.toml`.
+
 ## Quick Start
 
 ### Basic Usage
