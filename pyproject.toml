@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "autosar-calltree"
-version = "0.6.1"
+version = "0.6.2"
 description = "A Python tool to analyze C/AUTOSAR codebases and generate function call trees with Mermaid and XMI output"
 readme = "README.md"
 requires-python = ">=3.8"

@@ -23,6 +23,67 @@ from ..version import __version__
 console = Console(record=True)
 
 
+def _generate_mermaid_output(
+    result,
+    output_path,
+    format,
+    no_abbreviate_rte,
+    use_module_names,
+) -> None:
+    """Generate Mermaid diagram output."""
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+        transient=True,
+    ) as progress:
+        task = progress.add_task("Generating Mermaid diagram...", total=None)
+
+        mermaid_output = (
+            output_path
+            if format == "mermaid"
+            else output_path.with_suffix(".mermaid.md")
+        )
+
+        generator = MermaidGenerator(
+            abbreviate_rte=not no_abbreviate_rte,
+            use_module_names=use_module_names,
+        )
+        generator.generate(result, str(mermaid_output))
+
+        progress.update(task, completed=True)
+
+    console.print(
+        f"[green]Generated[/green] Mermaid diagram: [cyan]{mermaid_output}[/cyan]"
+    )
+
+
+def _generate_xmi_output(result, output_path, use_module_names) -> None:
+    """Generate XMI document output."""
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+        transient=True,
+    ) as progress:
+        task = progress.add_task("Generating XMI document...", total=None)
+
+        xmi_output = (
+            output_path.with_suffix(".xmi")
+            if output_path.suffix != ".xmi"
+            else output_path
+        )
+
+        xmi_generator = XmiGenerator(use_module_names=use_module_names)
+        xmi_generator.generate(result, str(xmi_output))
+
+        progress.update(task, completed=True)
+
+    console.print(
+        f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]"
+    )
+
+
 @click.command()
 @click.option(
     "--start-function",
@@ -271,79 +332,10 @@ def cli(
         output_path = Path(output)
 
         if format in ["mermaid", "both"]:
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
-                transient=True,
-            ) as progress:
-                task = progress.add_task("Generating Mermaid diagram...", total=None)
+            _generate_mermaid_output(result, output_path, format, no_abbreviate_rte, use_module_names)
 
-                mermaid_output = (
-                    output_path
-                    if format == "mermaid"
-                    else output_path.with_suffix(".mermaid.md")
-                )
-
-                generator = MermaidGenerator(
-                    abbreviate_rte=not no_abbreviate_rte,
-                    use_module_names=use_module_names,
-                )
-                generator.generate(result, str(mermaid_output))
-
-                progress.update(task, completed=True)
-
-            console.print(
-                f"[green]Generated[/green] Mermaid diagram: [cyan]{mermaid_output}[/cyan]"
-            )
-
-        if format == "xmi":
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
-                transient=True,
-            ) as progress:
-                task = progress.add_task("Generating XMI document...", total=None)
-
-                xmi_output = (
-                    output_path.with_suffix(".xmi")
-                    if output_path.suffix != ".xmi"
-                    else output_path
-                )
-
-                xmi_generator = XmiGenerator(
-                    use_module_names=use_module_names,
-                )
-                xmi_generator.generate(result, str(xmi_output))
-
-                progress.update(task, completed=True)
-
-            console.print(
-                f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]"
-            )
-
-        if format == "both":
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
-                transient=True,
-            ) as progress:
-                task = progress.add_task("Generating XMI document...", total=None)
-
-                xmi_output = output_path.with_suffix(".xmi")
-
-                xmi_generator = XmiGenerator(
-                    use_module_names=use_module_names,
-                )
-                xmi_generator.generate(result, str(xmi_output))
-
-                progress.update(task, completed=True)
-
-            console.print(
-                f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]"
-            )
+        if format in ["xmi", "both"]:
+            _generate_xmi_output(result, output_path, use_module_names)
 
         # Print warnings for circular dependencies
         if result.circular_dependencies:

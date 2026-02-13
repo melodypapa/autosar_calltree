@@ -36,12 +36,15 @@ except ImportError:
 
 def _format_file_size(size_bytes: int) -> str:
     """Format file size in human-readable format."""
-    if size_bytes >= 1024 * 1024:
-        return f"{size_bytes / (1024 * 1024):.2f}M"
-    elif size_bytes >= 1024:
-        return f"{size_bytes / 1024:.2f}K"
-    else:
-        return str(size_bytes)
+    # Define size thresholds
+    KB = 1024
+    MB = KB * 1024
+
+    if size_bytes >= MB:
+        return f"{size_bytes / MB:.2f}M"
+    if size_bytes >= KB:
+        return f"{size_bytes / KB:.2f}K"
+    return str(size_bytes)
 
 
 @dataclass
@@ -99,11 +102,8 @@ class FunctionDatabase:
         # All functions by file
         self.functions_by_file: Dict[str, List[FunctionInfo]] = {}
 
-        # Parsers
+        # Parsers - use pycparser if available, otherwise regex-based
         self.autosar_parser = AutosarParser()
-
-        # Use pycparser if available, otherwise fall back to regex-based parser
-        # Type: Union[CParser, CParserPyCParser]
         if PYCPARSER_AVAILABLE:
             self.c_parser = CParserPyCParser()  # type: ignore[assignment]
             self.parser_type = "pycparser"
@@ -217,8 +217,6 @@ class FunctionDatabase:
             func_info.sw_module = self.module_config.get_module_for_file(
                 func_info.file_path
             )
-
-            # Track module statistics
             if func_info.sw_module:
                 self.module_stats[func_info.sw_module] = (
                     self.module_stats.get(func_info.sw_module, 0) + 1
@@ -229,9 +227,9 @@ class FunctionDatabase:
             self.functions[func_info.name] = []
         self.functions[func_info.name].append(func_info)
 
-        # Add to qualified functions (for static function resolution)
-        file_path = Path(func_info.file_path).stem  # Get filename without extension
-        qualified_key = f"{file_path}::{func_info.name}"
+        # Add to qualified functions for static function resolution
+        file_stem = Path(func_info.file_path).stem
+        qualified_key = f"{file_stem}::{func_info.name}"
         self.qualified_functions[qualified_key] = func_info
 
         self.total_functions_found += 1
@@ -277,11 +275,11 @@ class FunctionDatabase:
 
         Implements: SWR_CONFIG_00003 (Module Configuration Integration - Smart Function Selection)
 
-        Selection strategy:
-        1. Prefer functions that have actual implementations (have function calls)
-        2. Prefer functions from files that match the function name pattern
-        3. Avoid functions from the calling file (for cross-module calls)
-        4. Prefer functions with assigned modules over those without
+        Selection strategy (applied in order):
+        1. Implementations: Prefer functions with calls (actual implementation vs declaration)
+        2. File name match: Prefer files matching function name (e.g., COM_* in com.c)
+        3. Cross-module: Avoid the calling file for cross-module calls
+        4. Module assignment: Prefer functions with assigned modules
 
         Args:
             candidates: List of FunctionInfo objects to choose from
@@ -292,49 +290,42 @@ class FunctionDatabase:
         """
         if not candidates:
             return None
-
         if len(candidates) == 1:
             return candidates[0]
 
-        # Strategy 1: Prefer functions with actual implementations (have calls)
+        # Strategy 1: Prefer functions with implementations (have calls)
         implementations = [f for f in candidates if f.calls]
         if len(implementations) == 1:
             return implementations[0]
-        elif len(implementations) > 1:
+        if len(implementations) > 1:
             candidates = implementations
 
-        # Strategy 2: Prefer functions from files matching the function name
-        # e.g., COM_InitCommunication should be in com_*.c or communication.c
+        # Strategy 2: Prefer files matching function name pattern
+        # e.g., COM_InitCommunication should be in communication.c or com_*.c
         func_name_lower = candidates[0].name.lower()
-
-        # Check for matching files
         for func_info in candidates:
             file_stem = Path(func_info.file_path).stem.lower()
-
-            # Check if function name matches file name
+            # Check if function name starts with file name (without underscores)
             if func_name_lower.startswith(file_stem.replace("_", "")):
-                # e.g., COM_InitCommunication matches communication.c or com_*.c
                 if func_info.sw_module and func_info.sw_module != "DemoModule":
                     return func_info
 
         # Strategy 3: For cross-module calls, avoid the calling file
         if context_file:
             context_stem = Path(context_file).stem
-            # Prefer functions NOT from the calling file
             others = [f for f in candidates if Path(f.file_path).stem != context_stem]
             if len(others) == 1:
                 return others[0]
-            elif len(others) > 1:
+            if len(others) > 1:
                 candidates = others
 
-        # Strategy 4: Prefer functions with assigned modules over those without
+        # Strategy 4: Prefer functions with assigned modules
         with_modules = [f for f in candidates if f.sw_module]
         if len(with_modules) == 1:
             return with_modules[0]
-        elif len(with_modules) > 1:
+        if len(with_modules) > 1:
             candidates = with_modules
 
-        # If all else fails, return the first candidate
         return candidates[0]
 
     def get_function_by_qualified_name(
