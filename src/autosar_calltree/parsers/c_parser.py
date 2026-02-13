@@ -7,7 +7,7 @@ extracting function information including parameters, return types, and function
 
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from ..database.models import FunctionCall, FunctionInfo, FunctionType, Parameter
 
@@ -101,33 +101,31 @@ class CParser:
 
     def __init__(self):
         """Initialize the C parser."""
-        # Import AutosarParser to handle AUTOSAR macros
         from .autosar_parser import AutosarParser
 
         self.autosar_parser = AutosarParser()
 
-        # Pattern for traditional C function declarations/definitions
-        # Matches: [static] [inline] return_type function_name(params)
-        # Optimized to avoid catastrophic backtracking with length limits
+        # Function declaration pattern: [static] [inline] return_type function_name(params)
+        # Length limits prevent catastrophic backtracking
         self.function_pattern = re.compile(
-            r"^\s*"  # Start of line with optional whitespace
-            r"(?P<static>static\s+)?"  # Optional static keyword
-            r"(?P<inline>inline|__inline__|__inline\s+)?"  # Optional inline
-            r"(?P<return_type>[\w\s\*]{1,101}?)\s+"  # Return type (1-101 chars, non-greedy)
-            r"(?P<function_name>[a-zA-Z_][a-zA-Z0-9_]{1,50})\s*"  # Function name (1-50 chars)
-            r"\((?P<params>[^()]{0,500}(?:\([^()]{0,100}\)[^()]{0,500})*)\)",  # Parameters (limited length)
+            r"^\s*"
+            r"(?P<static>static\s+)?"
+            r"(?P<inline>inline|__inline__|__inline\s+)?"
+            r"(?P<return_type>[\w\s\*]{1,101}?)\s+"
+            r"(?P<function_name>[a-zA-Z_][a-zA-Z0-9_]{1,50})\s*"
+            r"\((?P<params>[^()]{0,500}(?:\([^()]{0,100}\)[^()]{0,500})*)\)",
             re.MULTILINE,
         )
 
-        # Pattern to match function bodies { ... }
+        # Function body pattern: { ... }
         self.function_body_pattern = re.compile(
             r"\{(?:[^{}]|(?:\{(?:[^{}]|(?:\{[^{}]*\}))*\}))*\}", re.DOTALL
         )
 
-        # Pattern for function calls: identifier(
+        # Function call pattern: identifier(
         self.function_call_pattern = re.compile(r"\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(")
 
-        # Pattern for RTE calls
+        # RTE call pattern
         self.rte_call_pattern = re.compile(r"\bRte_[a-zA-Z_][a-zA-Z0-9_]*\s*\(")
 
     def parse_file(self, file_path: Path) -> List[FunctionInfo]:
@@ -612,321 +610,293 @@ class CParser:
         """
         Extract function calls from a function body.
 
+        Tracks if/else blocks for conditional calls (SWR_PARSER_00022)
+        and for/while loops for loop calls (SWR_PARSER_00023).
+
         Args:
             function_body: Function body text
 
         Returns:
-            List of FunctionCall objects with conditional status and condition text
+            List of FunctionCall objects with conditional/loop status
         """
         called_functions: List[FunctionCall] = []
 
-        # Analyze function body to track if/else context
-        # We'll parse line by line to detect if/else blocks
-        # SWR_PARSER_00022: Multi-line If Condition Extraction
-        # SWR_PARSER_00023: Loop Detection
-        lines = function_body.split("\n")
+        # Control flow state
         in_if_block = False
         in_else_block = False
-        current_condition = None
         in_loop_block = False
-        current_loop_condition = None
+        current_condition: Optional[str] = None
+        current_loop_condition: Optional[str] = None
         brace_depth = 0
-        collecting_multiline_condition = False
-        multiline_condition_buffer = ""
-        multiline_paren_depth = 0
 
-        for line_idx, line in enumerate(lines, start=1):
+        # Multi-line condition state
+        multiline_state = self._MultiLineConditionState()
+
+        for line_idx, line in enumerate(function_body.split("\n"), start=1):
             stripped = line.strip()
 
-            # Check if we're collecting a multi-line condition
-            if collecting_multiline_condition:
-                multiline_condition_buffer += " " + stripped
-                # Track parentheses in the condition using a stack
-                for char in stripped:
-                    if char == "(":
-                        multiline_paren_depth += 1
-                    elif char == ")":
-                        multiline_paren_depth -= 1
-                        if multiline_paren_depth == 0:
-                            # Found the closing parenthesis
-                            # Extract condition from the buffer
-                            # Find the opening '(' after 'if' or 'else if'
-                            if "if" in multiline_condition_buffer:
-                                # Find the position after "if"
-                                if_pos = multiline_condition_buffer.find("if")
-                                # Find the first '(' after "if"
-                                paren_start = multiline_condition_buffer.find(
-                                    "(", if_pos
-                                )
-                                if paren_start != -1:
-                                    # Find the position of this closing ')' in the buffer
-                                    closing_paren_pos = (
-                                        multiline_condition_buffer.rfind(")")
-                                    )
-                                    if closing_paren_pos != -1:
-                                        condition_part = multiline_condition_buffer[
-                                            paren_start + 1 : closing_paren_pos
-                                        ]
-                                        current_condition = self._sanitize_condition(
-                                            condition_part.strip()
-                                        )
-                            collecting_multiline_condition = False
-                            multiline_condition_buffer = ""
-                            multiline_paren_depth = 0
-                            break
-                # Continue to next line if still collecting
-                if collecting_multiline_condition:
+            # Process multi-line conditions if collecting
+            if multiline_state.collecting:
+                multiline_state.process_line(stripped)
+                if multiline_state.is_complete():
+                    current_condition = multiline_state.get_condition()
+                    in_if_block = True  # Mark that we're in an if block
+                else:
                     continue
 
-            # Track if/else block entry and extract condition
-            if stripped.startswith("if ") or stripped.startswith("if("):
+            # Process if/elif/else statements
+            new_condition = self._process_conditional_statement(stripped, multiline_state)
+            if new_condition is not None:
+                # Explicit else/elif detected
                 in_if_block = True
-                # Extract condition from if statement
-                # Handle both "if (condition)" and "if(condition)" formats
-                if_match = re.match(r"if\s*\(\s*(.+?)\s*\)", stripped)
-                if if_match:
-                    condition_candidate = if_match.group(1).strip()
-                    # Check if the condition has unbalanced parentheses
-                    # This indicates a multi-line condition
-                    if condition_candidate.count("(") != condition_candidate.count(")"):
-                        # Fall back to multi-line collection
-                        collecting_multiline_condition = True
-                        multiline_condition_buffer = stripped
-                        # Count all opening parentheses in this line
-                        multiline_paren_depth = stripped.count("(") - stripped.count(
-                            ")"
-                        )
-                        # Extract partial condition after the first '('
-                        paren_start = stripped.find("(")
-                        if paren_start != -1:
-                            partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(
-                                partial_condition
-                            )
-                    else:
-                        current_condition = self._sanitize_condition(
-                            condition_candidate
-                        )
-                else:
-                    # Check if the line has an opening '(' but no closing ')'
-                    # This indicates a multi-line condition
-                    if "(" in stripped and ")" not in stripped:
-                        collecting_multiline_condition = True
-                        multiline_condition_buffer = stripped
-                        # Count all opening parentheses in this line
-                        multiline_paren_depth = stripped.count("(") - stripped.count(
-                            ")"
-                        )
-                        # Extract partial condition after the first '('
-                        paren_start = stripped.find("(")
-                        if paren_start != -1:
-                            partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(
-                                partial_condition
-                            )
-                    else:
-                        # Fallback: try to extract everything between "if" and the first '{'
-                        if_start = stripped.find("if")
-                        brace_pos = stripped.find("{")
-                        if brace_pos != -1:
-                            condition_part = stripped[if_start + 2 : brace_pos].strip()
-                            # Remove leading/trailing parentheses
-                            condition_part = (
-                                condition_part.lstrip("(").rstrip(")").strip()
-                            )
-                            current_condition = self._sanitize_condition(condition_part)
-                        else:
-                            current_condition = self._sanitize_condition("condition")
-            elif stripped.startswith("else if") or stripped.startswith("else if("):
-                in_if_block = True
-                # Extract condition from else if statement
-                elif_match = re.match(r"else\s+if\s*\(\s*(.+?)\s*\)", stripped)
-                if elif_match:
-                    condition_candidate = elif_match.group(1).strip()
-                    # Check if the condition has unbalanced parentheses
-                    if condition_candidate.count("(") != condition_candidate.count(")"):
-                        # Fall back to multi-line collection
-                        collecting_multiline_condition = True
-                        multiline_condition_buffer = stripped
-                        # Count all opening parentheses in this line
-                        multiline_paren_depth = stripped.count("(") - stripped.count(
-                            ")"
-                        )
-                        # Extract partial condition after the first '('
-                        paren_start = stripped.find("(")
-                        if paren_start != -1:
-                            partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(
-                                partial_condition
-                            )
-                    else:
-                        current_condition = self._sanitize_condition(
-                            f"else if {condition_candidate}"
-                        )
-                else:
-                    # Check for multi-line else if condition
-                    if "(" in stripped and ")" not in stripped:
-                        collecting_multiline_condition = True
-                        multiline_condition_buffer = stripped
-                        # Count all opening parentheses in this line
-                        multiline_paren_depth = stripped.count("(") - stripped.count(
-                            ")"
-                        )
-                        # Extract partial condition before the '('
-                        paren_start = stripped.find("(")
-                        if paren_start != -1:
-                            partial_condition = stripped[paren_start + 1 :].strip()
-                            current_condition = self._sanitize_condition(
-                                partial_condition
-                            )
-                    else:
-                        current_condition = self._sanitize_condition(
-                            "else if condition"
-                        )
+                current_condition = new_condition
             elif stripped.startswith("else") and not stripped.startswith("else if"):
                 in_else_block = True
                 current_condition = "else"
 
-            # Track for/while loop blocks - SWR_PARSER_00023: Loop Detection
-            elif stripped.startswith("for ") or stripped.startswith("for("):
+            # Process for/while loops
+            loop_condition = self._process_loop_statement(stripped)
+            if loop_condition is not None:
                 in_loop_block = True
-                # Extract condition from for statement
-                # Handle both "for (init; cond; inc)" and "for(init; cond; inc)" formats
-                for_match = re.match(r"for\s*\(\s*[^;]*;\s*(.+?)\s*;\s*", stripped)
-                if for_match:
-                    current_loop_condition = self._sanitize_condition(
-                        for_match.group(1).strip()
-                    )
-                else:
-                    # Fallback: extract everything between "for" and first ')'
-                    for_start = stripped.find("for")
-                    paren_end = stripped.find(")")
-                    if paren_end != -1:
-                        loop_part = stripped[for_start + 3 : paren_end].strip()
-                        # Split by semicolons and take the middle part (condition)
-                        parts = loop_part.split(";")
-                        if len(parts) >= 2:
-                            current_loop_condition = self._sanitize_condition(
-                                parts[1].strip()
-                            )
-                        else:
-                            current_loop_condition = self._sanitize_condition(
-                                "condition"
-                            )
-                    else:
-                        current_loop_condition = self._sanitize_condition("condition")
-
-            elif stripped.startswith("while ") or stripped.startswith("while("):
-                in_loop_block = True
-                # Extract condition from while statement
-                while_match = re.match(r"while\s*\(\s*(.+?)\s*\)", stripped)
-                if while_match:
-                    current_loop_condition = self._sanitize_condition(
-                        while_match.group(1).strip()
-                    )
-                else:
-                    # Fallback: extract everything between "while" and first ')'
-                    while_start = stripped.find("while")
-                    paren_end = stripped.find(")")
-                    if paren_end != -1:
-                        condition_part = stripped[while_start + 5 : paren_end].strip()
-                        current_loop_condition = self._sanitize_condition(
-                            condition_part.lstrip("(").rstrip(")").strip()
-                        )
-                    else:
-                        current_loop_condition = self._sanitize_condition("condition")
+                current_loop_condition = loop_condition
 
             # Track brace depth for nested blocks
             brace_depth += stripped.count("{")
             brace_depth -= stripped.count("}")
 
-            # Find function calls in this line
-            for match in self.function_call_pattern.finditer(line):
-                function_name = match.group(1)
+            # Extract function calls from this line
+            is_conditional = (in_if_block or in_else_block) and brace_depth > 0
+            is_loop = in_loop_block and brace_depth > 0
 
-                # Skip C keywords
-                if function_name in self.C_KEYWORDS:
-                    continue
+            self._add_calls_from_line(
+                line, line_idx, called_functions, is_conditional, current_condition, is_loop, current_loop_condition
+            )
 
-                # Skip AUTOSAR types (might be casts)
-                if function_name in self.AUTOSAR_TYPES:
-                    continue
-
-                # Check if this call is inside an if/else block - SWR_PARSER_00022
-                is_conditional = (in_if_block or in_else_block) and brace_depth > 0
-
-                # Check if this call is inside a loop block - SWR_PARSER_00023
-                is_loop = in_loop_block and brace_depth > 0
-
-                # Add to called functions if not already present
-                existing = next(
-                    (fc for fc in called_functions if fc.name == function_name), None
-                )
-                if existing:
-                    # Update conditional status if this occurrence is conditional
-                    if is_conditional:
-                        existing.is_conditional = True
-                        if current_condition and not existing.condition:
-                            existing.condition = current_condition
-                    # Update loop status if this occurrence is in a loop - SWR_PARSER_00023
-                    if is_loop:
-                        existing.is_loop = True
-                        if current_loop_condition and not existing.loop_condition:
-                            existing.loop_condition = current_loop_condition
-                else:
-                    called_functions.append(
-                        FunctionCall(
-                            name=function_name,
-                            is_conditional=is_conditional,
-                            condition=current_condition if is_conditional else None,
-                            is_loop=is_loop,
-                            loop_condition=current_loop_condition if is_loop else None,
-                            line_number=line_idx,
-                        )
-                    )
-
-            # Also extract RTE calls explicitly
-            for match in self.rte_call_pattern.finditer(line):
-                rte_function = match.group(0).rstrip("(").strip()
-
-                is_conditional = (in_if_block or in_else_block) and brace_depth > 0
-
-                is_loop = in_loop_block and brace_depth > 0
-
-                existing = next(
-                    (fc for fc in called_functions if fc.name == rte_function), None
-                )
-                if existing:
-                    if is_conditional:
-                        existing.is_conditional = True
-                        if current_condition and not existing.condition:
-                            existing.condition = current_condition
-                    if is_loop:
-                        existing.is_loop = True
-                        if current_loop_condition and not existing.loop_condition:
-                            existing.loop_condition = current_loop_condition
-                else:
-                    called_functions.append(
-                        FunctionCall(
-                            name=rte_function,
-                            is_conditional=is_conditional,
-                            condition=current_condition if is_conditional else None,
-                            is_loop=is_loop,
-                            loop_condition=current_loop_condition if is_loop else None,
-                            line_number=line_idx,
-                        )
-                    )
-
-            # Exit if/else block when we close the brace
+            # Reset block state when brace depth returns to 0
             if brace_depth == 0:
                 in_if_block = False
                 in_else_block = False
-                current_condition = None
                 in_loop_block = False
+                current_condition = None
                 current_loop_condition = None
 
-        # Sort by name for consistent output
         return sorted(called_functions, key=lambda fc: fc.name)
+
+    def _add_calls_from_line(
+        self,
+        line: str,
+        line_idx: int,
+        called_functions: List[FunctionCall],
+        is_conditional: bool,
+        condition: Optional[str],
+        is_loop: bool,
+        loop_condition: Optional[str],
+    ) -> None:
+        """Extract and add function calls from a single line."""
+        # Check all function calls
+        for match in self.function_call_pattern.finditer(line):
+            function_name = match.group(1)
+
+            if function_name in self.C_KEYWORDS:
+                continue
+            if function_name in self.AUTOSAR_TYPES:
+                continue
+            if function_name in self.AUTOSAR_MACROS:
+                continue
+
+            self._add_or_update_call(
+                called_functions,
+                function_name,
+                line_idx,
+                is_conditional,
+                condition,
+                is_loop,
+                loop_condition,
+            )
+
+        # Check RTE calls explicitly
+        for match in self.rte_call_pattern.finditer(line):
+            rte_function = match.group(0).rstrip("(").strip()
+
+            self._add_or_update_call(
+                called_functions,
+                rte_function,
+                line_idx,
+                is_conditional,
+                condition,
+                is_loop,
+                loop_condition,
+            )
+
+    def _add_or_update_call(
+        self,
+        called_functions: List[FunctionCall],
+        name: str,
+        line_idx: int,
+        is_conditional: bool,
+        condition: Optional[str],
+        is_loop: bool,
+        loop_condition: Optional[str],
+    ) -> None:
+        """Add new call or update existing with conditional/loop info."""
+        existing = next((fc for fc in called_functions if fc.name == name), None)
+
+        if existing:
+            if is_conditional:
+                existing.is_conditional = True
+                if condition and not existing.condition:
+                    existing.condition = condition
+            if is_loop:
+                existing.is_loop = True
+                if loop_condition and not existing.loop_condition:
+                    existing.loop_condition = loop_condition
+        else:
+            called_functions.append(
+                FunctionCall(
+                    name=name,
+                    is_conditional=is_conditional,
+                    condition=condition if is_conditional else None,
+                    is_loop=is_loop,
+                    loop_condition=loop_condition if is_loop else None,
+                    line_number=line_idx,
+                )
+            )
+
+    def _process_conditional_statement(
+        self, line: str, multiline_state: "_MultiLineConditionState"
+    ) -> Optional[str]:
+        """
+        Process if/elif statement and return condition.
+
+        Returns condition string or None if not a conditional statement.
+        """
+        if not (line.startswith("if ") or line.startswith("if(") or
+                line.startswith("else if") or line.startswith("else if(")):
+            return None
+
+        # Extract condition from if/elif statement
+        if line.startswith("if "):
+            pattern = r"if\s*\(\s*(.+?)\s*\)"
+        else:  # else if
+            pattern = r"else\s+if\s*\(\s*(.+?)\s*\)"
+
+        match = re.match(pattern, line)
+        if match:
+            condition_candidate = match.group(1).strip()
+            # Check for unbalanced parentheses (multi-line condition)
+            if condition_candidate.count("(") != condition_candidate.count(")"):
+                multiline_state.start_collection(line, self._sanitize_condition)
+                return multiline_state.get_condition()
+            return self._sanitize_condition(condition_candidate)
+
+        # Fallback: check for multi-line condition
+        if "(" in line and ")" not in line:
+            multiline_state.start_collection(line, self._sanitize_condition)
+            return multiline_state.get_condition()
+
+        # Extract condition between keyword and '{'
+        if "{" in line:
+            if_pos = line.find("if")
+            brace_pos = line.find("{")
+            if brace_pos > if_pos:
+                condition_part = line[if_pos + 2 : brace_pos].strip()
+                condition_part = condition_part.lstrip("(").rstrip(")").strip()
+                return self._sanitize_condition(condition_part)
+
+        return self._sanitize_condition("condition")
+
+    def _process_loop_statement(self, line: str) -> Optional[str]:
+        """
+        Process for/while statement and return condition.
+
+        Returns loop condition string or None if not a loop statement.
+        """
+        # Check for loop
+        if not (line.startswith("for ") or line.startswith("for(") or
+                line.startswith("while ") or line.startswith("while(")):
+            return None
+
+        # Handle for loop
+        if line.startswith("for "):
+            match = re.match(r"for\s*\(\s*[^;]*;\s*(.+?)\s*;\s*", line)
+            if match:
+                return self._sanitize_condition(match.group(1).strip())
+
+            # Fallback: extract middle part
+            for_start = line.find("for")
+            paren_end = line.find(")")
+            if paren_end > for_start:
+                loop_part = line[for_start + 3 : paren_end].strip()
+                parts = loop_part.split(";")
+                if len(parts) >= 2:
+                    return self._sanitize_condition(parts[1].strip())
+
+        # Handle while loop
+        match = re.match(r"while\s*\(\s*(.+?)\s*\)", line)
+        if match:
+            return self._sanitize_condition(match.group(1).strip())
+
+        # Fallback for while
+        while_start = line.find("while")
+        paren_end = line.find(")")
+        if paren_end > while_start:
+            condition_part = line[while_start + 5 : paren_end].strip()
+            return self._sanitize_condition(condition_part.lstrip("(").rstrip(")").strip())
+
+        return self._sanitize_condition("condition")
+
+    class _MultiLineConditionState:
+        """State tracker for multi-line condition collection."""
+
+        def __init__(self):
+            self.collecting = False
+            self.buffer = ""
+            self.paren_depth = 0
+            self._condition: Optional[str] = None
+            self._sanitizer: Optional[Callable[[str], str]] = None
+
+        def start_collection(self, line: str, sanitizer: Callable[[str], str]) -> None:
+            """Start collecting a multi-line condition."""
+            self.collecting = True
+            self.buffer = line
+            self.paren_depth = line.count("(") - line.count(")")
+            self._sanitizer = sanitizer
+
+        def process_line(self, line: str) -> None:
+            """Process a line during multi-line collection."""
+            self.buffer += " " + line
+            for char in line:
+                if char == "(":
+                    self.paren_depth += 1
+                elif char == ")":
+                    self.paren_depth -= 1
+                    if self.paren_depth == 0:
+                        self._extract_condition()
+                        break
+
+        def is_complete(self) -> bool:
+            """Check if condition collection is complete."""
+            return not self.collecting
+
+        def get_condition(self) -> Optional[str]:
+            """Get the collected condition."""
+            return self._condition
+
+        def _extract_condition(self) -> None:
+            """Extract condition from buffer and stop collecting."""
+            if "if" in self.buffer:
+                if_pos = self.buffer.find("if")
+                paren_start = self.buffer.find("(", if_pos)
+                if paren_start != -1:
+                    closing_paren_pos = self.buffer.rfind(")")
+                    if closing_paren_pos > paren_start:
+                        condition_part = self.buffer[paren_start + 1 : closing_paren_pos]
+                        if self._sanitizer is not None:
+                            self._condition = self._sanitizer(condition_part.strip())
+                        else:
+                            self._condition = condition_part.strip()
+
+            self.collecting = False
 
     def _sanitize_condition(self, condition: str) -> str:
         """

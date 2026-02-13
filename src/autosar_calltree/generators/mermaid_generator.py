@@ -201,30 +201,13 @@ class MermaidGenerator:
             lines: List of lines to append to
             caller: Name of calling function or module (None for root)
         """
-        # Determine current participant (module or function name)
-        if self.use_module_names:
-            current_participant = (
-                node.function_info.sw_module or Path(node.function_info.file_path).stem
-            )
-            # When using modules, show function name on arrows
-            call_label = node.function_info.name
-        else:
-            current_participant = self._get_participant_name(node.function_info.name)
-            # When using function names, show generic "call" label
-            call_label = "call"
-
-        # Add parameters to the call label
-        if node.function_info.parameters:
-            params_str = self._format_parameters_for_diagram(node.function_info)
-            call_label = f"{call_label}({params_str})"
+        current_participant = self._get_participant_from_node(node)
+        call_label = self._get_call_label(node)
 
         # Generate call from caller to current
         if caller:
             if node.is_recursive:
-                if self.use_module_names:
-                    label = f"{call_label} [recursive]"
-                else:
-                    label = "recursive call"
+                label = f"{call_label} [recursive]" if self.use_module_names else "recursive call"
                 lines.append(f"    {caller}-->>x{current_participant}: {label}")
             else:
                 lines.append(f"    {caller}->>{current_participant}: {call_label}")
@@ -266,6 +249,41 @@ class MermaidGenerator:
             Participant name to use in diagram
         """
         return str(self.participant_map.get(function_name, function_name))
+
+    def _get_participant_from_node(self, node: CallTreeNode) -> str:
+        """
+        Get participant name from a tree node.
+
+        Args:
+            node: Call tree node
+
+        Returns:
+            Participant name (function name or module name)
+        """
+        if self.use_module_names:
+            return node.function_info.sw_module or Path(node.function_info.file_path).stem
+        return node.function_info.name
+
+    def _get_call_label(self, node: CallTreeNode) -> str:
+        """
+        Get the call label for a node.
+
+        Args:
+            node: Call tree node
+
+        Returns:
+            Call label (function name or "call" with parameters)
+        """
+        if self.use_module_names:
+            label = node.function_info.name
+        else:
+            label = "call"
+
+        if node.function_info.parameters:
+            params_str = self._format_parameters_for_diagram(node.function_info)
+            label = f"{label}({params_str})"
+
+        return label
 
     def _abbreviate_rte_name(self, rte_function: str) -> str:
         """
@@ -367,7 +385,6 @@ class MermaidGenerator:
             type_str = param.param_type
             if param.is_pointer:
                 type_str += "*"
-
             if param.name:
                 param_strs.append(f"`{type_str} {param.name}`")
             else:
@@ -393,10 +410,7 @@ class MermaidGenerator:
             if param.name:
                 param_strs.append(param.name)
             else:
-                # If no parameter name, use the type
-                type_str = param.param_type
-                if param.is_pointer:
-                    type_str += "*"
+                type_str = f"{param.param_type}* " if param.is_pointer else param.param_type
                 param_strs.append(type_str)
 
         return ", ".join(param_strs)

@@ -62,71 +62,92 @@ class AutosarParser:
         # Try FUNC pattern
         match = self.FUNC_PATTERN.search(line)
         if match:
-            is_static_str, return_type, memory_class, func_name = match.groups()
-            # Extract parameters from the line
-            param_start = line.find(func_name) + len(func_name)
-            param_string = self._extract_param_string(line, param_start)
-            parameters = self.parse_parameters(param_string)
-
-            return FunctionInfo(
-                name=func_name,
-                return_type=return_type.strip(),
-                file_path=file_path,
-                line_number=line_number,
-                is_static=bool(is_static_str),
-                function_type=FunctionType.AUTOSAR_FUNC,
-                memory_class=memory_class.strip(),
-                macro_type="FUNC",
-                parameters=parameters,
+            return self._create_function_info_from_match(
+                match, line, file_path, line_number, FunctionType.AUTOSAR_FUNC, "FUNC"
             )
 
         # Try FUNC_P2VAR pattern
         match = self.FUNC_P2VAR_PATTERN.search(line)
         if match:
-            is_static_str, return_type, ptr_class, memory_class, func_name = (
-                match.groups()
-            )
-            # Extract parameters from the line
-            param_start = line.find(func_name) + len(func_name)
-            param_string = self._extract_param_string(line, param_start)
-            parameters = self.parse_parameters(param_string)
-
-            return FunctionInfo(
-                name=func_name,
-                return_type=f"{return_type.strip()}*",
-                file_path=file_path,
-                line_number=line_number,
-                is_static=bool(is_static_str),
-                function_type=FunctionType.AUTOSAR_FUNC_P2VAR,
-                memory_class=memory_class.strip(),
-                macro_type="FUNC_P2VAR",
-                parameters=parameters,
+            return self._create_function_info_from_match(
+                match,
+                line,
+                file_path,
+                line_number,
+                FunctionType.AUTOSAR_FUNC_P2VAR,
+                "FUNC_P2VAR",
             )
 
         # Try FUNC_P2CONST pattern
         match = self.FUNC_P2CONST_PATTERN.search(line)
         if match:
-            is_static_str, return_type, ptr_class, memory_class, func_name = (
-                match.groups()
-            )
-            # Extract parameters from the line
-            param_start = line.find(func_name) + len(func_name)
-            param_string = self._extract_param_string(line, param_start)
-            parameters = self.parse_parameters(param_string)
-
-            return FunctionInfo(
-                name=func_name,
-                return_type=f"const {return_type.strip()}*",
-                file_path=file_path,
-                line_number=line_number,
-                is_static=bool(is_static_str),
-                function_type=FunctionType.AUTOSAR_FUNC_P2CONST,
-                memory_class=memory_class.strip(),
-                macro_type="FUNC_P2CONST",
-                parameters=parameters,
+            return self._create_function_info_from_match(
+                match,
+                line,
+                file_path,
+                line_number,
+                FunctionType.AUTOSAR_FUNC_P2CONST,
+                "FUNC_P2CONST",
             )
 
         return None
+
+    def _create_function_info_from_match(
+        self,
+        match,
+        line: str,
+        file_path: Path,
+        line_number: int,
+        function_type: FunctionType,
+        macro_type: str,
+    ) -> FunctionInfo:
+        """
+        Create FunctionInfo from regex match.
+
+        Args:
+            match: Regex match object
+            line: Original line of code
+            file_path: Path to source file
+            line_number: Line number in file
+            function_type: Type of function (AUTOSAR_FUNC, AUTOSAR_FUNC_P2VAR, etc.)
+            macro_type: Macro type name (FUNC, FUNC_P2VAR, etc.)
+
+        Returns:
+            FunctionInfo object
+        """
+        groups = match.groups()
+        is_static_str = groups[0]
+        return_type = groups[1].strip()
+        func_name = groups[-1]  # Last group is always function name
+
+        # Extract parameters from the line
+        param_start = line.find(func_name) + len(func_name)
+        param_string = self._extract_param_string(line, param_start)
+        parameters = self.parse_parameters(param_string)
+
+        # Build return type based on macro type
+        if macro_type == "FUNC_P2VAR":
+            return_type = f"{return_type}*"
+        elif macro_type == "FUNC_P2CONST":
+            return_type = f"const {return_type}*"
+
+        # Get memory class (varies by macro type)
+        if macro_type == "FUNC":
+            memory_class = groups[2].strip()
+        else:
+            memory_class = groups[3].strip()
+
+        return FunctionInfo(
+            name=func_name,
+            return_type=return_type,
+            file_path=file_path,
+            line_number=line_number,
+            is_static=bool(is_static_str),
+            function_type=function_type,
+            memory_class=memory_class,
+            macro_type=macro_type,
+            parameters=parameters,
+        )
 
     def _extract_param_string(self, line: str, start_pos: int) -> str:
         """
