@@ -1,0 +1,106 @@
+<?xml version="1.0" ?>
+<ns0:XMI xmlns:ns0="http://www.omg.org/spec/XMI/20131001" xmlns:ns1="http://www.eclipse.org/uml2/5.0.0/UML" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" ns0:version="4.0">
+  <ns1:Model ns0:id="rhapsody_85b249a11ecf4d29aa83612682b8d475" name="CallTree_Demo_Init" visibility="public">
+    <ns1:packagedElement ns0:id="rhapsody_61956188b53b4fed98b33c3538dcecbb" name="Sequence_Demo_Init" visibility="public">
+      <ns1:packagedElement ns0:id="rhapsody_d5ebb42812dc4482ac1d4f0ea9c8565e" name="CallSequence_Demo_Init" visibility="public" isReentrant="false">
+        <ns1:ownedAttribute ns0:id="rhapsody_ae96f458cb394f4c9ac725d0443acbed" name="interactionType" visibility="public" type="Interaction"/>
+        <ns1:lifeline ns0:id="rhapsody_9d28fbf6f95b477ebae9389f44044b8a" name="Demo_Init" visibility="public">
+          <ns1:represents ns0:id="rhapsody_63ba4a5b6147447c900d3fd406ba47ff" name="Demo_Init"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_3ea8e4c829e042298362ff846728849d" name="COM_InitCommunication" visibility="public">
+          <ns1:represents ns0:id="rhapsody_f02fc9bc9a954fe39e4f2b18fc39b03e" name="COM_InitCommunication"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_0f5cd097c4234020a455ecfe4167a1c3" name="COM_InitCAN" visibility="public">
+          <ns1:represents ns0:id="rhapsody_54943f7c83e7467095c44765210f1c67" name="COM_InitCAN"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_9bee469b1d254c3ebed0210de67d617d" name="COM_InitEthernet" visibility="public">
+          <ns1:represents ns0:id="rhapsody_0c6339a2335a40beb57d418b8382405d" name="COM_InitEthernet"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_1748a52e82ed48818d15ccf5e73869c7" name="COM_InitLIN" visibility="public">
+          <ns1:represents ns0:id="rhapsody_d1b00774fdc140af9ec59f93c2f371b1" name="COM_InitLIN"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_1d118cb2345d457294760c8d3e007666" name="Demo_InitVariables" visibility="public">
+          <ns1:represents ns0:id="rhapsody_64c29ad9e8d74d95a4941c1ed0f9b5cc" name="Demo_InitVariables"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_e15c83b53a79445c8a03e6f320c86d7e" name="HW_InitHardware" visibility="public">
+          <ns1:represents ns0:id="rhapsody_0ad053f045dd496cb10e348d20b1a742" name="HW_InitHardware"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_022541342adf40eb8ef8d196bc63dbfd" name="HW_InitADC" visibility="public">
+          <ns1:represents ns0:id="rhapsody_708f47749b684d26ba1664c77f4126a5" name="HW_InitADC"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_74e210ec12984234a38084d6e386e13e" name="HW_InitClock" visibility="public">
+          <ns1:represents ns0:id="rhapsody_8ea367c15e8f4bbc976815fa7e1d4ba0" name="HW_InitClock"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_06b531dac52e4a9eb62fd43534835fdc" name="HW_InitGPIO" visibility="public">
+          <ns1:represents ns0:id="rhapsody_eea1baac93634e25b0f971c24afb83ea" name="HW_InitGPIO"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_d981ed96a67342a0b17cfa8311e704da" name="HW_InitPWM" visibility="public">
+          <ns1:represents ns0:id="rhapsody_d1ef7bd0fd58447bb43ddd73a63f86a7" name="HW_InitPWM"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_8cd33eb15f9a44c69e9554840dd83762" name="SW_InitSoftware" visibility="public">
+          <ns1:represents ns0:id="rhapsody_5638dddff38f4f6ebffcac665a2e1889" name="SW_InitSoftware"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_18b29592c4fe4296aa20f075c6c23b52" name="SW_InitConfig" visibility="public">
+          <ns1:represents ns0:id="rhapsody_e107db35b77649da97e8a0b367a65b89" name="SW_InitConfig"/>
+        </ns1:lifeline>
+        <ns1:lifeline ns0:id="rhapsody_60f1219e99ca4a0ba0b430b40dbf8719" name="SW_InitState" visibility="public">
+          <ns1:represents ns0:id="rhapsody_2f51577c3f694634b89512dc3820179a" name="SW_InitState"/>
+        </ns1:lifeline>
+        <ns1:message ns0:id="rhapsody_34f1b0f216814fae97d264d7c2fb3585" name="COM_InitCAN" visibility="public" messageSort="synchCall" signature="COM_InitCAN()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_3ea8e4c829e042298362ff846728849d" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_0f5cd097c4234020a455ecfe4167a1c3">
+          <ns1:sendEvent ns0:id="rhapsody_9088f6bbf3104b6b9bbbbaec6f81d9f3"/>
+          <ns1:receiveEvent ns0:id="rhapsody_7ed2c07e5f214fb9a84a8fdb0348350a"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_ed1ce6f73e0142ecbf2a8bd029569fdf" name="COM_InitEthernet" visibility="public" messageSort="synchCall" signature="COM_InitEthernet()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_3ea8e4c829e042298362ff846728849d" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_9bee469b1d254c3ebed0210de67d617d">
+          <ns1:sendEvent ns0:id="rhapsody_d6855c064fe346dea74b221d28609faf"/>
+          <ns1:receiveEvent ns0:id="rhapsody_bc0733b614a84451a074c26758b2b1ae"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_028c51295a3e43f8b1b4de552db4deab" name="COM_InitLIN" visibility="public" messageSort="synchCall" signature="COM_InitLIN()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_3ea8e4c829e042298362ff846728849d" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_1748a52e82ed48818d15ccf5e73869c7">
+          <ns1:sendEvent ns0:id="rhapsody_fc28285998f34cdeadb6d704fee5e390"/>
+          <ns1:receiveEvent ns0:id="rhapsody_0d867baaaa094297b62c77306df4e7b1"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_20635533b3454805b84c46f649c7db6e" name="HW_InitADC" visibility="public" messageSort="synchCall" signature="HW_InitADC()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_e15c83b53a79445c8a03e6f320c86d7e" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_022541342adf40eb8ef8d196bc63dbfd">
+          <ns1:sendEvent ns0:id="rhapsody_49dd21d8f444435fa48c77c2fd2cf172"/>
+          <ns1:receiveEvent ns0:id="rhapsody_6d4f72a3ca6c400c9542e6df96c9370c"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_4a2ea7012bee42b0bf16d92773b6ab58" name="HW_InitClock" visibility="public" messageSort="synchCall" signature="HW_InitClock()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_e15c83b53a79445c8a03e6f320c86d7e" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_74e210ec12984234a38084d6e386e13e">
+          <ns1:sendEvent ns0:id="rhapsody_7f4f0e1e4dcf4ffcb76be71e9f7adc30"/>
+          <ns1:receiveEvent ns0:id="rhapsody_a101db317fa540ac8dc7ff74e49d6a7c"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_d4c3af965f7643849cb7e58da9e45fa8" name="HW_InitGPIO" visibility="public" messageSort="synchCall" signature="HW_InitGPIO()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_e15c83b53a79445c8a03e6f320c86d7e" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_06b531dac52e4a9eb62fd43534835fdc">
+          <ns1:sendEvent ns0:id="rhapsody_99b20259101c4afab856b748a91745d5"/>
+          <ns1:receiveEvent ns0:id="rhapsody_468f4adcf72d415fa0df4f4553c71f5c"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_fc8b6db0d06b466c8e1e309595a35e13" name="HW_InitPWM" visibility="public" messageSort="synchCall" signature="HW_InitPWM()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_e15c83b53a79445c8a03e6f320c86d7e" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_d981ed96a67342a0b17cfa8311e704da">
+          <ns1:sendEvent ns0:id="rhapsody_5a0889e94e8c4ec0a06b974d4ba714dd"/>
+          <ns1:receiveEvent ns0:id="rhapsody_e16a500a0af74b96ae52c49b6afb47ba"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_6c4d9ccbf3bb4a93a7c6931ce3943707" name="SW_InitConfig" visibility="public" messageSort="synchCall" signature="SW_InitConfig()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_8cd33eb15f9a44c69e9554840dd83762" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_18b29592c4fe4296aa20f075c6c23b52">
+          <ns1:sendEvent ns0:id="rhapsody_8305a59ddee44ff38e170e3b534c68bb"/>
+          <ns1:receiveEvent ns0:id="rhapsody_c99d42bc9e2b42d88aeb376e5b8c67d4"/>
+        </ns1:message>
+        <ns1:message ns0:id="rhapsody_f0c3f63287ed41b9b0fb3c80c864e5b6" name="SW_InitState" visibility="public" messageSort="synchCall" signature="SW_InitState()" sendEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_8cd33eb15f9a44c69e9554840dd83762" receiveEvent="{http://www.omg.org/spec/XMI/20131001}rhapsody_60f1219e99ca4a0ba0b430b40dbf8719">
+          <ns1:sendEvent ns0:id="rhapsody_55b8cc1228f54850be514818afe3fd57"/>
+          <ns1:receiveEvent ns0:id="rhapsody_59100f4a9e45480f8e1f4eb5c2e3baef"/>
+        </ns1:message>
+      </ns1:packagedElement>
+    </ns1:packagedElement>
+    <ns1:profileApplication>
+      <ns1:eAnnotations source="http://www.ibm.com/Rhapsody/profile"/>
+    </ns1:profileApplication>
+    <ns1:profileApplication>
+      <ns1:eAnnotations source="http://www.ibm.com/Rhapsody/profile/AUTOSAR"/>
+    </ns1:profileApplication>
+    <ns1:ownedComment ns0:id="rhapsody_02f51852ad3f42829f739c5736ead672">
+      <ns1:body>Generated by AUTOSAR Call Tree Analyzer
+Target: IBM Rhapsody 10.0.1
+Analysis: Demo_Init
+Depth: 2</ns1:body>
+    </ns1:ownedComment>
+    <ns1:ownedComment ns0:id="rhapsody_5c69b39e2ad14c2e830711e2ba23f427">
+      <ns1:body>Rhapsody Settings:
+- Theme: Default
+- Layout: Automatic
+- Profile: AUTOSAR</ns1:body>
+    </ns1:ownedComment>
+  </ns1:Model>
+</ns0:XMI>
