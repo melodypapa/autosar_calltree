@@ -3,6 +3,7 @@ Pytest configuration and fixtures.
 """
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Generator
 
 import pytest
@@ -23,6 +24,22 @@ def demo_dir() -> Path:
     return demo_path
 
 
+@pytest.fixture
+def temp_output_dir() -> Generator[Path, None, None]:
+    """
+    Fixture that provides a temporary directory for test outputs.
+
+    Uses the system's temporary directory (e.g., /tmp on Unix, C:\Temp on Windows).
+    Automatically cleaned up after the test completes.
+
+    Use this fixture for tests that need to write actual output files
+    to disk instead of using Click's isolated_filesystem().
+    """
+    with TemporaryDirectory(prefix="autosar_calltree_test_") as temp_dir:
+        yield Path(temp_dir)
+        # Temp directory automatically cleaned up by context manager
+
+
 @pytest.fixture(autouse=True)
 def cleanup_temp_files() -> Generator[None, None, None]:
     """
@@ -36,6 +53,9 @@ def cleanup_temp_files() -> Generator[None, None, None]:
 
     This fixture runs automatically after every test to ensure
     working directory remains clean.
+
+    Note: Most tests should use temp_output_dir or isolated_filesystem()
+    to avoid creating files in the project root. This is a safety net.
     """
     yield  # Run the test
 
