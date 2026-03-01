@@ -778,9 +778,6 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test module-level diagram
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
     def test_module_level_diagram(self):
         """Test module-level lifelines."""
         generator = RhapsodyXmiGenerator(use_module_names=True)
