@@ -62,7 +62,9 @@ def test_start_function_option() -> None:
         create_temp_source_file(tmp_dir, "void callee(void) {}", "callee.c")
 
         # Test that start_function can be provided
-        result = CliRunner().invoke(cli, ["-s", "test_func", "-i", str(tmp_dir)], standalone_mode=False)
+        result = CliRunner().invoke(
+            cli, ["-s", "test_func", "-i", str(tmp_dir)], standalone_mode=False
+        )
         assert result.exit_code == 0
 
 
@@ -83,7 +85,9 @@ def test_source_dir_option(tmp_path: Path) -> None:
     create_temp_source_file(test_dir, "void func2(void) {}", "file2.c")
 
     # Test with source-dir option
-    result = CliRunner().invoke(cli, ["-s", "func1", "-i", str(test_dir)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "func1", "-i", str(test_dir)], standalone_mode=False
+    )
     assert result.exit_code == 0
 
 
@@ -99,7 +103,11 @@ def test_output_option(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void func1(void) {}", "func1.c")
     output_file = tmp_path / "output.md"
 
-    result = CliRunner().invoke(cli, ["-s", "func1", "-i", str(tmp_path), "-o", str(output_file)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "func1", "-i", str(tmp_path), "-o", str(output_file)],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
     assert output_file.exists()
 
@@ -115,12 +123,16 @@ def test_max_depth_option(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void func1(void) { nested_call(); }", "func1.c")
 
     # Test max-depth=0 (root only)
-    result = CliRunner().invoke(cli, ["-s", "func1", "-d", "0", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "func1", "-d", "0", "-i", str(tmp_path)], standalone_mode=False
+    )
     # Should succeed
     assert result.exit_code == 0
 
     # Test max-depth=1
-    result = CliRunner().invoke(cli, ["-s", "func1", "-d", "1", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "func1", "-d", "1", "-i", str(tmp_path)], standalone_mode=False
+    )
     assert result.exit_code == 0
 
 
@@ -136,7 +148,9 @@ def test_format_option(tmp_path: Path) -> None:
 
     # Test each format choice
     for fmt in ["mermaid", "xmi", "both"]:
-        result = CliRunner().invoke(cli, ["-s", "func1", "-f", fmt, "-i", str(tmp_path)], standalone_mode=False)
+        result = CliRunner().invoke(
+            cli, ["-s", "func1", "-f", fmt, "-i", str(tmp_path)], standalone_mode=False
+        )
         assert result.exit_code == 0
 
 
@@ -154,15 +168,25 @@ def test_cache_options(tmp_path: Path) -> None:
     cache_dir.mkdir()
 
     # Test --cache-dir option
-    result = CliRunner().invoke(cli, ["-s", "func1", "--cache-dir", str(cache_dir), "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "func1", "--cache-dir", str(cache_dir), "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
 
     # Test --no-cache option
-    result = CliRunner().invoke(cli, ["-s", "func1", "--no-cache", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "func1", "--no-cache", "-i", str(tmp_path)], standalone_mode=False
+    )
     assert result.exit_code == 0
 
     # Test --rebuild-cache option
-    result = CliRunner().invoke(cli, ["-s", "func1", "--rebuild-cache", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "func1", "--rebuild-cache", "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
 
 
@@ -197,7 +221,9 @@ def test_search_option(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void matching_func(void) {}", "matching.c")
 
     # Test search with pattern
-    result = CliRunner().invoke(cli, ["--search", "pattern", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["--search", "pattern", "-i", str(tmp_path)], standalone_mode=False
+    )
     assert result.exit_code == 0
     # Should find matching function or show no results message
     # The key is that the CLI executes successfully
@@ -214,7 +240,9 @@ def test_no_abbreviate_rte_option(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void Rte_Call_Long_Name(void) {}")
 
     # Test default behavior (should abbreviate)
-    result = CliRunner().invoke(cli, ["-s", "Rte_Call_Long_Name", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "Rte_Call_Long_Name", "-i", str(tmp_path)], standalone_mode=False
+    )
     assert result.exit_code == 0
     # Check output file for abbreviations
     output_file = tmp_path / "call_tree.md"
@@ -224,7 +252,11 @@ def test_no_abbreviate_rte_option(tmp_path: Path) -> None:
         pass
 
     # Test with --no-abbreviate-rte
-    result = CliRunner().invoke(cli, ["-s", "Rte_Call_Long_Name", "--no-abbreviate-rte", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "Rte_Call_Long_Name", "--no-abbreviate-rte", "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
     # Check output file for full names
     output_file = tmp_path / "call_tree.md"
@@ -257,7 +289,11 @@ file_mappings:
     )
 
     # Test with module config
-    result = CliRunner().invoke(cli, ["-s", "test_func", "--module-config", str(config_file), "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "test_func", "--module-config", str(config_file), "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
 
 
@@ -284,21 +320,37 @@ file_mappings:
     create_temp_source_file(tmp_path, "void hw_func(void) {}", "hw.c")
 
     # Test with module config but no --use-module-names
-    result = CliRunner().invoke(cli, ["-s", "test_func", "--module-config", str(config_file), "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "test_func", "--module-config", str(config_file), "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
     # Check the output file for module names
     output_file = tmp_path / "call_tree.md"
     if output_file.exists():
-        output_content = output_file.read_text()
+        output_content = output_file.read_text(encoding="utf-8")
         # Should not use module names in the diagram
         assert "TestModule" not in output_content or "participant" not in output_content
 
     # Test with module config and --use-module-names
-    result = CliRunner().invoke(cli, ["-s", "test_func", "--module-config", str(config_file), "--use-module-names", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        [
+            "-s",
+            "test_func",
+            "--module-config",
+            str(config_file),
+            "--use-module-names",
+            "-i",
+            str(tmp_path),
+        ],
+        standalone_mode=False,
+    )
     assert result.exit_code == 0
     # Check the output file for module names
     if output_file.exists():
-        output_content = output_file.read_text()
+        output_content = output_file.read_text(encoding="utf-8")
         # Should use module names as participants
         assert "TestModule" in output_content
         assert "HardwareModule" in output_content
@@ -315,12 +367,16 @@ def test_verbose_option(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void test_func(void) {}")
 
     # Test without verbose (default minimal output)
-    result = CliRunner().invoke(cli, ["-s", "test_func", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "test_func", "-i", str(tmp_path)], standalone_mode=False
+    )
     # Should succeed
     assert result.exit_code == 0
 
     # Test with verbose
-    result = CliRunner().invoke(cli, ["-s", "test_func", "-v", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "test_func", "-v", "-i", str(tmp_path)], standalone_mode=False
+    )
     assert result.exit_code == 0
     # Verbose should show more output
 
@@ -350,13 +406,17 @@ def test_banner_display(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void test_func(void) {}")
 
     # Test banner display (non-verbose) - banner is shown by default
-    result = CliRunner().invoke(cli, ["-s", "test_func", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "test_func", "-i", str(tmp_path)], standalone_mode=False
+    )
     output = result.output
     # Should contain banner
     assert "AUTOSAR Call Tree Analyzer" in output
 
     # Test with verbose (banner may not be shown in verbose mode)
-    result = CliRunner().invoke(cli, ["-s", "test_func", "-v", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "test_func", "-v", "-i", str(tmp_path)], standalone_mode=False
+    )
     output = result.output
     # Banner may or may not be shown in verbose mode
     # The key is that the CLI executes successfully
@@ -372,7 +432,9 @@ def test_exit_code_on_error(tmp_path: Path) -> None:
     Test CLI exits with error code 1 on validation errors.
     """
     # Test with non-existent start function
-    result = CliRunner().invoke(cli, ["-s", "NonExistentFunc", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli, ["-s", "NonExistentFunc", "-i", str(tmp_path)], standalone_mode=False
+    )
     # Should exit with error
     assert result.exit_code == 1
 
@@ -388,11 +450,18 @@ def test_use_module_names_requires_config(tmp_path: Path) -> None:
     create_temp_source_file(tmp_path, "void test_func(void) {}")
 
     # Test without module config but with --use-module-names
-    result = CliRunner().invoke(cli, ["-s", "test_func", "--use-module-names", "-i", str(tmp_path)], standalone_mode=False)
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "test_func", "--use-module-names", "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
     # Should show warning
     assert "Warning" in result.output or "warning" in result.output.lower()
     # Should not use module names
-    assert "module names will not be used" in result.output.lower() or "module names will not be \nused" in result.output.lower()
+    assert (
+        "module names will not be used" in result.output.lower()
+        or "module names will not be \nused" in result.output.lower()
+    )
 
 
 # SWUT_CLI_00018: Rich Console Output

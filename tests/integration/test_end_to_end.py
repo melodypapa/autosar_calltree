@@ -45,7 +45,7 @@ class TestEndToEndWorkflow:
 
         # Step 4: Verify output
         assert output_path.exists()
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
         assert "```mermaid" in content
         assert "sequenceDiagram" in content
         assert "Demo_Init" in content
@@ -83,7 +83,7 @@ class TestEndToEndWorkflow:
         generator.generate(result, str(output_path))
 
         # Verify module names in output
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
         assert "DemoModule" in content
         assert (
             "HardwareModule" in content
@@ -216,7 +216,7 @@ class TestEndToEndWorkflow:
         generator = MermaidGenerator()
         generator.generate(result, str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
 
         # Verify Mermaid structure
         assert "```mermaid" in content
@@ -249,7 +249,7 @@ class TestEndToEndWorkflow:
         generator = MermaidGenerator()
         generator.generate(result, str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
 
         # Demo_Init has parameters in function calls
         # Check that parameter handling works
@@ -416,7 +416,7 @@ class TestOutputFileContent:
         generator = MermaidGenerator()
         generator.generate(result, str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
 
         # Check essential Mermaid elements
         lines = content.split("\n")
@@ -441,7 +441,7 @@ class TestOutputFileContent:
         generator = MermaidGenerator()
         generator.generate(result, str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
         assert "## Function Reference Table" in content or "Function" in content
 
     def test_metadata_section(self, demo_dir, tmp_path):
@@ -455,7 +455,7 @@ class TestOutputFileContent:
         generator = MermaidGenerator()
         generator.generate(result, str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
         # Check for metadata section
         assert "#" in content  # Has at least one header
 
@@ -482,7 +482,7 @@ class TestRealWorldScenarios:
         generator = MermaidGenerator()
         generator.generate(result, str(output_path))
 
-        content = output_path.read_text()
+        content = output_path.read_text(encoding="utf-8")
         assert "Demo_MainFunction" in content
 
     def test_shallow_analysis(self, demo_dir, tmp_path):

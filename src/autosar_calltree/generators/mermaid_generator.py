@@ -207,7 +207,11 @@ class MermaidGenerator:
         # Generate call from caller to current
         if caller:
             if node.is_recursive:
-                label = f"{call_label} [recursive]" if self.use_module_names else "recursive call"
+                label = (
+                    f"{call_label} [recursive]"
+                    if self.use_module_names
+                    else "recursive call"
+                )
                 lines.append(f"    {caller}-->>x{current_participant}: {label}")
             else:
                 lines.append(f"    {caller}->>{current_participant}: {call_label}")
@@ -261,7 +265,9 @@ class MermaidGenerator:
             Participant name (function name or module name)
         """
         if self.use_module_names:
-            return node.function_info.sw_module or Path(node.function_info.file_path).stem
+            return (
+                node.function_info.sw_module or Path(node.function_info.file_path).stem
+            )
         return node.function_info.name
 
     def _get_call_label(self, node: CallTreeNode) -> str:
@@ -410,7 +416,9 @@ class MermaidGenerator:
             if param.name:
                 param_strs.append(param.name)
             else:
-                type_str = f"{param.param_type}* " if param.is_pointer else param.param_type
+                type_str = (
+                    f"{param.param_type}* " if param.is_pointer else param.param_type
+                )
                 param_strs.append(type_str)
 
         return ", ".join(param_strs)

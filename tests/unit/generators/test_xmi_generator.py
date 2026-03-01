@@ -169,7 +169,7 @@ class TestXmiGeneratorGenerate:
             assert output_path.exists()
 
             # Check file content is valid XML
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             assert "<?xml" in content or "<XMI" in content
 
     def test_generate_raises_error_no_call_tree(self):
@@ -651,7 +651,7 @@ class TestXmiGeneratorNamespaces:
             gen = XmiGenerator()
             gen.generate(result, str(output_path))
 
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
 
             # Check for XMI namespace attributes
             assert "xmlns:xmi" in content or "xmlns:uml" in content
@@ -668,7 +668,7 @@ class TestXmiGeneratorNamespaces:
             gen = XmiGenerator()
             gen.generate(result, str(output_path))
 
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
 
             # Check for UML elements
             assert "Model" in content or "interaction" in content.lower()
@@ -736,7 +736,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Parameters should be in the message signature
             assert "CalleeFunc" in content
 
@@ -805,7 +805,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain loop fragment
             assert "loop" in content
             assert "interactionOperator" in content
@@ -890,7 +890,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain loop fragment and nested function
             assert "loop" in content
             assert "NestedFunc" in content
@@ -961,7 +961,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain opt fragment
             assert "opt" in content
             assert "interactionOperator" in content
@@ -1046,7 +1046,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain opt fragment and nested function
             assert "opt" in content
             assert "NestedFunc" in content
@@ -1192,7 +1192,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain module names
             assert "CallerModule" in content
             assert "ChildModule" in content
@@ -1265,7 +1265,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain module names
             assert "CallerModule" in content
             assert "ChildModule" in content
@@ -1331,7 +1331,7 @@ class TestXmiGeneratorParameterHandling:
             gen.generate(result, str(output_path))
 
             assert output_path.exists()
-            content = output_path.read_text()
+            content = output_path.read_text(encoding="utf-8")
             # Should contain messageSort="reply" for recursive call
             assert "messageSort" in content
             assert "reply" in content

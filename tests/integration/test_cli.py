@@ -221,7 +221,7 @@ class TestOutputFormatOption:
             )
             assert result.exit_code == 0
             assert Path("call_tree.md").exists()
-            content = Path("call_tree.md").read_text()
+            content = Path("call_tree.md").read_text(encoding="utf-8")
             assert "```mermaid" in content
 
     def test_format_xmi_warning(self, demo_dir):
@@ -242,7 +242,7 @@ class TestOutputFormatOption:
             assert result.exit_code == 0
             assert Path("call_tree.xmi").exists()
             # Verify XMI file contains expected XML content
-            xmi_content = Path("call_tree.xmi").read_text()
+            xmi_content = Path("call_tree.xmi").read_text(encoding="utf-8")
             assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
             assert "Demo_Init" in xmi_content
 
@@ -265,7 +265,7 @@ class TestOutputFormatOption:
             assert Path("call_tree.mermaid.md").exists()
             assert Path("call_tree.xmi").exists()
             # Verify both files contain expected content
-            xmi_content = Path("call_tree.xmi").read_text()
+            xmi_content = Path("call_tree.xmi").read_text(encoding="utf-8")
             assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
             assert "Demo_Init" in xmi_content
 
@@ -780,7 +780,7 @@ class TestCLICoverageGaps:
             assert Path("call_tree.mermaid.md").exists()
             assert Path("call_tree.xmi").exists()
             # Verify XMI content
-            xmi_content = Path("call_tree.xmi").read_text()
+            xmi_content = Path("call_tree.xmi").read_text(encoding="utf-8")
             assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
 
     def test_format_both_with_custom_output(self, demo_dir):
@@ -866,6 +866,11 @@ class TestCLICoverageGaps:
         restricted_config = tmp_path / "restricted.yaml"
         restricted_config.write_text('version: "1.0"\nfile_mappings: {}')
         # Remove read permissions (this may not work on all systems)
+        import platform
+
+        if platform.system() == "Windows":
+            # Skip this test on Windows as chmod doesn't work the same way
+            return
         try:
             restricted_config.chmod(0o000)
         except Exception:

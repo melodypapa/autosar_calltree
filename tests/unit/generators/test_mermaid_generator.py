@@ -740,7 +740,7 @@ def test_file_output(tmp_path: Path) -> None:
     gen.generate(result, str(output_path))
 
     assert output_path.exists()
-    content = output_path.read_text()
+    content = output_path.read_text(encoding="utf-8")
     assert "# Call Tree: Demo_Init" in content
     assert "## Metadata" in content
     assert "## Sequence Diagram" in content
@@ -794,7 +794,7 @@ def test_optional_sections(tmp_path: Path) -> None:
         include_text_tree=False,
     )
 
-    content = output_path.read_text()
+    content = output_path.read_text(encoding="utf-8")
     assert "## Metadata" not in content
     assert "## Function Details" not in content
     assert "## Call Tree (Text)" not in content
@@ -958,7 +958,7 @@ def test_generate_with_circular_deps(tmp_path: Path) -> None:
 
     gen.generate(result, str(output_path))
 
-    content = output_path.read_text()
+    content = output_path.read_text(encoding="utf-8")
     assert "## Circular Dependencies" in content
     assert "A → B → A" in content
 

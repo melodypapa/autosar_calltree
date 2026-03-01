@@ -1,5 +1,6 @@
 /*
  * Demo AUTOSAR C file for testing calltree
+ * Demonstrates: conditional calls, loop calls, complex conditions
  */
 
 #include "demo.h"
@@ -25,12 +26,26 @@ FUNC(void, RTE_CODE) Demo_InitVariables(VAR(uint32, AUTOMATIC) config_mode)
 FUNC(void, RTE_CODE) Demo_MainFunction(void)
 {
     /* Main function loop */
+    uint32 sensor_count = 0;
+
     HW_ReadSensor(0x01);
     SW_ProcessData((uint8*)0x20001000, 0x64);
     COM_SendCANMessage(0x123, (uint8*)0x20002000);
 
     /* Optional call based on mode */
     if (0x05 > 0x00) {
+        Demo_Update(0x05);
+    }
+
+    /* Loop through sensors */
+    for (sensor_count = 0; sensor_count < 10; sensor_count++) {
+        HW_ReadSensor(sensor_count);
+        SW_ProcessData((uint8*)0x20001000, 0x64);
+    }
+
+    /* Multi-line condition */
+    if (sensor_count > 5 &&
+        sensor_count < 20) {
         Demo_Update(0x05);
     }
 
@@ -45,6 +60,28 @@ FUNC(void, RTE_CODE) Demo_Update(VAR(uint32, AUTOMATIC) update_mode)
     /* Optional LIN message based on update mode */
     if (update_mode == 0x05) {
         COM_SendLINMessage(0x456, (uint8*)0x20003000);
+    }
+
+    /* Nested conditional */
+    if (update_mode == 0x05) {
+        if (sensor_count > 5) {
+            COM_SendCANMessage(0x123, (uint8*)0x20002000);
+        } else {
+            COM_EnableTX(0x01);
+        }
+    }
+
+    return;
+}
+
+FUNC(void, RTE_CODE) Demo_ProcessLoop(VAR(uint32, AUTOMATIC) iterations)
+{
+    /* Demonstrate while loop */
+    uint32 i = 0;
+    while (i < iterations) {
+        HW_ReadSensor(i);
+        SW_ProcessData((uint8*)0x20001000, 0x64);
+        i++;
     }
 
     return;

@@ -27,42 +27,52 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 
 ## What's New
 
-### Version 0.7.0 (2026-02-14)
+### Version 0.8.0 (2026-03-01)
 
-**🎉 Major Feature: IBM Rhapsody Export**
+**🎉 Major Feature: Full Rhapsody XMI 2.1 Compatibility**
 
-This release adds support for generating Rhapsody-compatible XMI 2.5 files that can be imported into IBM Rhapsody 8.0+ for further editing and visualization.
+This release adds complete Rhapsody XMI 2.1 compatibility, matching Rhapsody's native export format for seamless import into IBM Rhapsody 8.0+.
 
 **New Features**:
-- 🎯 **Rhapsody XMI Export**: New `--format rhapsody` option for Rhapsody-compatible XMI 2.5 files
-- 🔑 **UUID-based IDs**: Rhapsody prefers UUID-based element IDs for better compatibility
-- 📊 **Rhapsody Profiles**: Includes Rhapsody-specific profile imports and metadata
-- 🏷️ **AUTOSAR Stereotypes**: Support for AUTOSAR-specific stereotypes in Rhapsody
-- 🌐 **Cross-platform**: Works on Windows, Linux, and macOS (no runtime dependencies)
+- 🎯 **Rhapsody XMI 2.1 Export**: Full XMI 2.1 compliant output with OMG UML namespace
+- 🔑 **GUID+ ID Format**: Uses `GUID+<UUID>` format for maximum Rhapsody compatibility
+- 📊 **MessageOccurrenceSpecification**: Explicit send/receive occurrence fragments
+- 🏗️ **Role Definitions**: Proper lifeline role definitions via ownedAttribute
+- 🌐 **Element Imports**: Profile metaclass imports for complete model structure
+- 🔄 **CoveredBy Attributes**: Lifeline coverage tracking for message occurrences
+- 📦 **Complex Profile Structure**: Nested eAnnotations with EPackage references
 
 **CLI Usage**:
 ```bash
 # Generate Rhapsody-compatible XMI
-calltree --start-function Demo_Init --format rhapsody --source-dir demo
-
-# With module names for architecture-level diagrams
-calltree --start-function Demo_Init --format rhapsody --module-config demo/module_mapping.yaml --use-module-names
+calltree --start-function Demo_MainFunction \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_output.xmi
 ```
 
 **Implementation**:
-- `RhapsodyXmiGenerator` extends `XmiGenerator` (95% code reuse)
-- Uses only Python standard library (`xml.etree.ElementTree`)
-- No additional runtime dependencies required
+- Independent `RhapsodyXmiGenerator` implementation (does not extend XmiGenerator)
+- Uses lxml for proper namespace control
+- Full structural match with Rhapsody's native XMI export format
+- All 8 critical structural differences addressed
 
 **Benefits**:
-- ✅ Cross-platform compatibility (Windows, Linux, macOS)
-- ✅ Manual import via Rhapsody's native XMI import (Tools > Import > OMG UML/XMI)
-- ✅ Leverages existing 521-line XMI infrastructure
-- ✅ Low implementation risk (extends proven XMI generator)
+- ✅ Direct import into IBM Rhapsody 8.0+ without conversion
+- ✅ Full Rhapsody XMI 2.1 compatibility (not just UML 2.5)
+- ✅ Proper MessageOccurrenceSpecification for timing/sequencing info
+- ✅ Role definitions matching Rhapsody's internal structure
+- ✅ Complex profile structure with EPackage references
 
-**Limitations**:
-- Manual import step required by user (acceptable trade-off for cross-platform compatibility)
-- Requires IBM Rhapsody 8.0+ license
+**Demo Files**:
+- Enhanced demo code showcasing loops, multi-line conditions, nested conditionals
+- Reorganized structure: `demo/src/` for source code
+- Updated documentation in `demo/README.md`
+
+**Breaking Changes**:
+- Rhapsody XMI output structure completely changed (old format not compatible)
+- Source directory changed from `demo/` to `demo/src/`
+- All existing Rhapsody XMI files need regeneration
 
 ---
 
@@ -172,6 +182,87 @@ sequenceDiagram
 - 298 tests passing with 89% code coverage
 
 ## Changelog
+
+### [Version 0.8.0] - 2026-03-01
+
+#### Added
+- **Rhapsody XMI 2.1 full compatibility**: Complete structural match with Rhapsody's native XMI export format
+- **GUID+ ID format**: Uses `GUID+<UUID>` format for all XMI elements
+- **MessageOccurrenceSpecification**: Explicit send/receive occurrence fragments for each message
+- **Lifeline role definitions**: Proper ownedAttribute elements for lifeline roles
+- **Element imports**: Profile metaclass imports for complete model structure
+- **CoveredBy attributes**: Lifeline coverage tracking linking lifelines to message occurrences
+- **Complex profile structure**: Nested eAnnotations with EPackage references
+- **lxml-based generator**: Uses lxml for proper namespace control and XMI 2.1 compliance
+- **Independent RhapsodyXmiGenerator**: Complete rewrite (does not extend XmiGenerator) for full structural control
+- **Enhanced demo files**: Showcases loops, multi-line conditions, nested conditionals
+- **Reorganized demo structure**: Source code moved to `demo/src/`
+- **Comprehensive demo documentation**: Usage guide in `demo/README.md`
+
+#### Breaking Changes
+- **Rhapsody XMI output format**: Complete structural change from XMI 4.0 to XMI 2.1
+- **Old Rhapsody files incompatible**: All existing Rhapsody XMI files must be regenerated
+- **Source directory changed**: Default source directory changed from `./demo` to `./demo/src`
+- **Namespace format**: Changed from Eclipse UML2 to OMG UML namespace
+- **ID format**: Changed from `rhapsody_<UUID>` to `GUID+<UUID>`
+
+#### Improved
+- Direct import into IBM Rhapsody 8.0+ without conversion
+- Proper MessageOccurrenceSpecification for timing/sequencing information
+- Role definitions matching Rhapsody's internal structure
+- Full structural compatibility with Rhapsody's native export format
+
+#### Technical
+- All 8 critical structural differences between XMI 4.0 and Rhapsody XMI 2.1 addressed
+- lxml used for proper namespace control and XMI generation
+- RhapsodyXmiGenerator implemented independently for full structural control
+- Demo files enhanced to showcase all parsing features
+
+---
+
+### [Version 0.7.0] - 2026-02-14
+
+#### Added
+- **IBM Rhapsody XMI export**: Complete support for IBM Rhapsody 8.0+ XMI format with AUTOSAR profile
+- **RhapsodyGenerator**: New generator class (221 lines) with IBM-specific XMI schema
+- **Rhapsody documentation**: Comprehensive guides (1,075 lines total)
+  - `docs/rhapsody_export.md`: Complete export guide
+  - `docs/rhapsody_troubleshooting.md`: Troubleshooting guide
+  - `docs/requirements/requirements_rhapsody.md`: Requirements documentation
+- **Rhapsody import helper**: Script to assist with XMI imports
+- **Rhapsody demo files**: 3 example XMI files (init, modules, update)
+- **Rhapsody CLI option**: `--format rhapsody` for Rhapsody XMI output
+
+#### Fixed
+- **Invalid PyPI license classifier**: Corrected license classifier in pyproject.toml for proper PyPI publishing
+- **Temporary file cleanup**: Automatic cleanup of test output files
+- **Type safety**: Code simplification and type safety improvements
+- **Code quality issues**: Formatting, imports, and linting corrections
+
+#### Improved
+- **Test structure**: Reorganized unit tests to match source code package layout
+- **Documentation**: Removed deprecated setup.py references, updated build docs
+- **Code quality**: Resolved all ruff linting errors
+- **Test hygiene**: Added automatic cleanup for temporary test files
+
+#### Technical
+- 17 new requirements (SWR_RHAPSODY_00001 through SWR_RHAPSODY_00017)
+- 759 lines of comprehensive Rhapsody-specific tests
+- All 397 tests passing (100%)
+- Overall test coverage: 89%
+- Rhapsody-specific AUTOSAR profile support
+- Cross-platform compatibility with Rhapsody 8.0+
+
+#### CLI Usage
+```bash
+# Generate Rhapsody XMI
+calltree --start-function Demo_Init --format rhapsody
+
+# Generate both Mermaid and Rhapsody XMI
+calltree --start-function Demo_Init --format both
+```
+
+---
 
 ### [Version 0.6.0] - 2026-02-10
 
@@ -341,22 +432,36 @@ pip install dist/autosar_calltree-<version>-py3-none-any.whl
 
 ```bash
 # Analyze a function with default settings (depth=3)
-calltree --start-function Demo_Init --source-dir demo
+calltree --start-function Demo_Init --source-dir demo/src
 
 # Use SW module configuration for architecture-level diagrams
-calltree --start-function Demo_Init --source-dir demo --module-config demo/module_mapping.yaml --use-module-names --output demo/demo.md
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --module-config demo/module_mapping.yaml \
+         --use-module-names \
+         --output demo/demo.md
 
 # Specify depth and output
-calltree --start-function Demo_Init --max-depth 2 -o output.md
+calltree --start-function Demo_Init \
+         --max-depth 2 \
+         --output demo/output.md
 
-# Generate XMI format (with opt block support)
-calltree --start-function Demo_MainFunction --source-dir demo --format xmi --output demo/demo.xmi
+# Generate XMI format (with opt/loop block support)
+calltree --start-function Demo_MainFunction \
+         --source-dir demo/src \
+         --format xmi \
+         --output demo/demo.xmi
 
-# Generate Rhapsody-compatible XMI
-calltree --start-function Demo_Init --format rhapsody --source-dir demo --output demo/rhapsody_demo.xmi
+# Generate Rhapsody-compatible XMI 2.1
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_demo.xmi
 
 # Verbose mode with detailed statistics and cache progress
-calltree --start-function Demo_Init --verbose
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --verbose
 ```
 
 ### Python API
@@ -372,7 +477,7 @@ from pathlib import Path
 config = ModuleConfig(Path("demo/module_mapping.yaml"))
 
 # Build function database (with caching and module config)
-db = FunctionDatabase(source_dir="demo", module_config=config)
+db = FunctionDatabase(source_dir="demo/src", module_config=config)
 db.build_database(use_cache=True)
 
 # Build call tree
@@ -399,7 +504,7 @@ calltree [OPTIONS]
 Options:
   --start-function TEXT          Starting function name [required]
   --max-depth INTEGER           Maximum call depth (default: 3)
-  --source-dir PATH             Source code directory (default: ./demo)
+  --source-dir PATH             Source code directory (default: ./demo/src)
   --format [mermaid|xmi|rhapsody|both]   Output format (default: mermaid)
   --output PATH                 Output file path (default: call_tree.md)
   --module-config PATH          YAML file mapping C files to SW modules
@@ -567,18 +672,29 @@ autosar-calltree/
 │   ├── parsers/          # Code parsers (AUTOSAR, C)
 │   ├── analyzers/        # Analysis logic (call tree, dependencies)
 │   ├── database/         # Data models and caching
-│   ├── generators/       # Output generators (Mermaid, XMI)
+│   ├── generators/       # Output generators (Mermaid, XMI, Rhapsody)
 │   └── utils/            # Utilities (empty, for future use)
-├── test_demo/            # Demo AUTOSAR C files for testing
-│   ├── demo.c
-│   ├── hardware.c
-│   ├── software.c
-│   ├── communication.c
-│   └── module_mapping.yaml
-├── tests/                # Test suite (empty, for future use)
+├── demo/                 # Demo AUTOSAR C files and examples
+│   ├── src/              # C source code
+│   │   ├── communication.c
+│   │   ├── demo.c
+│   │   ├── demo.h
+│   │   ├── hardware.c
+│   │   └── software.c
+│   ├── module_mapping.yaml  # Module configuration
+│   ├── demo.md           # Example Mermaid output
+│   ├── demo_main.md      # Example Mermaid output
+│   ├── rhapsody_demo_main.xmi  # Example Rhapsody XMI 2.1 output
+│   └── README.md         # Demo usage guide
+├── tests/                # Test suite
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   └── fixtures/         # Test data
 ├── docs/                 # Documentation
-│   └── requirements/     # Software requirements
-└── examples/             # Example scripts (empty, for future use)
+│   ├── requirements/     # Software requirements
+│   ├── rhapsody_export.md     # Rhapsody export guide
+│   └── rhapsody_troubleshooting.md  # Rhapsody troubleshooting
+└── scripts/              # Utility scripts
 ```
 
 ## Development
@@ -752,8 +868,10 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [ ] Multi-threading for large codebases
 - [ ] Function complexity metrics
 - [ ] Dead code detection
-- [x] XMI/UML 2.5 output format with opt block support
-- [x] Automatic conditional call detection with opt blocks
+- [x] XMI/UML 2.5 output format with opt/loop/alt block support
+- [x] Automatic conditional call detection with opt/alt/else blocks
+- [x] Loop detection (for/while) with condition extraction
+- [x] Rhapsody XMI 2.1 export with full structural compatibility
 
 ## Support
 

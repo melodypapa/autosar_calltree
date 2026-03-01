@@ -328,7 +328,10 @@ def test_rte_call_filtering():
     builder = CallTreeBuilder(db)
 
     # Test excluding RTE calls (default behavior)
-    result1 = builder.build_tree("Demo_Init", max_depth=2,)
+    result1 = builder.build_tree(
+        "Demo_Init",
+        max_depth=2,
+    )
     rte_count_excluded = result1.statistics.total_functions
 
     # Test including RTE calls

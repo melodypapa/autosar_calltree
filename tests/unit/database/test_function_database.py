@@ -217,7 +217,7 @@ class TestDatabaseBuilding:
             # Copy only the core demo files (exclude large_scale)
             demo_files = ["hardware.c", "software.c", "communication.c", "demo.c"]
             for filename in demo_files:
-                src = Path("./demo") / filename
+                src = Path("./demo/src") / filename
                 if src.exists():
                     shutil.copy(src, temp_path / filename)
 
@@ -738,7 +738,7 @@ class TestQueryMethods:
             # Copy only the core demo files (exclude large_scale)
             demo_files = ["hardware.c", "software.c", "communication.c", "demo.c"]
             for filename in demo_files:
-                src = Path("./demo") / filename
+                src = Path("./demo/src") / filename
                 if src.exists():
                     shutil.copy(src, temp_path / filename)
 
@@ -788,7 +788,7 @@ class TestQueryMethods:
             # Copy only the core demo files (exclude large_scale)
             demo_files = ["hardware.c", "software.c", "communication.c", "demo.c"]
             for filename in demo_files:
-                src = Path("./demo") / filename
+                src = Path("./demo/src") / filename
                 if src.exists():
                     shutil.copy(src, temp_path / filename)
 
