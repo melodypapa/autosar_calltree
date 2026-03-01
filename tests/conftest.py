@@ -29,7 +29,7 @@ def temp_output_dir() -> Generator[Path, None, None]:
     """
     Fixture that provides a temporary directory for test outputs.
 
-    Uses the system's temporary directory (e.g., /tmp on Unix, C:\Temp on Windows).
+    Uses the system's temporary directory (e.g., /tmp on Unix, C:\\Temp on Windows).
     Automatically cleaned up after the test completes.
 
     Use this fixture for tests that need to write actual output files

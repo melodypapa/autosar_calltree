@@ -1,5 +1,6 @@
 # AUTOSAR Call Tree Module Mapping Configuration
 # Maps C source files to SW modules for diagram generation
+# Source files are located in ../src/ directory
 
 version: "1.0"
 

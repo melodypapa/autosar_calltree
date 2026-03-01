@@ -128,7 +128,9 @@ def test_autosar_macro_preprocessing():
     # Check FUNC_P2CONST was parsed by AutosarParser
     get_cfg_func = [f for f in functions if f.name == "GetConfig"]
     assert len(get_cfg_func) > 0
-    assert get_cfg_func[0].return_type == "const ConfigType*"  # P2CONST adds const + pointer
+    assert (
+        get_cfg_func[0].return_type == "const ConfigType*"
+    )  # P2CONST adds const + pointer
 
     # Check traditional function (may or may not be parsed depending on implementation)
     trad_func = [f for f in functions if f.name == "TradFunc"]

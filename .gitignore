@@ -63,3 +63,5 @@ demo/large_scale
 test_output/
 call_tree.*
 .claude/settings.local.json
+*.json
+pytest*.html

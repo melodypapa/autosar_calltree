@@ -415,7 +415,11 @@ class CParser:
         return content
 
     def _parse_function_match(
-        self, match: re.Match, content: str, file_path: Path, line_number: Optional[int] = None
+        self,
+        match: re.Match,
+        content: str,
+        file_path: Path,
+        line_number: Optional[int] = None,
     ) -> Optional[FunctionInfo]:
         """
         Parse a regex match into a FunctionInfo object.
@@ -645,7 +649,9 @@ class CParser:
                     continue
 
             # Process if/elif/else statements
-            new_condition = self._process_conditional_statement(stripped, multiline_state)
+            new_condition = self._process_conditional_statement(
+                stripped, multiline_state
+            )
             if new_condition is not None:
                 # Explicit else/elif detected
                 in_if_block = True
@@ -669,7 +675,13 @@ class CParser:
             is_loop = in_loop_block and brace_depth > 0
 
             self._add_calls_from_line(
-                line, line_idx, called_functions, is_conditional, current_condition, is_loop, current_loop_condition
+                line,
+                line_idx,
+                called_functions,
+                is_conditional,
+                current_condition,
+                is_loop,
+                current_loop_condition,
             )
 
             # Reset block state when brace depth returns to 0
@@ -770,8 +782,12 @@ class CParser:
 
         Returns condition string or None if not a conditional statement.
         """
-        if not (line.startswith("if ") or line.startswith("if(") or
-                line.startswith("else if") or line.startswith("else if(")):
+        if not (
+            line.startswith("if ")
+            or line.startswith("if(")
+            or line.startswith("else if")
+            or line.startswith("else if(")
+        ):
             return None
 
         # Extract condition from if/elif statement
@@ -812,8 +828,12 @@ class CParser:
         Returns loop condition string or None if not a loop statement.
         """
         # Check for loop
-        if not (line.startswith("for ") or line.startswith("for(") or
-                line.startswith("while ") or line.startswith("while(")):
+        if not (
+            line.startswith("for ")
+            or line.startswith("for(")
+            or line.startswith("while ")
+            or line.startswith("while(")
+        ):
             return None
 
         # Handle for loop
@@ -841,7 +861,9 @@ class CParser:
         paren_end = line.find(")")
         if paren_end > while_start:
             condition_part = line[while_start + 5 : paren_end].strip()
-            return self._sanitize_condition(condition_part.lstrip("(").rstrip(")").strip())
+            return self._sanitize_condition(
+                condition_part.lstrip("(").rstrip(")").strip()
+            )
 
         return self._sanitize_condition("condition")
 
@@ -890,7 +912,9 @@ class CParser:
                 if paren_start != -1:
                     closing_paren_pos = self.buffer.rfind(")")
                     if closing_paren_pos > paren_start:
-                        condition_part = self.buffer[paren_start + 1 : closing_paren_pos]
+                        condition_part = self.buffer[
+                            paren_start + 1 : closing_paren_pos
+                        ]
                         if self._sanitizer is not None:
                             self._condition = self._sanitizer(condition_part.strip())
                         else:

@@ -80,9 +80,7 @@ def _generate_xmi_output(result, output_path, use_module_names) -> None:
 
         progress.update(task, completed=True)
 
-    console.print(
-        f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]"
-    )
+    console.print(f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]")
 
 
 def _generate_rhapsody_output(result, output_path, use_module_names) -> None:
@@ -359,7 +357,9 @@ def cli(
         output_path = Path(output)
 
         if format in ["mermaid", "both"]:
-            _generate_mermaid_output(result, output_path, format, no_abbreviate_rte, use_module_names)
+            _generate_mermaid_output(
+                result, output_path, format, no_abbreviate_rte, use_module_names
+            )
 
         if format in ["xmi", "both"]:
             _generate_xmi_output(result, output_path, use_module_names)
