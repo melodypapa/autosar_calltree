@@ -359,11 +359,7 @@ class RhapsodyXmiGenerator:
                 return
 
             # Determine source participant
-            if depth == 0:
-                # Root function calls itself (initialization)
-                source_name = node.function_info.name
-            else:
-                source_name = self._get_participant_name(node.function_info)
+            source_name = self._get_participant_name(node.function_info)
 
             # Process each child call
             for child in node.children:
@@ -422,7 +418,7 @@ class RhapsodyXmiGenerator:
                 message = SubElement(interaction, "message")
                 message.set(f"{{{self.XMI_NAMESPACE}}}type", "uml:Message")
                 message.set(f"{{{self.XMI_NAMESPACE}}}id", message_id)
-                message.set("name", f"message_{message_index}")
+                message.set("name", child.function_info.name)
                 message.set("receiveEvent", target_occ_id)
                 message.set("sendEvent", source_occ_id)
                 message.set(
