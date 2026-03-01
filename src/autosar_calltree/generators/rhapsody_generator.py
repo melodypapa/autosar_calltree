@@ -16,7 +16,7 @@ Requirements:
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Optional
 from uuid import uuid4
 
 from lxml import etree
@@ -71,15 +71,73 @@ class RhapsodyXmiGenerator:
     PREDEFINED_TYPES_NAMESPACE = "http://RhapsodyStandardModel.PredefinedTypes/schemas/PredefinedTypes_profile/_doliZBVTEfGCaP-TK4cK4g/0"
 
     RHP_VERSION = "10.0.1"
+    MAX_PACKAGE_DEPTH = 30
+    MAX_PACKAGE_NAME_LENGTH = 50
 
-    def __init__(self, use_module_names: bool = False):
+    def __init__(self, use_module_names: bool = False, package_path: Optional[str] = None, model_name: Optional[str] = None):
         """
         Initialize the Rhapsody XMI generator.
 
         Args:
             use_module_names: Use SW module names as participants instead of function names
+            package_path: Package path for nested packages (e.g., 'Package1/Package2/Package3')
+            model_name: Custom name for the UML model (default: CallTree_{root_function})
+
+        Raises:
+            ValueError: If package path exceeds maximum depth or contains invalid package names
         """
         self.use_module_names = use_module_names
+        self.package_path = self._validate_package_path(package_path) if package_path else None
+        self.model_name = model_name
+
+    def _validate_package_path(self, package_path: str) -> str:
+        """
+        Validate package path format and constraints.
+
+        Args:
+            package_path: Package path string to validate
+
+        Returns:
+            Validated package path string
+
+        Raises:
+            ValueError: If package path is invalid
+        """
+        if not package_path:
+            return package_path
+
+        # Split by '/' and strip whitespace
+        packages = [pkg.strip() for pkg in package_path.split('/')]
+
+        # Remove empty segments (e.g., from trailing slashes)
+        packages = [pkg for pkg in packages if pkg]
+
+        # Check depth limit
+        if len(packages) > self.MAX_PACKAGE_DEPTH:
+            raise ValueError(
+                f"Package path depth exceeds maximum of {self.MAX_PACKAGE_DEPTH} levels. "
+                f"Got {len(packages)} levels."
+            )
+
+        # Check each package name
+        for pkg_name in packages:
+            if len(pkg_name) == 0:
+                raise ValueError("Package path contains empty package name")
+            if len(pkg_name) > self.MAX_PACKAGE_NAME_LENGTH:
+                raise ValueError(
+                    f"Package name '{pkg_name}' exceeds maximum length of "
+                    f"{self.MAX_PACKAGE_NAME_LENGTH} characters"
+                )
+            # Check for valid characters (alphanumeric, underscore, and space)
+            # First, check if any character is invalid
+            invalid_chars = [c for c in pkg_name if not (c.isalnum() or c in ('_', ' '))]
+            if invalid_chars:
+                raise ValueError(
+                    f"Package name '{pkg_name}' contains invalid characters: {', '.join(set(invalid_chars))}. "
+                    f"Only alphanumeric, underscore, and space are allowed."
+                )
+
+        return '/'.join(packages)
 
     def generate(self, result: AnalysisResult, output_path: str) -> None:
         """
@@ -137,8 +195,8 @@ class RhapsodyXmiGenerator:
         Returns:
             Formatted XML string
         """
-        # Convert to string using lxml
-        xml_str = etree.tostring(element, encoding="unicode", pretty_print=False)
+        # Convert to string using lxml with pretty-printing for readability
+        xml_str = etree.tostring(element, encoding="unicode", pretty_print=True)
 
         # Add XML declaration
         return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_str}'
@@ -188,7 +246,7 @@ class RhapsodyXmiGenerator:
         model = SubElement(root, "{http://www.omg.org/spec/UML/20090901}Model")
         model.set(f"{{{self.XMI_NAMESPACE}}}type", "uml:Model")
         model.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
-        model.set("name", f"CallTree_{result.root_function}")
+        model.set("name", self.model_name if self.model_name else f"CallTree_{result.root_function}")
 
         # Add element imports
         self._add_element_imports(model)
@@ -207,10 +265,33 @@ class RhapsodyXmiGenerator:
         self._add_rhapsody_metadata(model, result)
 
         # Create package structure
-        package = SubElement(model, "packagedElement")
-        package.set(f"{{{self.XMI_NAMESPACE}}}type", "uml:Package")
-        package.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
-        package.set("name", "Sequence_Diagram")
+        if self.package_path:
+            # Create nested packages based on package_path
+            packages = self.package_path.strip().split('/')
+            current_package = model
+
+            for pkg_name in packages:
+                pkg_name = pkg_name.strip()
+                if not pkg_name:
+                    continue
+
+                pkg = SubElement(current_package, "packagedElement")
+                pkg.set(f"{{{self.XMI_NAMESPACE}}}type", "uml:Package")
+                pkg.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+                pkg.set("name", pkg_name)
+                current_package = pkg
+
+            # The sequence diagram package is the last one
+            package = SubElement(current_package, "packagedElement")
+            package.set(f"{{{self.XMI_NAMESPACE}}}type", "uml:Package")
+            package.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+            package.set("name", "Sequence_Diagram")
+        else:
+            # Use flat package structure (current implementation)
+            package = SubElement(model, "packagedElement")
+            package.set(f"{{{self.XMI_NAMESPACE}}}type", "uml:Package")
+            package.set(f"{{{self.XMI_NAMESPACE}}}id", self._generate_id())
+            package.set("name", "Sequence_Diagram")
 
         # Create interaction
         interaction = SubElement(package, "packagedElement")
@@ -250,7 +331,7 @@ class RhapsodyXmiGenerator:
 
             # Determine participant name
             if self.use_module_names and node.function_info.sw_module:
-                name = node.function_info.sw_module
+                name = f":{node.function_info.sw_module}"
             else:
                 name = node.function_info.name
 
@@ -461,7 +542,7 @@ class RhapsodyXmiGenerator:
             Participant name (module name or function name)
         """
         if self.use_module_names and function_info.sw_module:
-            return function_info.sw_module
+            return f":{function_info.sw_module}"
         return function_info.name
 
     def _format_message_signature(self, function_info: FunctionInfo) -> str:

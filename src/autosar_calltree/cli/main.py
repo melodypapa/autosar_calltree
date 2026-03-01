@@ -18,7 +18,6 @@ from ..config.module_config import ModuleConfig
 from ..database.function_database import FunctionDatabase
 from ..generators.mermaid_generator import MermaidGenerator
 from ..generators.rhapsody_generator import RhapsodyXmiGenerator
-from ..generators.xmi_generator import XmiGenerator
 from ..version import __version__
 
 console = Console(record=True)
@@ -59,31 +58,7 @@ def _generate_mermaid_output(
     )
 
 
-def _generate_xmi_output(result, output_path, use_module_names) -> None:
-    """Generate XMI document output."""
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-        transient=True,
-    ) as progress:
-        task = progress.add_task("Generating XMI document...", total=None)
-
-        xmi_output = (
-            output_path.with_suffix(".xmi")
-            if output_path.suffix != ".xmi"
-            else output_path
-        )
-
-        xmi_generator = XmiGenerator(use_module_names=use_module_names)
-        xmi_generator.generate(result, str(xmi_output))
-
-        progress.update(task, completed=True)
-
-    console.print(f"[green]Generated[/green] XMI document: [cyan]{xmi_output}[/cyan]")
-
-
-def _generate_rhapsody_output(result, output_path, use_module_names) -> None:
+def _generate_rhapsody_output(result, output_path, use_module_names, rhapsody_package_path=None, rhapsody_model_name=None) -> None:
     """Generate Rhapsody-compatible XMI output."""
     with Progress(
         SpinnerColumn(),
@@ -99,7 +74,7 @@ def _generate_rhapsody_output(result, output_path, use_module_names) -> None:
             else output_path
         )
 
-        generator = RhapsodyXmiGenerator(use_module_names=use_module_names)
+        generator = RhapsodyXmiGenerator(use_module_names=use_module_names, package_path=rhapsody_package_path, model_name=rhapsody_model_name)
         generator.generate(result, str(rhapsody_output))
 
         progress.update(task, completed=True)
@@ -140,7 +115,7 @@ def _generate_rhapsody_output(result, output_path, use_module_names) -> None:
 @click.option(
     "--format",
     "-f",
-    type=click.Choice(["mermaid", "xmi", "rhapsody", "both"], case_sensitive=False),
+    type=click.Choice(["mermaid", "rhapsody"], case_sensitive=False),
     default="mermaid",
     help="Output format (default: mermaid)",
 )
@@ -169,9 +144,33 @@ def _generate_rhapsody_output(result, output_path, use_module_names) -> None:
     help="Path to YAML file mapping C files to SW modules",
 )
 @click.option(
-    "--use-module-names",
+    "--use-module-names/--no-use-module-names",
+    default=True,
+    help="Use SW module names as Mermaid participants (default: True, requires --module-config)",
+)
+@click.option(
+    "--enable-loops",
     is_flag=True,
-    help="Use SW module names as Mermaid participants (requires --module-config)",
+    default=False,
+    help="Enable loop detection and representation in diagrams (default: False)",
+)
+@click.option(
+    "--enable-conditionals",
+    is_flag=True,
+    default=False,
+    help="Enable if-else conditional detection and representation in diagrams (default: False)",
+)
+@click.option(
+    "--rhapsody-package-path",
+    type=str,
+    default=None,
+    help="Package path for Rhapsody XMI output (e.g., 'Package1/Package2/Package3'). Creates nested packages in the XMI structure. (default: flat package structure)",
+)
+@click.option(
+    "--rhapsody-model-name",
+    type=str,
+    default=None,
+    help="Custom name for the UML model in Rhapsody XMI output (default: CallTree_{root_function})",
 )
 @click.version_option(version=__version__, prog_name="autosar-calltree")
 def cli(
@@ -189,6 +188,10 @@ def cli(
     no_abbreviate_rte: bool,
     module_config: Optional[str],
     use_module_names: bool,
+    enable_loops: bool,
+    enable_conditionals: bool,
+    rhapsody_package_path: Optional[str],
+    rhapsody_model_name: Optional[str],
 ):
     """
     AUTOSAR Call Tree Analyzer
@@ -211,6 +214,11 @@ def cli(
                 "Module names will not be used."
             )
             use_module_names = False
+        elif not use_module_names and module_config:
+            console.print(
+                "[cyan]Info:[/cyan] Module config provided but --use-module-names is disabled. "
+                "Function names will be used instead of module names."
+            )
 
         # Load module configuration if provided
         config = None
@@ -323,6 +331,8 @@ def cli(
                 start_function=start_function,
                 max_depth=max_depth,
                 verbose=verbose,
+                enable_loops=enable_loops,
+                enable_conditionals=enable_conditionals,
             )
 
             progress.update(task, completed=True)
@@ -356,16 +366,13 @@ def cli(
         # Generate output
         output_path = Path(output)
 
-        if format in ["mermaid", "both"]:
+        if format == "mermaid":
             _generate_mermaid_output(
                 result, output_path, format, no_abbreviate_rte, use_module_names
             )
 
-        if format in ["xmi", "both"]:
-            _generate_xmi_output(result, output_path, use_module_names)
-
-        if format in ["rhapsody", "both"]:
-            _generate_rhapsody_output(result, output_path, use_module_names)
+        if format == "rhapsody":
+            _generate_rhapsody_output(result, output_path, use_module_names, rhapsody_package_path, rhapsody_model_name)
 
         # Print warnings for circular dependencies
         if result.circular_dependencies:

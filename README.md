@@ -449,7 +449,7 @@ calltree --start-function Demo_Init \
 # Generate XMI format (with opt/loop block support)
 calltree --start-function Demo_MainFunction \
          --source-dir demo/src \
-         --format xmi \
+         --format rhapsody \
          --output demo/demo.xmi
 
 # Generate Rhapsody-compatible XMI 2.1
@@ -457,6 +457,47 @@ calltree --start-function Demo_Init \
          --source-dir demo/src \
          --format rhapsody \
          --output demo/rhapsody_demo.xmi
+
+# Generate Rhapsody XMI with nested package structure
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_nested.xmi \
+         --rhapsody-package-path "MyPackage/SubPackage/DeepPackage"
+
+# Generate Rhapsody XMI with custom model name
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_custom_model.xmi \
+         --rhapsody-model-name "MyProjectModel"
+
+# Generate Rhapsody XMI with both custom model name and nested packages
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_full.xmi \
+         --rhapsody-model-name "MyProjectModel" \
+         --rhapsody-package-path "MyPackage/SubPackage/DeepPackage"
+
+# Enable loop detection
+calltree --start-function Demo_MainFunction \
+         --source-dir demo/src \
+         --enable-loops \
+         --output demo/demo_loops.md
+
+# Enable conditional detection
+calltree --start-function Demo_MainFunction \
+         --source-dir demo/src \
+         --enable-conditionals \
+         --output demo/demo_conditionals.md
+
+# Enable both loops and conditionals
+calltree --start-function Demo_MainFunction \
+         --source-dir demo/src \
+         --enable-loops \
+         --enable-conditionals \
+         --output demo/demo_full.md
 
 # Verbose mode with detailed statistics and cache progress
 calltree --start-function Demo_Init \
@@ -480,11 +521,13 @@ config = ModuleConfig(Path("demo/module_mapping.yaml"))
 db = FunctionDatabase(source_dir="demo/src", module_config=config)
 db.build_database(use_cache=True)
 
-# Build call tree
+# Build call tree with loop and conditional detection
 builder = CallTreeBuilder(db)
 result = builder.build_tree(
     start_function="Demo_Init",
-    max_depth=3
+    max_depth=3,
+    enable_loops=True,      # Enable loop detection
+    enable_conditionals=True  # Enable conditional detection
 )
 
 # Generate Mermaid diagram with module names and parameters
@@ -505,12 +548,18 @@ Options:
   --start-function TEXT          Starting function name [required]
   --max-depth INTEGER           Maximum call depth (default: 3)
   --source-dir PATH             Source code directory (default: ./demo/src)
-  --format [mermaid|xmi|rhapsody|both]   Output format (default: mermaid)
+  --format [mermaid|rhapsody]   Output format (default: mermaid)
   --output PATH                 Output file path (default: call_tree.md)
   --module-config PATH          YAML file mapping C files to SW modules
-  --use-module-names            Use SW module names as Mermaid participants
-  --cache-dir PATH              Cache directory (default: <source-dir>/.cache)
-  --no-cache                    Disable cache usage
+  --use-module-names/--no-use-module-names
+                               Use SW module names as Mermaid participants (default: True)
+  --enable-loops                Enable loop detection and representation (default: False)
+  --enable-conditionals         Enable if-else conditional detection and representation (default: False)
+  --rhapsody-package-path TEXT  Package path for Rhapsody XMI output (e.g., 'Package1/Package2/Package3').
+                                Creates nested packages in the XMI structure (default: flat package structure)
+                                Max depth: 30 levels, max name length: 50 characters, valid characters: alphanumeric, underscore, space
+    --rhapsody-model-name TEXT    Custom name for the UML model in Rhapsody XMI output (default: CallTree_{root_function})
+    --cache-dir PATH              Cache directory (default: <source-dir>/.cache)  --no-cache                    Disable cache usage
   --rebuild-cache               Force rebuild of cache
   --no-abbreviate-rte           Do not abbreviate RTE function names
   --verbose, -v                 Enable verbose output
@@ -575,17 +624,218 @@ The XMI output also supports opt blocks using UML combined fragments:
 - Can be imported into UML tools like Enterprise Architect, Visual Paradigm, MagicDraw
 - Proper XML structure with correct namespaces
 
+### Rhapsody Package Path
+
+When generating Rhapsody XMI output, you can specify a nested package structure using the `--rhapsody-package-path` option. This allows you to organize your sequence diagrams within a hierarchical package structure that matches your project's organization.
+
+**Usage**:
+```bash
+# Create nested packages: MyPackage → SubPackage → DeepPackage → Sequence_Diagram
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_nested.xmi \
+         --rhapsody-package-path "MyPackage/SubPackage/DeepPackage"
+```
+
+**Generated XMI Structure**:
+```xml
+<uml:Model name="CallTree_Demo_Init">
+  <packagedElement xmi:type="uml:Package" name="MyPackage">
+    <packagedElement xmi:type="uml:Package" name="SubPackage">
+      <packagedElement xmi:type="uml:Package" name="DeepPackage">
+        <packagedElement xmi:type="uml:Package" name="Sequence_Diagram">
+          <packagedElement xmi:type="uml:Interaction" name="seq_Demo_Init">
+            <!-- Interaction content -->
+          </packagedElement>
+        </packagedElement>
+      </packagedElement>
+    </packagedElement>
+  </packagedElement>
+</uml:Model>
+```
+
+**Package Path Constraints**:
+- **Maximum depth**: 30 levels
+- **Maximum name length**: 50 characters per package name
+- **Valid characters**: Alphanumeric, underscore, and space only
+- **Whitespace handling**: Leading/trailing whitespace is automatically stripped
+- **Empty segments**: Trailing slashes are handled gracefully
+
+**Examples**:
+```bash
+# Valid: 3 levels
+--rhapsody-package-path "MyPackage/SubPackage/DeepPackage"
+
+# Valid: At maximum depth (30 levels)
+--rhapsody-package-path "P1/P2/P3/.../P30"
+
+# Invalid: Exceeds maximum depth (31 levels)
+--rhapsody-package-path "P1/P2/.../P31"
+# Error: Package path depth exceeds maximum of 30 levels. Got 31 levels.
+
+# Invalid: Contains hyphen
+--rhapsody-package-path "My-Package"
+# Error: Package name 'My-Package' contains invalid characters: -.
+
+# Invalid: Name too long (51 characters)
+--rhapsody-package-path "A" * 51
+# Error: Package name 'AAA...' exceeds maximum length of 50 characters.
+```
+
+**Benefits**:
+- Organize diagrams within project-specific package hierarchies
+- Match your Rhapsody project structure
+- Better integration with existing Rhapsody models
+- Clear separation between different analysis results
+
+**Note**: If not specified, the default behavior creates a flat package structure with a single `Sequence_Diagram` package directly under the Model.
+
+### Rhapsody Model Name
+
+You can also customize the UML model name in the Rhapsody XMI output using the `--rhapsody-model-name` option. By default, the model name is set to `CallTree_{root_function}`, but you can specify any custom name to match your project's naming conventions.
+
+**Usage**:
+```bash
+# Generate Rhapsody XMI with custom model name
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_custom.xmi \
+         --rhapsody-model-name "MyProjectModel"
+```
+
+**Generated XMI Structure**:
+```xml
+<uml:Model name="MyProjectModel">
+  <packagedElement xmi:type="uml:Package" name="Sequence_Diagram">
+    <!-- Interaction content -->
+  </packagedElement>
+</uml:Model>
+```
+
+**Default Behavior**:
+```bash
+# Without --rhapsody-model-name, uses default naming
+calltree --start-function Demo_Init --format rhapsody --output demo/rhapsody.xmi
+```
+
+**Generated XMI with Default Name**:
+```xml
+<uml:Model name="CallTree_Demo_Init">
+  <packagedElement xmi:type="uml:Package" name="Sequence_Diagram">
+    <!-- Interaction content -->
+  </packagedElement>
+</uml:Model>
+```
+
+**Combined with Package Path**:
+```bash
+# Use both custom model name and nested package path
+calltree --start-function Demo_Init \
+         --source-dir demo/src \
+         --format rhapsody \
+         --output demo/rhapsody_full.xmi \
+         --rhapsody-model-name "MyProjectModel" \
+         --rhapsody-package-path "MyPackage/SubPackage/DeepPackage"
+```
+
+**Benefits**:
+- Match your Rhapsody project's model naming conventions
+- Better integration with existing Rhapsody models
+- Clear identification of different analysis results
+- Consistent naming across multiple XMI exports
+
+**Note**: The model name is independent of the package path. You can use a custom model name with or without nested packages.
+
 ### Generated Markdown Structure
 
 The tool generates comprehensive Markdown files with:
 - Metadata header (timestamp, settings, statistics)
-- Mermaid sequence diagram with function parameters and opt blocks
+- Mermaid sequence diagram with function parameters and opt/loop blocks
 - Function details table with parameter information
 - Text-based call tree
 - Circular dependency warnings
 - Analysis statistics
 
 **Note**: Return statements are omitted from sequence diagrams by default for cleaner visualization. This can be configured programmatically when using the Python API.
+
+### Loop and Conditional Detection
+
+The tool automatically detects `for`, `while`, and `if`/`else` statements in your C code and represents them as `loop` and `opt` blocks in Mermaid diagrams and combined fragments in XMI.
+
+**Note**: Loop and conditional detection are disabled by default to keep diagrams clean. Use `--enable-loops` and `--enable-conditionals` flags to enable them.
+
+#### Mermaid Loop Example
+
+**Source Code**:
+```c
+for (sensor_count = 0; sensor_count < 10; sensor_count++) {
+    HW_ReadSensor(sensor_count);
+    SW_ProcessData((uint8*)0x20001000, 0x64);
+}
+```
+
+**Generated Mermaid Diagram** (with `--enable-loops`):
+```mermaid
+sequenceDiagram
+    participant Demo_MainFunction
+    participant HW_ReadSensor
+    participant SW_ProcessData
+
+    loop sensor_count < 10
+    Demo_MainFunction->>HW_ReadSensor: call(sensor_id)
+    Demo_MainFunction->>SW_ProcessData: call(data, length)
+    end
+```
+
+#### Mermaid Conditional Example
+
+**Source Code**:
+```c
+if (update_mode == 0x05) {
+    COM_SendLINMessage(0x456, (uint8*)0x20003000);
+}
+```
+
+**Generated Mermaid Diagram** (with `--enable-conditionals`):
+```mermaid
+sequenceDiagram
+    participant Demo_Update
+    participant COM_SendLINMessage
+
+    opt update_mode == 0x05
+    Demo_Update->>COM_SendLINMessage: call(msg_id, data)
+    end
+```
+
+#### XMI Combined Fragments
+
+Both loops and conditionals are represented as UML combined fragments in XMI output:
+
+```xml
+<!-- Loop fragment -->
+<uml:fragment name="loop" interactionOperator="loop">
+  <uml:operand name="sensor_count < 10">
+    <uml:message name="HW_ReadSensor" />
+    <uml:message name="SW_ProcessData" />
+  </uml:operand>
+</uml:fragment>
+
+<!-- Conditional fragment -->
+<uml:fragment name="opt" interactionOperator="opt">
+  <uml:operand name="update_mode == 0x05">
+    <uml:message name="COM_SendLINMessage" />
+  </uml:operand>
+</uml:fragment>
+```
+
+**Features**:
+- ✅ Automatic detection of `for`, `while`, and `if`/`else` statements
+- ✅ Actual condition text extracted from source code
+- ✅ Nested conditionals and loops supported
+- ✅ Works with both Mermaid and XMI output formats
+- ✅ Disabled by default for cleaner diagrams
 
 ## Supported AUTOSAR Patterns
 
