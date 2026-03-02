@@ -13,10 +13,11 @@ demo/
 │   ├── hardware.c           # Hardware module (sensors, actuators)
 │   └── software.c           # Software module (data processing)
 ├── module_mapping.yaml      # SW module configuration
-├── demo.md                  # Example output: Demo_Init (module-level)
-├── demo_main.md             # Example output: Demo_MainFunction (module-level)
-├── rhapsody_demo_main.xmi   # Example output: Rhapsody XMI 2.1 format
-└── README.md                # This file
+└── output/                  # Generated output files
+    ├── demo.md              # Example output: Demo_Init (module-level)
+    ├── demo_main.md         # Example output: Demo_MainFunction (module-level)
+    ├── rhapsody_demo_main.xmi   # Example output: Rhapsody XMI 2.1 format
+    └── README.md            # This file
 ```
 
 ## 🚀 Quick Start
@@ -30,7 +31,7 @@ calltree --start-function Demo_Init \
          --source-dir demo/src \
          --module-config demo/module_mapping.yaml \
          --use-module-names \
-         --output demo/demo_init_output.md
+         --output demo/output/demo_init_output.md
 ```
 
 **Output:** Shows initialization of all subsystems (Hardware, Software, Communication)
@@ -44,7 +45,7 @@ calltree --start-function Demo_MainFunction \
          --source-dir demo/src \
          --module-config demo/module_mapping.yaml \
          --use-module-names \
-         --output demo/demo_main_output.md
+         --output demo/output/demo_main_output.md
 ```
 
 **Output:** Shows sensor reading, data processing, and conditional updates
@@ -56,9 +57,10 @@ Export a Rhapsody-compatible XMI 2.1 file:
 ```bash
 calltree --start-function Demo_MainFunction \
          --source-dir demo/src \
-         --format rhapsody \
+         --module-config demo/module_mapping.yaml \
          --use-module-names \
-         --output demo/rhapsody_output.xmi
+         --format rhapsody \
+         --output demo/output/rhapsody_demo_main_modules.xmi
 ```
 
 **Output:** XMI file that can be imported into IBM Rhapsody 8.0+

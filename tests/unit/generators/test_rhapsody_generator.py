@@ -796,8 +796,8 @@ class TestRhapsodyXmiGenerator:
             lifelines = self._find_elements(root, "lifeline", self.UML_NAMESPACE)
             assert len(lifelines) > 0
 
-            # Check for module names
-            module_names = {"DemoModule", "CommModule", "HardwareModule"}
+            # Check for module names (module names are prefixed with colon in XMI)
+            module_names = {":DemoModule", ":CommModule", ":HardwareModule"}
             found_modules = set()
             for lifeline in lifelines:
                 name = lifeline.get("name")
@@ -1122,3 +1122,413 @@ class TestRhapsodyXmiGenerator:
 
         # Verify Ecore namespace (for Rhapsody extensions)
         assert "http://www.eclipse.org/emf/2002/Ecore" in xmi_string
+
+    # Test package path feature
+    def test_package_path_creates_nested_packages(self):
+        """Test that package_path parameter creates nested package structure."""
+        generator = RhapsodyXmiGenerator(package_path="Package1/Package2/Package3")
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Should have 4 packages: Package1, Package2, Package3, and Sequence_Diagram
+            assert len(package_elements) == 4
+
+            # Extract package names
+            package_names = [pkg.get("name") for pkg in package_elements]
+
+            # Verify expected package names exist
+            assert "Package1" in package_names
+            assert "Package2" in package_names
+            assert "Package3" in package_names
+            assert "Sequence_Diagram" in package_names
+
+        finally:
+            output_path.unlink()
+
+    # Test package path with single level
+    def test_package_path_single_level(self):
+        """Test that single-level package_path works correctly."""
+        generator = RhapsodyXmiGenerator(package_path="SinglePackage")
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Should have 2 packages: SinglePackage and Sequence_Diagram
+            assert len(package_elements) == 2
+
+            # Extract package names
+            package_names = [pkg.get("name") for pkg in package_elements]
+
+            # Verify expected package names exist
+            assert "SinglePackage" in package_names
+            assert "Sequence_Diagram" in package_names
+
+        finally:
+            output_path.unlink()
+
+    # Test package path with empty string (default behavior)
+    def test_package_path_empty_string(self):
+        """Test that empty package_path uses flat structure (default behavior)."""
+        generator = RhapsodyXmiGenerator(package_path="")
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Should have 1 package: Sequence_Diagram (flat structure)
+            assert len(package_elements) == 1
+
+            # Extract package names
+            package_names = [pkg.get("name") for pkg in package_elements]
+
+            # Verify only Sequence_Diagram exists
+            assert "Sequence_Diagram" in package_names
+            assert "Package1" not in package_names
+
+        finally:
+            output_path.unlink()
+
+    # Test package path with None (default behavior)
+    def test_package_path_none(self):
+        """Test that None package_path uses flat structure (default behavior)."""
+        generator = RhapsodyXmiGenerator(package_path=None)
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Should have 1 package: Sequence_Diagram (flat structure)
+            assert len(package_elements) == 1
+
+            # Extract package names
+            package_names = [pkg.get("name") for pkg in package_elements]
+
+            # Verify only Sequence_Diagram exists
+            assert "Sequence_Diagram" in package_names
+            assert "Package1" not in package_names
+
+        finally:
+            output_path.unlink()
+
+    # Test custom model name
+    def test_custom_model_name(self):
+        """Test that custom model name is used in XMI output."""
+        custom_model_name = "MyCustomModel"
+        generator = RhapsodyXmiGenerator(model_name=custom_model_name)
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Verify model name
+            assert model.get("name") == custom_model_name
+
+        finally:
+            output_path.unlink()
+
+    # Test default model name
+    def test_default_model_name(self):
+        """Test that default model name is CallTree_{root_function}."""
+        generator = RhapsodyXmiGenerator()
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Verify default model name format
+            assert model.get("name") == "CallTree_Demo_Init"
+
+        finally:
+            output_path.unlink()
+
+    # Test custom model name with package path
+    def test_custom_model_name_with_package_path(self):
+        """Test that custom model name works with package path."""
+        custom_model_name = "MyProjectModel"
+        generator = RhapsodyXmiGenerator(model_name=custom_model_name, package_path="Package1/Package2")
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Verify model name
+            assert model.get("name") == custom_model_name
+
+            # Verify package structure
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+            assert len(package_elements) == 3  # Package1, Package2, Sequence_Diagram
+
+        finally:
+            output_path.unlink()
+
+    # Test package path depth limit
+    def test_package_path_exceeds_max_depth(self):
+        """Test that package path exceeding maximum depth raises ValueError."""
+        # Create a path with 31 levels (exceeds MAX_PACKAGE_DEPTH of 30)
+        long_path = "/".join([f"Package{i}" for i in range(1, 32)])
+
+        with pytest.raises(ValueError, match="Package path depth exceeds maximum of 30 levels"):
+            RhapsodyXmiGenerator(package_path=long_path)
+
+    # Test package path exactly at max depth
+    def test_package_path_at_max_depth(self):
+        """Test that package path at maximum depth works correctly."""
+        # Create a path with 30 levels (exactly MAX_PACKAGE_DEPTH)
+        max_path = "/".join([f"Package{i}" for i in range(1, 31)])
+
+        generator = RhapsodyXmiGenerator(package_path=max_path)
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Should have 31 packages: 30 user packages + Sequence_Diagram
+            assert len(package_elements) == 31
+
+        finally:
+            output_path.unlink()
+
+    # Test package name length limit
+    def test_package_name_exceeds_max_length(self):
+        """Test that package name exceeding maximum length raises ValueError."""
+        # Create a package name with 51 characters (exceeds MAX_PACKAGE_NAME_LENGTH of 50)
+        long_name = "A" * 51
+
+        with pytest.raises(ValueError, match="Package name.*exceeds maximum length of 50 characters"):
+            RhapsodyXmiGenerator(package_path=long_name)
+
+    # Test package name with invalid characters
+    def test_package_name_invalid_characters(self):
+        """Test that package name with invalid characters raises ValueError."""
+        # Test hyphen
+        with pytest.raises(ValueError, match="Package name.*contains invalid characters"):
+            RhapsodyXmiGenerator(package_path="Package-Test")
+
+        # Test at sign
+        with pytest.raises(ValueError, match="Package name.*contains invalid characters"):
+            RhapsodyXmiGenerator(package_path="Package@Test")
+
+        # Test dot
+        with pytest.raises(ValueError, match="Package name.*contains invalid characters"):
+            RhapsodyXmiGenerator(package_path="Package.Test")
+
+    # Test package path with whitespace handling
+    def test_package_path_whitespace_handling(self):
+        """Test that package path correctly handles whitespace by stripping it."""
+        # Package path with extra spaces
+        path_with_spaces = "  Package1  /  Package2  /  Package3  "
+
+        generator = RhapsodyXmiGenerator(package_path=path_with_spaces)
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Extract package names
+            package_names = [pkg.get("name") for pkg in package_elements]
+
+            # Verify that spaces were stripped (normalized behavior)
+            assert "Package1" in package_names
+            assert "Package2" in package_names
+            assert "Package3" in package_names
+            # Verify that the original spacing was not preserved
+            assert "  Package1  " not in package_names
+
+        finally:
+            output_path.unlink()
+
+    # Test package path with trailing slashes
+    def test_package_path_trailing_slashes(self):
+        """Test that package path with trailing slashes works correctly."""
+        path_with_trailing = "Package1/Package2/Package3///"
+
+        generator = RhapsodyXmiGenerator(package_path=path_with_trailing)
+        result = create_mock_analysis_result()
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".xmi", delete=False) as f:
+            generator.generate(result, f.name)
+            output_path = Path(f.name)
+
+        try:
+            # Parse the generated XMI
+            tree = etree.parse(str(output_path))
+            root = tree.getroot()
+
+            # Find model
+            model = self._find_element(root, "Model", self.UML_NAMESPACE)
+            assert model is not None
+
+            # Find all packaged elements
+            packages = self._find_elements(model, "packagedElement", self.UML_NAMESPACE)
+
+            # Filter for uml:Package elements
+            package_elements = [
+                pkg for pkg in packages
+                if pkg.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:Package"
+            ]
+
+            # Should have 4 packages: 3 user packages + Sequence_Diagram
+            assert len(package_elements) == 4
+
+            # Extract package names
+            package_names = [pkg.get("name") for pkg in package_elements]
+
+            # Verify expected package names exist (no empty packages from trailing slashes)
+            assert "Package1" in package_names
+            assert "Package2" in package_names
+            assert "Package3" in package_names
+            assert "Sequence_Diagram" in package_names
+
+        finally:
+            output_path.unlink()

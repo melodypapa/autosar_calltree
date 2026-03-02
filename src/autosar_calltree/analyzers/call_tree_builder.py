@@ -42,7 +42,12 @@ class CallTreeBuilder:
         self.total_nodes = 0
 
     def build_tree(
-        self, start_function: str, max_depth: int = 3, verbose: bool = False
+        self,
+        start_function: str,
+        max_depth: int = 3,
+        verbose: bool = False,
+        enable_loops: bool = False,
+        enable_conditionals: bool = False,
     ) -> AnalysisResult:
         """
         Build a call tree starting from a function.
@@ -51,6 +56,8 @@ class CallTreeBuilder:
             start_function: Name of the function to start from
             max_depth: Maximum depth to traverse
             verbose: Print progress information
+            enable_loops: Enable loop detection and representation
+            enable_conditionals: Enable if-else conditional detection and representation
 
         Returns:
             AnalysisResult containing the call tree and metadata
@@ -65,6 +72,8 @@ class CallTreeBuilder:
         if verbose:
             print(f"Building call tree for: {start_function}")
             print(f"Max depth: {max_depth}")
+            print(f"Enable loops: {enable_loops}")
+            print(f"Enable conditionals: {enable_conditionals}")
 
         # Lookup start function
         start_functions = self.function_db.lookup_function(start_function)
@@ -103,6 +112,8 @@ class CallTreeBuilder:
             current_depth=0,
             max_depth=max_depth,
             verbose=verbose,
+            enable_loops=enable_loops,
+            enable_conditionals=enable_conditionals,
         )
 
         # Compute statistics
@@ -136,6 +147,8 @@ class CallTreeBuilder:
         current_depth: int,
         max_depth: int,
         verbose: bool = False,
+        enable_loops: bool = False,
+        enable_conditionals: bool = False,
     ) -> CallTreeNode:
         """
         Recursively build call tree using depth-first search.
@@ -145,6 +158,8 @@ class CallTreeBuilder:
             current_depth: Current depth in the tree
             max_depth: Maximum depth to traverse
             verbose: Print progress information
+            enable_loops: Enable loop detection and representation
+            enable_conditionals: Enable if-else conditional detection and representation
 
         Returns:
             CallTreeNode for current function
@@ -230,15 +245,17 @@ class CallTreeBuilder:
                 current_depth=current_depth + 1,
                 max_depth=max_depth,
                 verbose=verbose,
+                enable_loops=enable_loops,
+                enable_conditionals=enable_conditionals,
             )
 
             # Mark as optional if it's conditional - SWR_MERMAID_00004: Opt Block Support
-            if is_conditional:
+            if enable_conditionals and is_conditional:
                 child_node.is_optional = True
                 child_node.condition = func_call.condition
 
             # Mark as loop if it's in a loop - SWR_MERMAID_00005 / SWR_XMI_00004: Loop Block Support
-            if is_loop:
+            if enable_loops and is_loop:
                 child_node.is_loop = True
                 child_node.loop_condition = func_call.loop_condition
 

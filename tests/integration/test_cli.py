@@ -224,8 +224,8 @@ class TestOutputFormatOption:
             content = Path("call_tree.md").read_text(encoding="utf-8")
             assert "```mermaid" in content
 
-    def test_format_xmi_warning(self, demo_dir):
-        """Test that --format xmi generates XMI file."""
+    def test_format_rhapsody(self, demo_dir):
+        """Test that --format rhapsody generates Rhapsody XMI file."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
@@ -236,38 +236,16 @@ class TestOutputFormatOption:
                     "--start-function",
                     "Demo_Init",
                     "--format",
-                    "xmi",
+                    "rhapsody",
                 ],
             )
             assert result.exit_code == 0
             assert Path("call_tree.xmi").exists()
-            # Verify XMI file contains expected XML content
+            # Verify Rhapsody XMI file contains expected XML content
             xmi_content = Path("call_tree.xmi").read_text(encoding="utf-8")
-            assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
+            assert "<?xml" in xmi_content
             assert "Demo_Init" in xmi_content
-
-    def test_format_both(self, demo_dir):
-        """Test that --format both generates Mermaid and XMI files."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(
-                cli,
-                [
-                    "--source-dir",
-                    str(demo_dir),
-                    "--start-function",
-                    "Demo_Init",
-                    "--format",
-                    "both",
-                ],
-            )
-            assert result.exit_code == 0
-            assert Path("call_tree.mermaid.md").exists()
-            assert Path("call_tree.xmi").exists()
-            # Verify both files contain expected content
-            xmi_content = Path("call_tree.xmi").read_text(encoding="utf-8")
-            assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
-            assert "Demo_Init" in xmi_content
+            assert "XMI" in xmi_content
 
 
 class TestCacheOptions:
@@ -760,8 +738,8 @@ class TestCLICoverageGaps:
             # Should show the cycle path
             assert " → " in result.output or "->" in result.output
 
-    def test_format_both_generates_xmi(self, demo_dir):
-        """Test format 'both' generates both Mermaid and XMI (covers lines 350-355)."""
+    def test_format_rhapsody_with_custom_output(self, demo_dir):
+        """Test format 'rhapsody' with custom output path."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             result = runner.invoke(
@@ -772,38 +750,18 @@ class TestCLICoverageGaps:
                     "--start-function",
                     "Demo_Init",
                     "--format",
-                    "both",
-                ],
-            )
-            assert result.exit_code == 0
-            # Both files should be generated
-            assert Path("call_tree.mermaid.md").exists()
-            assert Path("call_tree.xmi").exists()
-            # Verify XMI content
-            xmi_content = Path("call_tree.xmi").read_text(encoding="utf-8")
-            assert "<?xml" in xmi_content or "<xmi:XMI" in xmi_content
-
-    def test_format_both_with_custom_output(self, demo_dir):
-        """Test format 'both' with custom output path (covers lines 350-355)."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            result = runner.invoke(
-                cli,
-                [
-                    "--source-dir",
-                    str(demo_dir),
-                    "--start-function",
-                    "Demo_Init",
-                    "--format",
-                    "both",
+                    "rhapsody",
                     "--output",
                     "custom_output",
                 ],
             )
             assert result.exit_code == 0
-            # Both files should be generated with custom base name
-            assert Path("custom_output.mermaid.md").exists()
+            # Rhapsody XMI file should be generated with custom base name
             assert Path("custom_output.xmi").exists()
+            # Verify XMI content
+            xmi_content = Path("custom_output.xmi").read_text(encoding="utf-8")
+            assert "<?xml" in xmi_content
+            assert "Demo_Init" in xmi_content
 
     def test_multiple_cycles_detected(self, demo_dir, test_fixtures_dir):
         """Test detection of multiple circular dependencies (covers lines 365-368)."""

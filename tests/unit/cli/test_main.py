@@ -142,12 +142,12 @@ def test_max_depth_option(tmp_path: Path) -> None:
 def test_format_option(tmp_path: Path) -> None:
     """SWUT_CLI_00006
 
-    Test --format option with mermaid/xmi/both choices.
+    Test --format option with mermaid/rhapsody choices.
     """
     create_temp_source_file(tmp_path, "void func1(void) {}", "func1.c")
 
     # Test each format choice
-    for fmt in ["mermaid", "xmi", "both"]:
+    for fmt in ["mermaid", "rhapsody"]:
         result = CliRunner().invoke(
             cli, ["-s", "func1", "-f", fmt, "-i", str(tmp_path)], standalone_mode=False
         )
