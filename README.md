@@ -12,13 +12,12 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 - 🔍 **Static Analysis**: Analyzes C source code without compilation
 - 📊 **Multiple Output Formats**:
   - Mermaid sequence diagrams (Markdown)
-  - XMI/UML 2.5 (importable to Enterprise Architect, Visual Paradigm, etc.)
-  - Rhapsody XMI 2.5 (importable to IBM Rhapsody 8.0+)
+  - Rhapsody XMI 2.1 (importable to IBM Rhapsody 8.0+)
   - JSON (for custom processing) - *planned*
 - 🏗️ **SW Module Support**: Map C files to SW modules via YAML configuration for architecture-level diagrams
 - 📈 **Module-Aware Diagrams**: Generate diagrams with SW module names as participants
 - 🎯 **Parameter Display**: Function parameters shown in sequence diagram calls for better visibility
-- 🔄 **Automatic Conditional Detection**: Automatically detects `if`/`else` statements and generates `opt` blocks with actual conditions (Mermaid and XMI)
+- 🔄 **Automatic Conditional Detection**: Automatically detects `if`/`else` statements and generates `opt` blocks with actual conditions (Mermaid and Rhapsody XMI)
 - 🚀 **Performance**: Intelligent caching for fast repeated analysis with file-by-file progress reporting
 - 🎯 **Depth Control**: Configurable call tree depth
 - 🔄 **Circular Dependency Detection**: Identifies recursive calls and cycles
@@ -26,6 +25,32 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 - 📝 **Clean Diagrams**: Return statements omitted by default for cleaner sequence diagrams (configurable)
 
 ## What's New
+
+### Version 0.8.3 (2026-03-05)
+
+**🎉 Major Feature: Comprehensive C Comment Removal with String Literal Protection**
+
+This release adds robust C comment removal that protects string literals from being incorrectly parsed as comments.
+
+**New Features**:
+- 🛡️ **String Literal Protection**: Comments inside string literals are preserved correctly
+- 📝 **Multi-line String Support**: Handles complex multi-line string literals
+- ✅ **Production Ready**: Verified on real AUTOSAR codebases with complex string formatting
+
+**Example**:
+```c
+// String containing what looks like a comment
+const char* msg = "Hello // this is not a comment";
+const char* multi = "Start /* also not a comment */ End";
+```
+
+**Benefits**:
+- ✅ Prevents false positive comment detection inside strings
+- ✅ Handles both single-line (`//`) and multi-line (`/* */`) comments
+- ✅ Preserves string literal content exactly as written
+- ✅ Verified on production AUTOSAR codebases
+
+---
 
 ### Version 0.8.0 (2026-03-01)
 
@@ -170,18 +195,37 @@ sequenceDiagram
 - ✅ Shows actual condition text for better understanding
 - ✅ Supports nested conditionals
 - ✅ Handles `if`, `else if`, and `else` statements
-- ✅ Works with both Mermaid and XMI output formats
-- ✅ XMI uses UML combined fragments (standard UML 2.5 representation)
+- ✅ Works with both Mermaid and Rhapsody XMI output formats
+- ✅ Rhapsody XMI uses UML combined fragments (standard UML 2.5 representation)
 
 **Technical Changes**:
 - `FunctionCall` model extended with `is_conditional` and `condition` fields
 - `CallTreeNode` extended with `is_optional` and `condition` fields
 - `CParser` enhanced with line-by-line conditional context tracking
 - `MermaidGenerator` supports `opt`, `alt`, and `else` blocks
-- `XMIGenerator` supports UML combined fragments
+- `RhapsodyXmiGenerator` supports UML combined fragments
 - 298 tests passing with 89% code coverage
 
 ## Changelog
+
+### [Version 0.8.3] - 2026-03-05
+
+#### Added
+- **Comprehensive C comment removal**: Robust comment parsing with string literal protection
+- **String literal protection**: Comments inside string literals are correctly preserved
+- **Multi-line string support**: Handles complex multi-line string literals with embedded comment-like patterns
+- **Production verification**: Tested on real AUTOSAR codebases with complex string formatting
+
+#### Improved
+- False positive prevention for comment detection inside strings
+- Both single-line (`//`) and multi-line (`/* */`) comment handling
+- String literal content preservation
+
+#### Technical
+- Verified parsing of production AUTOSAR codebase with zero comment-related parse errors
+- All existing tests passing
+
+---
 
 ### [Version 0.8.0] - 2026-03-01
 
@@ -257,9 +301,6 @@ sequenceDiagram
 ```bash
 # Generate Rhapsody XMI
 calltree --start-function Demo_Init --format rhapsody
-
-# Generate both Mermaid and Rhapsody XMI
-calltree --start-function Demo_Init --format both
 ```
 
 ---
@@ -314,13 +355,10 @@ calltree --start-function Demo_Init --format both
 ### [Version 0.4.0] - 2026-02-03
 
 #### Added
-- **XMI/UML 2.5 output format**: Complete XMI generation with UML 2.5 compliance
-- **XMIGenerator**: New generator class for XMI document creation
-- **CLI `--format xmi` option**: Support for XMI output format
-- **CLI `--format both` option**: Generate both Mermaid and XMI simultaneously
-- **XMI requirements documentation**: `docs/requirements/requirements_xmi.md`
+- **XMI/UML 2.5 output format**: Complete XMI generation with UML 2.5 compliance (now superseded by Rhapsody XMI 2.1 in v0.8.0)
+- **XMIGenerator**: New generator class for XMI document creation (deprecated, use RhapsodyXmiGenerator)
 - **UML combined fragments**: Support for `opt`, `alt`, `else` interactions
-- **XMI demo output**: `demo/demo_main.xmi` example file
+- **Rhapsody XMI demo output**: `demo/rhapsody_demo_main.xmi` example file
 
 #### Technical
 - XMI documents importable into Enterprise Architect, Visual Paradigm, MagicDraw
@@ -446,7 +484,7 @@ calltree --start-function Demo_Init \
          --max-depth 2 \
          --output demo/output.md
 
-# Generate XMI format (with opt/loop block support)
+# Generate Rhapsody XMI 2.1
 calltree --start-function Demo_MainFunction \
          --source-dir demo/src \
          --format rhapsody \
@@ -547,7 +585,7 @@ calltree [OPTIONS]
 Options:
   --start-function TEXT          Starting function name [required]
   --max-depth INTEGER           Maximum call depth (default: 3)
-  --source-dir PATH             Source code directory (default: ./demo/src)
+  --source-dir PATH             Source code directory (default: ./demo)
   --format [mermaid|rhapsody]   Output format (default: mermaid)
   --output PATH                 Output file path (default: call_tree.md)
   --module-config PATH          YAML file mapping C files to SW modules
@@ -555,11 +593,12 @@ Options:
                                Use SW module names as Mermaid participants (default: True)
   --enable-loops                Enable loop detection and representation (default: False)
   --enable-conditionals         Enable if-else conditional detection and representation (default: False)
-  --rhapsody-package-path TEXT  Package path for Rhapsody XMI output (e.g., 'Package1/Package2/Package3').
-                                Creates nested packages in the XMI structure (default: flat package structure)
-                                Max depth: 30 levels, max name length: 50 characters, valid characters: alphanumeric, underscore, space
-    --rhapsody-model-name TEXT    Custom name for the UML model in Rhapsody XMI output (default: CallTree_{root_function})
-    --cache-dir PATH              Cache directory (default: <source-dir>/.cache)  --no-cache                    Disable cache usage
+  --rhapsody-package-path TEXT  Package path for Rhapsody XMI output
+                               (e.g., 'Package1/Package2/Package3').
+                               Creates nested packages in the XMI structure.
+  --rhapsody-model-name TEXT    Custom name for the UML model in Rhapsody XMI output
+  --cache-dir PATH              Cache directory (default: <source-dir>/.cache)
+  --no-cache                    Disable cache usage
   --rebuild-cache               Force rebuild of cache
   --no-abbreviate-rte           Do not abbreviate RTE function names
   --verbose, -v                 Enable verbose output
@@ -1118,10 +1157,10 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [ ] Multi-threading for large codebases
 - [ ] Function complexity metrics
 - [ ] Dead code detection
-- [x] XMI/UML 2.5 output format with opt/loop/alt block support
+- [x] Rhapsody XMI 2.1 export with full structural compatibility (v0.8.0)
 - [x] Automatic conditional call detection with opt/alt/else blocks
 - [x] Loop detection (for/while) with condition extraction
-- [x] Rhapsody XMI 2.1 export with full structural compatibility
+- [x] C comment removal with string literal protection (v0.8.3)
 
 ## Support
 

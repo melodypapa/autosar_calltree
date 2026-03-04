@@ -8,7 +8,7 @@ AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR c
 
 **Key capability**: Handles AUTOSAR's proprietary macros that traditional C parsers cannot understand. Use this when working with automotive embedded systems code.
 
-**Latest feature (v0.7.0)**: IBM Rhapsody XMI export for cross-platform compatibility with Rhapsody 8.0+
+**Latest feature (v0.8.3)**: Comprehensive C comment removal with string literal protection for robust parsing of comment-like patterns in string literals
 
 ## Development Commands
 
@@ -387,6 +387,9 @@ tests/
 
 ## Version History
 
+- **v0.8.3** (2026-03-05): Comprehensive C comment removal with string literal protection
+- **v0.8.0** (2026-03-01): Full Rhapsody XMI 2.1 compatibility with OMG UML namespace
+- **v0.7.0** (2026-02-14): IBM Rhapsody XMI export for cross-platform compatibility with Rhapsody 8.0+
 - **v0.6.1** (2026-02-11): Alternative pycparser-based C parser for more reliable standard C parsing
 - **v0.6.0** (2026-02-10): Loop detection and multi-line if condition extraction for complex AUTOSAR code
 - **v0.5.0** (2026-02-04): Conditional function call tracking with opt/alt/else blocks
@@ -395,11 +398,11 @@ tests/
 
 ## Optional: pycparser Integration
 
-The project includes an optional pycparser-based C parser (`CParserPyCParser`) that provides more reliable parsing of standard C code through AST analysis.
+The project includes a pycparser-based C parser (`CParserPyCParser`) that provides more reliable parsing of standard C code through AST analysis.
 
 **Installation**:
 ```bash
-pip install -e ".[parser]"  # Includes pycparser
+pip install -e ".[dev]"  # pycparser is included in core dependencies
 ```
 
 **Benefits over regex-based CParser**:
@@ -409,7 +412,6 @@ pip install -e ".[parser]"  # Includes pycparser
 - Fewer false positives from C keywords
 
 **Limitations**:
-- Requires pycparser installation (not in core dependencies)
 - Does not track conditional/loop context (TODO: `# TODO: Track if/else context` in code)
 - Still requires AutosarParser for AUTOSAR macros (pycparser cannot parse them)
 

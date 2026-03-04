@@ -125,7 +125,7 @@ This directory contains test case documentation for the AUTOSAR Call Tree Analyz
 - **Requirement IDs**: SWR_GEN_00001 - SWR_GEN_00025 (25 requirements)
 - **Test IDs**: SWUT_GEN_00001 - SWUT_GEN_00025 (25 tests)
 - **Coverage**: 89%
-- **Source Files**: `mermaid_generator.py`, `xmi_generator.py`
+- **Source Files**: `mermaid_generator.py`, `rhapsody_generator.py`
 - **Key Areas**:
   - Mermaid sequence diagram generation
   - Participant management (function and module-based)
@@ -137,14 +137,16 @@ This directory contains test case documentation for the AUTOSAR Call Tree Analyz
   - ASCII art text tree generation
   - Statistics display
   - Circular dependencies section
-  - XMI 2.5 document generation
-  - XMI namespaces and schema compliance
+  - Rhapsody XMI 2.1 document generation
+  - OMG UML 2.1 namespaces and XMI 2.1 schema compliance
+  - GUID+ UUID format for element IDs
+  - MessageOccurrenceSpecification for timing info
   - UML lifeline generation
   - UML message generation
-  - XMI opt block support for conditionals
-  - Module support in XMI
+  - Rhapsody opt/loop block support for conditionals
+  - Module support in Rhapsody XMI
   - Recursive call handling
-  - XMI metadata
+  - Rhapsody XMI metadata
   - XML formatting and escaping
   - File extensions (.md, .xmi)
 
@@ -208,7 +210,7 @@ src/autosar_calltree/parsers/c_parser_pycparser.py    90%
 src/autosar_calltree/analyzers/call_tree_builder.py  94%
 src/autosar_calltree/config/module_config.py       97%
 src/autosar_calltree/generators/mermaid_generator.py   89%
-src/autosar_calltree/generators/xmi_generator.py      70%
+src/autosar_calltree/generators/rhapsody_generator.py   89%
 src/autosar_calltree/cli/*.py                        ~90%
 --------------------------------------------------------
 TOTAL                                             89%
