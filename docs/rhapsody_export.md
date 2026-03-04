@@ -2,12 +2,12 @@
 
 ## Overview
 
-The AUTOSAR Call Tree Analyzer supports exporting call trees as Rhapsody-compatible XMI 2.5 files that can be imported into IBM Rhapsody 8.0+ for further editing and visualization.
+The AUTOSAR Call Tree Analyzer supports exporting call trees as Rhapsody-compatible XMI 2.1 files that can be imported into IBM Rhapsody 8.0+ for further editing and visualization.
 
 ## Requirements
 
 - IBM Rhapsody 8.0 or later
-- AUTOSAR Call Tree Analyzer v0.7.0+
+- AUTOSAR Call Tree Analyzer v0.8.0+ (for XMI 2.1 compatibility)
 
 ## Generating Rhapsody XMI
 
@@ -19,6 +19,18 @@ calltree --start-function Demo_Init --format rhapsody --source-dir demo
 
 # Output to specific file
 calltree --start-function Demo_Init --format rhapsody --output diagrams/rhapsody_demo.xmi
+
+# Generate with nested package structure
+calltree --start-function Demo_Init \
+         --format rhapsody \
+         --output diagrams/rhapsody_demo.xmi \
+         --rhapsody-package-path "MyPackage/SubPackage"
+
+# Generate with custom model name
+calltree --start-function Demo_Init \
+         --format rhapsody \
+         --output diagrams/rhapsody_demo.xmi \
+         --rhapsody-model-name "MyProjectModel"
 ```
 
 ### Module-Level Diagrams
@@ -34,20 +46,18 @@ calltree --start-function Demo_Init \
          --output demo/rhapsody_architecture.xmi
 ```
 
-### Combining Formats
+### With Loop and Conditional Detection
 
-Generate both Mermaid and Rhapsody formats:
+Enable loop and conditional detection for more detailed diagrams:
 
 ```bash
 calltree --start-function Demo_MainFunction \
-         --format both \
-         --max-depth 4 \
-         --output diagrams/demo
+         --format rhapsody \
+         --source-dir demo \
+         --enable-loops \
+         --enable-conditionals \
+         --output demo/rhapsody_detailed.xmi
 ```
-
-This creates:
-- `diagrams/demo.mermaid.md` - Mermaid sequence diagram
-- `diagrams/demo.xmi` - Rhapsody-compatible XMI
 
 ## Importing into Rhapsody
 
@@ -78,9 +88,13 @@ This creates:
 
 ### Rhapsody-Specific Features
 
-- **UUID-based IDs**: All elements use UUID format for better Rhapsody compatibility
-- **Rhapsody Profiles**: Includes Rhapsody-specific profile references
+- **XMI 2.1 Format**: OMG XMI 2.1 with UML 2.1 namespace for full Rhapsody compatibility
+- **GUID+ ID Format**: All elements use `GUID+<UUID>` format for maximum Rhapsody compatibility
+- **MessageOccurrenceSpecification**: Explicit send/receive occurrence fragments for timing info
+- **Rhapsody Profiles**: Includes Rhapsody-specific profile references and eAnnotations
 - **AUTOSAR Stereotypes**: Supports AUTOSAR-specific stereotypes (e.g., `<<SWC>>`)
+- **Nested Package Support**: Optional `--rhapsody-package-path` for hierarchical organization
+- **Custom Model Names**: Optional `--rhapsody-model-name` for project-specific naming
 - **Tool Metadata**: Includes generation metadata for traceability
 
 ## Limitations
@@ -95,9 +109,10 @@ To import and edit XMI files, you need a valid IBM Rhapsody license. The generat
 
 ### Version Compatibility
 
-- **Minimum**: Rhapsody 8.0 (UML 2.1 support)
+- **Minimum**: Rhapsody 8.0 (XMI 2.1 support)
 - **Tested**: Rhapsody 10.0.1
-- **XMI Format**: UML 2.5 XMI (backward compatible with UML 2.1)
+- **XMI Format**: XMI 2.1 with UML 2.1 namespace (full Rhapsody compatibility)
+- **Breaking Change**: v0.8.0 changed from XMI 4.0 to XMI 2.1 - files generated with v0.8.0+ are not compatible with older versions
 
 ## Troubleshooting
 
@@ -141,19 +156,22 @@ To import and edit XMI files, you need a valid IBM Rhapsody license. The generat
 
 - Use `--use-module-names` for architecture-level views
 - Include `--max-depth` to limit complexity
-- Generate both formats: `--format both` (Mermaid for docs, Rhapsody for editing)
+- Generate Mermaid for docs and Rhapsody XMI for editing (run separately)
+- Use `--enable-loops` and `--enable-conditionals` for detailed behavioral diagrams
 
 ### For Analysis
 
 - Use `--verbose` to see detailed statistics
 - Check circular dependency warnings
 - Review module distribution for architecture insights
+- Use `--rhapsody-package-path` to organize diagrams by project structure
 
 ### For Automation
 
 - Combine with `--rebuild-cache` for fresh analysis
 - Use `--output` with directory structure for organized outputs
 - Script generation for multiple start functions
+- Use `--rhapsody-model-name` for consistent naming across batch exports
 
 ## Examples
 

@@ -163,16 +163,15 @@ Validates that --format option selects output format.
 **Test Approach**
 The test verifies that:
 1. --format or -f flag is recognized
-2. Choices are: mermaid, xmi, both
+2. Choices are: mermaid, rhapsody
 3. Default is mermaid
 4. Format determines generator selection
 
 **Expected Behavior**
-Output format option selects Mermaid, XMI, or both output types.
+Output format option selects Mermaid or Rhapsody XMI 2.1 output type.
 
 **Edge Cases**
 - Invalid format (rejected)
-- Both format creates two files
 - Case sensitivity
 
 ---
@@ -204,29 +203,28 @@ Cache options provide fine-grained control over caching behavior.
 
 ---
 
-### SWUT_CLI_00008 - Multiple Output Files
+### SWUT_CLI_00008 - Rhapsody Format Output
 
 **Requirement**: SWR_CLI_00008
 **Priority**: Medium
 **Status**: ✅ Pass
 
 **Description**
-Validates that --format both generates multiple output files.
+Validates that --format rhapsody generates XMI output file.
 
 **Test Approach**
 The test verifies that:
-1. Format "both" generates .md and .xmi files
-2. --output path is used as base name
-3. Both files are created successfully
-4. File extensions are correct
+1. Format "rhapsody" generates .xmi file
+2. --output path is respected
+3. File is created successfully
+4. File extension is .xmi
 
 **Expected Behavior**
-Both output format generates Mermaid markdown and XMI files from base output name.
+Rhapsody format generates Rhapsody-compatible XMI 2.1 file.
 
 **Edge Cases**
 - Output path with existing extension
-- Both generators failing
-- Partial success (one file created)
+- Rhapsody generator failing
 
 ---
 

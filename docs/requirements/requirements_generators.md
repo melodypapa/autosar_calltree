@@ -1,18 +1,18 @@
 # Generators Package Requirements
 
 **Package**: `autosar_calltree.generators`
-**Source Files**: `mermaid_generator.py`, `xmi_generator.py`
+**Source Files**: `mermaid_generator.py`, `rhapsody_generator.py`
 **Requirements**: SWR_GEN_00001 - SWR_GEN_00025 (25 requirements)
 
 ---
 
 ## Overview
 
-The generators package provides output generation functionality, creating Mermaid sequence diagrams and XMI/UML 2.5 documents from call tree analysis results.
+The generators package provides output generation functionality, creating Mermaid sequence diagrams and Rhapsody XMI 2.1 documents from call tree analysis results.
 
 **Core Classes**:
 - `MermaidGenerator` - Mermaid sequence diagram generation
-- `XMIGenerator` - XMI/UML 2.5 document generation
+- `RhapsodyXmiGenerator` - Rhapsody XMI 2.1 document generation (v0.8.0+)
 
 ---
 
@@ -227,28 +227,33 @@ sequenceDiagram
 
 ---
 
-## XMI Generator (SWR_GEN_00016 - SWR_GEN_00025)
+## Rhapsody XMI Generator (SWR_GEN_00016 - SWR_GEN_00025)
 
-### SWR_GEN_00016 - XMI 2.5 Document Generation
-**Purpose**: Generate XMI/UML 2.5 sequence diagrams
+### SWR_GEN_00016 - Rhapsody XMI 2.1 Document Generation
+**Purpose**: Generate Rhapsody-compatible XMI 2.1 sequence diagrams
 
 **Method**: `generate(analysis_result, output_path)`
 
-**Output**: XML file with XMI 2.5 format
+**Output**: XML file with XMI 2.1 format (OMG UML 2.1 namespace)
 
-**Implementation**: `XMIGenerator`
+**Implementation**: `RhapsodyXmiGenerator` (uses lxml for namespace control)
+
+**Note**: v0.8.0 migrated from generic XMI/UML 2.5 to Rhapsody-specific XMI 2.1 format for full IBM Rhapsody 8.0+ compatibility.
 
 ---
 
 ### SWR_GEN_00017 - XMI Namespaces and Schema
-**Purpose**: Use correct XMI and UML namespaces
+**Purpose**: Use correct XMI and UML namespaces for Rhapsody compatibility
 
 **Namespaces**:
-- `xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML"`
-- `xmlns:xmi="http://www.omg.org/spec/XMI/20131001"`
-- `xmlns:xmi="http://www.omg.org/spec/XMI/20110701"`
+- `xmlns:uml="http://www.omg.org/spec/UML/20090901"` (OMG UML 2.1)
+- `xmlns:xmi="http://schema.omg.org/spec/XMI/2.1"` (XMI 2.1)
+- `xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"`
+- `xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"`
 
-**XMI Version**: 4.0 (or 2.5 compatible)
+**XMI Version**: 2.1 (Rhapsody native format)
+
+**ID Format**: `GUID+<UUID>` for all elements
 
 ---
 
@@ -256,9 +261,9 @@ sequenceDiagram
 **Purpose**: Generate UML lifelines for participants
 
 **Elements**:
-- `uml:Lifeline` with unique ID
+- `uml:Lifeline` with GUID+ UUID
 - `name`: Participant name (function or module)
-- `represents`: Property reference
+- `represents`: Property reference via ownedAttribute
 
 ---
 
@@ -266,16 +271,15 @@ sequenceDiagram
 **Purpose**: Generate UML messages for calls
 
 **Elements**:
-- `uml:Message` with unique ID
+- `uml:Message` with GUID+ UUID
 - `name`: Function name with parameters
 - `messageSort`: "synchCall" for calls
-- `sendEvent`: Source lifeline event
-- `receiveEvent`: Target lifeline event
+- `MessageOccurrenceSpecification`: Explicit send/receive events
 
 ---
 
-### SWR_GEN_00020 - XMI Opt Block Support
-**Purpose**: Generate UML combined fragments for conditional calls
+### SWR_GEN_00020 - Rhapsody Opt/Loop Block Support
+**Purpose**: Generate UML combined fragments for conditional/loop calls
 
 **Element**: `uml:CombinedFragment`
 
@@ -342,13 +346,17 @@ sequenceDiagram
 **Package Structure**:
 ```
 autosar_calltree.generators/
-├── mermaid_generator.py    # SWR_GEN_00001 - SWR_GEN_00015 (Mermaid)
-└── xmi_generator.py        # SWR_GEN_00016 - SWR_GEN_00025 (XMI)
+├── mermaid_generator.py     # SWR_GEN_00001 - SWR_GEN_00015 (Mermaid)
+└── rhapsody_generator.py    # SWR_GEN_00016 - SWR_GEN_00025 (Rhapsody XMI 2.1)
 ```
 
 **Key Features**:
 - Mermaid sequence diagrams with opt/alt/loop blocks
 - Module-level or function-level diagrams
-- XMI/UML 2.5 compliant output
+- Rhapsody XMI 2.1 compliant output (OMG UML 2.1 namespace)
+- GUID+ UUID format for all elements
+- MessageOccurrenceSpecification for timing info
+- Nested package support via --rhapsody-package-path
+- Custom model name support via --rhapsody-model-name
 - Function tables and metadata
 - Text tree representations

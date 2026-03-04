@@ -7,7 +7,7 @@ This document describes test cases for the Generators package, organized by requ
 **Requirements Document**: [requirements_generators.md](../requirements/requirements_generators.md)
 
 **Package**: `autosar_calltree.generators`
-**Source Files**: `mermaid_generator.py`, `xmi_generator.py`
+**Source Files**: `mermaid_generator.py`, `rhapsody_generator.py`
 **Requirement IDs**: SWR_GEN_00001 - SWR_GEN_00025
 **Coverage**: 89%
 
@@ -421,26 +421,27 @@ Generated file is valid markdown with embedded Mermaid diagram.
 
 ---
 
-## XMI Generator Tests
+## Rhapsody XMI Generator Tests
 
-### SWUT_GEN_00016 - XMI 2.5 Document Generation
+### SWUT_GEN_00016 - Rhapsody XMI 2.1 Document Generation
 
 **Requirement**: SWR_GEN_00016
 **Priority**: High
 **Status**: ✅ Pass
 
 **Description**
-Validates that XMI/UML 2.5 sequence diagrams are generated.
+Validates that Rhapsody-compatible XMI 2.1 sequence diagrams are generated.
 
 **Test Approach**
 The test verifies that:
 1. generate() method creates XMI XML file
 2. XML declaration is correct
-3. XMI namespaces are used
+3. OMG UML 2.1 and XMI 2.1 namespaces are used
 4. Output file has .xmi extension
+5. GUID+ UUID format is used for element IDs
 
 **Expected Behavior**
-XMIGenerator produces valid XMI 2.5 files with UML sequence diagrams.
+RhapsodyXmiGenerator produces valid XMI 2.1 files with OMG UML 2.1 namespace, compatible with IBM Rhapsody 8.0+.
 
 **Edge Cases**
 - Empty call trees
@@ -450,24 +451,24 @@ XMIGenerator produces valid XMI 2.5 files with UML sequence diagrams.
 
 ---
 
-### SWUT_GEN_00017 - XMI Namespaces and Schema
+### SWUT_GEN_00017 - Rhapsody XMI Namespaces and Schema
 
 **Requirement**: SWR_GEN_00017
 **Priority**: High
 **Status**: ✅ Pass
 
 **Description**
-Validates that correct XMI and UML namespaces are used.
+Validates that correct OMG UML 2.1 and XMI 2.1 namespaces are used for Rhapsody compatibility.
 
 **Test Approach**
 The test verifies that:
-1. xmlns:uml namespace is correct
-2. xmlns:xmi namespaces are correct
-3. XMI version attribute is set
-4. Schema references are valid
+1. xmlns:uml namespace is OMG UML 2.1 (http://www.omg.org/spec/UML/20090901)
+2. xmlns:xmi namespace is XMI 2.1 (http://schema.omg.org/spec/XMI/2.1)
+3. xmlns:xsi namespace is correct
+4. ecore namespace is included for Rhapsody profile support
 
 **Expected Behavior**
-XMI document uses standard namespaces for UML 2.5 and XMI compatibility.
+XMI document uses OMG UML 2.1 and XMI 2.1 namespaces for full Rhapsody compatibility.
 
 **Edge Cases**
 - Different XMI versions
@@ -531,24 +532,25 @@ Messages represent function calls with proper UML event references.
 
 ---
 
-### SWUT_GEN_00020 - XMI Opt Block Support
+### SWUT_GEN_00020 - Rhapsody Opt/Loop Block Support
 
 **Requirement**: SWR_GEN_00020
 **Priority**: Medium
 **Status**: ✅ Pass
 
 **Description**
-Validates that UML combined fragments for conditional calls are generated.
+Validates that UML combined fragments for conditional and loop calls are generated in Rhapsody format.
 
 **Test Approach**
 The test verifies that:
 1. uml:CombinedFragment is created for conditional calls
-2. interactionOperator is "opt"
+2. interactionOperator is "opt" for conditionals and "loop" for loops
 3. operand element contains condition name
 4. Nested message is inside operand
+5. MessageOccurrenceSpecification elements are present
 
 **Expected Behavior**
-Conditional calls generate UML combined fragments with opt operator.
+Conditional and loop calls generate UML combined fragments with proper operators in Rhapsody XMI 2.1 format.
 
 **Edge Cases**
 - Nested conditionals
@@ -558,14 +560,14 @@ Conditional calls generate UML combined fragments with opt operator.
 
 ---
 
-### SWUT_GEN_00021 - Module Support in XMI
+### SWUT_GEN_00021 - Module Support in Rhapsody XMI
 
 **Requirement**: SWR_GEN_00021
 **Priority**: Medium
 **Status**: ✅ Pass
 
 **Description**
-Validates that modules are used as lifelines when configured.
+Validates that modules are used as lifelines when configured in Rhapsody XMI output.
 
 **Test Approach**
 The test verifies that:
@@ -575,7 +577,7 @@ The test verifies that:
 4. Module configuration is respected
 
 **Expected Behavior**
-Module-level XMI diagrams show module lifelines with function messages.
+Module-level Rhapsody XMI diagrams show module lifelines with function messages.
 
 **Edge Cases**
 - Functions without modules
@@ -584,24 +586,24 @@ Module-level XMI diagrams show module lifelines with function messages.
 
 ---
 
-### SWUT_GEN_00022 - Recursive Call Handling
+### SWUT_GEN_00022 - Recursive Call Handling in Rhapsody XMI
 
 **Requirement**: SWR_GEN_00022
 **Priority**: Low
 **Status**: ✅ Pass
 
 **Description**
-Validates that recursive calls are marked correctly in XMI.
+Validates that recursive calls are handled correctly in Rhapsody XMI.
 
 **Test Approach**
 The test verifies that:
-1. Recursive calls use messageSort="reply"
+1. Recursive calls are handled correctly
 2. Non-recursive calls use "synchCall"
 3. Recursive calls are visually distinguished
 4. Self-calls are handled
 
 **Expected Behavior**
-Recursive function calls are marked with reply message sort in XMI.
+Recursive function calls are handled correctly in Rhapsody XMI output.
 
 **Edge Cases**
 - Indirect recursion
@@ -610,14 +612,14 @@ Recursive function calls are marked with reply message sort in XMI.
 
 ---
 
-### SWUT_GEN_00023 - XMI Metadata
+### SWUT_GEN_00023 - Rhapsody XMI Metadata
 
 **Requirement**: SWR_GEN_00023
 **Priority**: Low
 **Status**: ✅ Pass
 
 **Description**
-Validates that metadata is included in XMI document.
+Validates that metadata is included in Rhapsody XMI document.
 
 **Test Approach**
 The test verifies that:
@@ -627,7 +629,7 @@ The test verifies that:
 4. Package documentation is included
 
 **Expected Behavior**
-XMI metadata documents analysis context and tool information.
+Rhapsody XMI metadata documents analysis context and tool information.
 
 **Edge Cases**
 - Very long file paths
@@ -643,7 +645,7 @@ XMI metadata documents analysis context and tool information.
 **Status**: ✅ Pass
 
 **Description**
-Validates that properly formatted XML is generated.
+Validates that properly formatted XML is generated for Rhapsody XMI.
 
 **Test Approach**
 The test verifies that:
@@ -653,7 +655,7 @@ The test verifies that:
 4. UTF-8 encoding is declared
 
 **Expected Behavior**
-XMI output is valid, well-formatted XML 1.0 document.
+Rhapsody XMI output is valid, well-formatted XML 1.0 document.
 
 **Edge Cases**
 - Special XML characters (<, >, &, ", ')
@@ -663,14 +665,14 @@ XMI output is valid, well-formatted XML 1.0 document.
 
 ---
 
-### SWUT_GEN_00025 - XMI File Extension
+### SWUT_GEN_00025 - Rhapsody XMI File Extension
 
 **Requirement**: SWR_GEN_00025
 **Priority**: Low
 **Status**: ✅ Pass
 
 **Description**
-Validates that correct file extension is used for XMI output.
+Validates that correct file extension is used for Rhapsody XMI output.
 
 **Test Approach**
 The test verifies that:
@@ -730,13 +732,13 @@ XMI files are saved with standard .xmi extension.
 ```bash
 # Run all generator tests
 pytest tests/unit/test_mermaid_generator.py
-pytest tests/unit/test_xmi_generator.py
+pytest tests/unit/test_rhapsody_generator.py
 
 # Run specific test
 pytest tests/unit/test_mermaid_generator.py::TestClass::test_SWUT_GEN_00001
 
 # Run with coverage
-pytest tests/unit/test_mermaid_generator.py tests/unit/test_xmi_generator.py --cov=autosar_calltree/generators --cov-report=term-missing
+pytest tests/unit/test_mermaid_generator.py tests/unit/test_rhapsody_generator.py --cov=autosar_calltree/generators --cov-report=term-missing
 ```
 
 ## Change History

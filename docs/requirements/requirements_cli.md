@@ -82,14 +82,13 @@ The CLI package provides a command-line interface for the AUTOSAR Call Tree Anal
 
 **Flag**: `--format` / `-f`
 
-**Choices**: `mermaid`, `xmi`, `both`
+**Choices**: `mermaid`, `rhapsody`
 
 **Default**: `mermaid`
 
 **Behavior**:
 - `mermaid`: Generate Mermaid markdown
-- `xmi`: Generate XMI file
-- `both`: Generate both formats
+- `rhapsody`: Generate Rhapsody XMI 2.1
 
 ---
 
@@ -105,13 +104,19 @@ The CLI package provides a command-line interface for the AUTOSAR Call Tree Anal
 
 ---
 
-### SWR_CLI_00008 - Multiple Output Files
-**Purpose**: Handle multiple output files with `--format both`
+### SWR_CLI_00008 - Output Format Selection
+**Purpose**: Select output format (Mermaid or Rhapsody XMI)
+
+**Flag**: `--format [mermaid|rhapsody]`
+
+**Options**:
+- `mermaid`: Generate Mermaid sequence diagram (default)
+- `rhapsody`: Generate Rhapsody-compatible XMI 2.1
 
 **Behavior**:
-- Generate `.md` file for Mermaid
-- Generate `.xmi` file for XMI
-- Use `--output` as base name
+- Default output file: `call_tree.md` for Mermaid
+- Default output file: `call_tree.xmi` for Rhapsody
+- Use `--output` to specify custom output path
 
 ---
 
@@ -255,9 +260,11 @@ autosar_calltree.cli/
 
 **Key Features**:
 - Click-based command structure
-- Multiple output formats (Mermaid, XMI, both)
+- Multiple output formats (Mermaid, Rhapsody XMI 2.1)
 - Configurable caching
 - Rich console output
 - Function search and listing
 - Module configuration support
 - Comprehensive error handling
+- Loop and conditional detection options
+- Rhapsody-specific options (package path, model name)
