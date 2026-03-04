@@ -13,7 +13,7 @@ Example usage:
 
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pycparser import c_ast, c_parser
 
@@ -578,8 +578,11 @@ class CParser:
         """
         preprocessed = content
 
-        # Add typedefs for common AUTOSAR types at the beginning
-        # This allows pycparser to recognize these types
+        # Step 1: Remove ALL comments FIRST (before any macro processing)
+        # This prevents comment-like content in strings from being affected
+        preprocessed = self._remove_comments(preprocessed)
+
+        # Step 2: Add typedefs for AUTOSAR types
         autosar_typedefs = """typedef unsigned char uint8;
 typedef unsigned short uint16;
 typedef unsigned int uint32;
@@ -594,10 +597,6 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 """
         preprocessed = autosar_typedefs + preprocessed
-
-        # Remove comments (pycparser can handle them, but removing helps)
-        preprocessed = re.sub(r"/\*.*?\*/", "", preprocessed, flags=re.DOTALL)
-        preprocessed = re.sub(r"//.*?$", "", preprocessed, flags=re.MULTILINE)
 
         # Replace AUTOSAR function macros with dummy declarations
         # Pattern: FUNC(return_type, class) func_name(params);
@@ -792,6 +791,62 @@ typedef unsigned long ulong;
                 filtered_lines.append(line)
 
         return "\n".join(filtered_lines)
+
+    def _remove_comments(self, content: str) -> str:
+        """
+        Remove all C-style comments while preserving string/char literals.
+
+        Handles both comment formats:
+        - Block comments: /* ... */ (can span multiple lines)
+        - Line comments: // ... (extends to end of line)
+
+        Args:
+            content: C source code
+
+        Returns:
+            Source with comments removed, string/char literals preserved
+        """
+        # Placeholders for protected content
+        string_placeholders: Dict[str, str] = {}
+        char_placeholders: Dict[str, str] = {}
+
+        def replace_string(match: re.Match) -> str:
+            """Replace string literal with placeholder."""
+            key = f"__STR_{len(string_placeholders)}__"
+            string_placeholders[key] = match.group(0)
+            return key
+
+        def replace_char(match: re.Match) -> str:
+            """Replace character literal with placeholder."""
+            key = f"__CHR_{len(char_placeholders)}__"
+            char_placeholders[key] = match.group(0)
+            return key
+
+        # Step 1: Protect string literals (handles escaped quotes)
+        # Pattern: " followed by (non-"-or-backslash OR escaped-char)* followed by "
+        content = re.sub(r'"(?:[^"\\]|\\.)*"', replace_string, content)
+
+        # Step 2: Protect character literals (handles escaped chars)
+        # Pattern: ' followed by (non-'-or-backslash OR escaped-char)* followed by '
+        content = re.sub(r"'(?:[^'\\]|\\.)*'", replace_char, content)
+
+        # Step 3: Remove block comments /* ... */
+        # Use DOTALL so . matches newlines (multi-line comments)
+        content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+
+        # Step 4: Remove line comments // ... (to end of line)
+        # MULTILINE makes $ match at end of each line
+        content = re.sub(r'//.*?$', '', content, flags=re.MULTILINE)
+
+        # Step 5: Restore string literals
+        for key, value in string_placeholders.items():
+            content = content.replace(key, value)
+
+        # Step 6: Restore character literals
+        for key, value in char_placeholders.items():
+            content = content.replace(key, value)
+
+        return content
 
     def _has_traditional_c_functions(self, content: str) -> bool:
         """
