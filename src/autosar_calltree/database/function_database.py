@@ -24,15 +24,6 @@ from ..parsers.autosar_parser import AutosarParser
 from ..parsers.c_parser import CParser
 from .models import FunctionInfo
 
-# Try to import pycparser-based parser (optional dependency)
-try:
-    from ..parsers.c_parser_pycparser import CParserPyCParser
-
-    PYCPARSER_AVAILABLE = True
-except ImportError:
-    PYCPARSER_AVAILABLE = False
-    CParserPyCParser = None  # type: ignore
-
 
 def _format_file_size(size_bytes: int) -> str:
     """Format file size in human-readable format."""
@@ -54,7 +45,7 @@ class CacheMetadata:
     created_at: datetime
     source_directory: str
     file_count: int
-    parser_type: str = "regex"  # Track which parser created this cache
+    parser_type: str = "pycparser"  # Track which parser created this cache
     file_checksums: Dict[str, str] = field(default_factory=dict)
 
 
@@ -102,14 +93,10 @@ class FunctionDatabase:
         # All functions by file
         self.functions_by_file: Dict[str, List[FunctionInfo]] = {}
 
-        # Parsers - use pycparser if available, otherwise regex-based
+        # Parsers
         self.autosar_parser = AutosarParser()
-        if PYCPARSER_AVAILABLE:
-            self.c_parser = CParserPyCParser()  # type: ignore[assignment]
-            self.parser_type = "pycparser"
-        else:
-            self.c_parser = CParser()  # type: ignore[assignment]
-            self.parser_type = "regex"
+        self.c_parser = CParser()
+        self.parser_type = "pycparser"
 
         # Module configuration
         self.module_config = module_config
@@ -398,7 +385,6 @@ class FunctionDatabase:
 
         return {
             "parser_type": self.parser_type,
-            "pycparser_available": PYCPARSER_AVAILABLE,
             "total_files_scanned": self.total_files_scanned,
             "total_functions_found": self.total_functions_found,
             "unique_function_names": len(self.functions),
