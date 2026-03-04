@@ -409,3 +409,164 @@ def test_parse_error_graceful_handling():
     # or return empty result
     # The key is that it doesn't crash
     assert functions is not None
+
+
+# Tests for comment removal functionality
+
+
+class TestCommentRemoval:
+    """Test C comment removal edge cases."""
+
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.parser = CParser()
+
+    def test_block_comment_simple(self):
+        """Remove simple block comment."""
+        code = "int x; /* comment */ int y;"
+        expected = "int x;  int y;"
+        assert self.parser._remove_comments(code) == expected
+
+    def test_block_comment_multiline(self):
+        """Remove multi-line block comment."""
+        code = "int x; /* line1\nline2 */ int y;"
+        # Block comments are removed entirely, including newlines inside them
+        expected = "int x;  int y;"
+        assert self.parser._remove_comments(code) == expected
+
+    def test_line_comment_simple(self):
+        """Remove simple line comment."""
+        code = "int x; // comment"
+        expected = "int x; "
+        assert self.parser._remove_comments(code) == expected
+
+    def test_both_comment_formats(self):
+        """Handle both /* */ and // in same code."""
+        code = "/* block */ int x; // line"
+        expected = " int x; "
+        assert self.parser._remove_comments(code) == expected
+
+    def test_string_with_comment_chars(self):
+        """Preserve strings containing comment-like text."""
+        code = 'char* s = "/* not a comment */";'
+        expected = code  # Unchanged
+        assert self.parser._remove_comments(code) == expected
+
+    def test_string_with_line_comment(self):
+        """Preserve strings containing //."""
+        code = 'char* s = "a // b";'
+        expected = code  # Unchanged
+        assert self.parser._remove_comments(code) == expected
+
+    def test_escaped_quotes_in_string(self):
+        """Preserve strings with escaped quotes."""
+        code = 'char* s = "he said \\"hello\\"";'
+        expected = code  # Unchanged
+        assert self.parser._remove_comments(code) == expected
+
+    def test_char_literal_preservation(self):
+        """Preserve character literals."""
+        code = "char c = '/';"
+        expected = code  # Unchanged
+        assert self.parser._remove_comments(code) == expected
+
+    def test_comment_in_code(self):
+        """Remove comments between code."""
+        code = """
+            int x = 1;  /* initialize */
+            int y = 2;  // another
+        """
+        # Comments removed, structure preserved
+        result = self.parser._remove_comments(code)
+        assert "/*" not in result
+        assert "//" not in result
+        assert "int x = 1;" in result
+
+    def test_empty_block_comment(self):
+        """Remove empty block comment."""
+        code = "int x; /**/ int y;"
+        expected = "int x;  int y;"
+        assert self.parser._remove_comments(code) == expected
+
+    def test_empty_line_comment(self):
+        """Remove empty line comment (just //)."""
+        code = "int x; //\nint y;"
+        # // to end of line is removed, but newline remains
+        result = self.parser._remove_comments(code)
+        assert "int x; " in result
+        assert "int y;" in result
+
+    def test_comment_at_eof(self):
+        """Remove comment at end of file."""
+        code = "int x; /* comment */"
+        expected = "int x; "
+        assert self.parser._remove_comments(code) == expected
+
+    def test_string_then_block_comment(self):
+        """String followed by block comment."""
+        code = 'char* s = "hello"; /* comment */'
+        expected = 'char* s = "hello"; '
+        assert self.parser._remove_comments(code) == expected
+
+    def test_char_then_line_comment(self):
+        """Character literal followed by line comment."""
+        code = "char c = 'x'; // comment"
+        expected = "char c = 'x'; "
+        assert self.parser._remove_comments(code) == expected
+
+    def test_nested_comment_like_in_block(self):
+        """Block comment containing // inside."""
+        code = "int x; /* // nested */ int y;"
+        expected = "int x;  int y;"
+        assert self.parser._remove_comments(code) == expected
+
+    def test_line_comment_with_block_comment_inside(self):
+        """Line comment containing /* */ inside."""
+        code = "int x; // /* ignored */\nint y;"
+        # Everything after // to end of line is removed
+        result = self.parser._remove_comments(code)
+        assert "int x; " in result
+        assert "int y;" in result
+        assert "/*" not in result
+
+    def test_multiple_strings_with_comments(self):
+        """Multiple strings with comment-like content."""
+        code = 'char* a = "/* first */"; char* b = "// second";'
+        expected = code  # Unchanged
+        assert self.parser._remove_comments(code) == expected
+
+    def test_multiline_block_comment(self):
+        """Multi-line block comment spanning many lines."""
+        code = """int x;
+/* This is a
+   multi-line
+   comment */
+int y;"""
+        result = self.parser._remove_comments(code)
+        assert "/*" not in result
+        assert "int x;" in result
+        assert "int y;" in result
+
+    def test_code_with_both_comment_types_and_strings(self):
+        """Complex code with both comment types and strings."""
+        code = '''
+            char* msg = "/* not a comment */";
+            int x = 10;  // initialize x
+            char c = '/'; /* char with slash */
+            char* url = "http://example.com";
+        '''
+        result = self.parser._remove_comments(code)
+        # Comments outside strings should be removed
+        # Note: /* inside strings is preserved, so we check for the pattern
+        # that indicates a real comment (not inside quotes)
+        # The easy check: string literals with comment-like content should be preserved
+        assert '"/* not a comment */"' in result
+        # Line comment after code should be removed
+        assert "// initialize x" not in result
+        # Block comment after char literal should be removed
+        # (but '/' char literal is preserved)
+        assert "'/'" in result
+        # Code should be preserved
+        assert "int x = 10;" in result
+        assert 'char* msg = "/* not a comment */"' in result
+        assert 'char* url = "http://example.com"' in result
