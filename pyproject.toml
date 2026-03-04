@@ -49,6 +49,7 @@ dependencies = [
     "jinja2>=3.0.0",
     "pyyaml>=6.0",
     "lxml>=4.0.0",
+    "pycparser>=2.21",
 ]
 
 [project.optional-dependencies]
@@ -60,15 +61,11 @@ dev = [
     "flake8>=4.0.0",
     "mypy>=0.950",
     "isort>=5.10.0",
-    "pycparser>=2.21",
 ]
 docs = [
     "sphinx>=4.0.0",
     "sphinx-rtd-theme>=1.0.0",
     "sphinx-click>=3.0.0",
-]
-parser = [
-    "pycparser>=2.21",
 ]
 parser-clang = [
     "libclang>=18.0.0",
