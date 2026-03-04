@@ -138,12 +138,16 @@ class TestRhapsodyXmiGenerator:
     UML_NAMESPACE = "http://www.omg.org/spec/UML/20090901"
 
     def _find_element(self, root, tag_name: str, namespace: str = None):
-        """Helper to find element by tag name, handling lxml namespace quirks."""
+        """Helper to find element by tag name or xmi:type, handling lxml namespace quirks."""
         if namespace:
             full_tag = f"{{{namespace}}}{tag_name}"
             for elem in root.iter():
                 # Check both full namespace tag and simple tag (lxml strips namespace from children)
                 if elem.tag == full_tag or elem.tag == tag_name:
+                    return elem
+                # Also check xmi:type attribute for namespaced types (e.g., uml:Interaction)
+                elem_type = elem.get(f"{{{self.XMI_NAMESPACE}}}type")
+                if elem_type and elem_type.endswith(f":{tag_name}"):
                     return elem
         else:
             for elem in root.iter():
@@ -152,13 +156,17 @@ class TestRhapsodyXmiGenerator:
         return None
 
     def _find_elements(self, root, tag_name: str, namespace: str = None):
-        """Helper to find all elements by tag name, handling lxml namespace quirks."""
+        """Helper to find all elements by tag name or xmi:type, handling lxml namespace quirks."""
         result = []
         if namespace:
             full_tag = f"{{{namespace}}}{tag_name}"
             for elem in root.iter():
                 # Check both full namespace tag and simple tag (lxml strips namespace from children)
                 if elem.tag == full_tag or elem.tag == tag_name:
+                    result.append(elem)
+                # Also check xmi:type attribute for namespaced types (e.g., uml:Interaction)
+                elem_type = elem.get(f"{{{self.XMI_NAMESPACE}}}type")
+                if elem_type and elem_type.endswith(f":{tag_name}"):
                     result.append(elem)
         else:
             for elem in root.iter():
@@ -341,9 +349,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test role definitions (ownedAttribute)
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_role_definitions(self):
         """Test that role definitions are created via ownedAttribute."""
         generator = RhapsodyXmiGenerator()
@@ -380,9 +386,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test MessageOccurrenceSpecification elements
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_message_occurrence_specifications(self):
         """Test that MessageOccurrenceSpecification elements are created."""
         generator = RhapsodyXmiGenerator()
@@ -401,14 +405,8 @@ class TestRhapsodyXmiGenerator:
             interaction = self._find_element(root, "Interaction", self.UML_NAMESPACE)
             assert interaction is not None
 
-            # Check for MessageOccurrenceSpecification fragments
-            fragments = interaction.findall(f".//{{{self.UML_NAMESPACE}}}fragment")
-            occurrence_specs = [
-                f
-                for f in fragments
-                if f.get(f"{{{self.XMI_NAMESPACE}}}type")
-                == "uml:MessageOccurrenceSpecification"
-            ]
+            # Check for MessageOccurrenceSpecification fragments using helper method
+            occurrence_specs = self._find_elements(interaction, "MessageOccurrenceSpecification", self.UML_NAMESPACE)
 
             # Should have occurrence specifications (2 per message: source + target)
             assert len(occurrence_specs) > 0
@@ -425,7 +423,7 @@ class TestRhapsodyXmiGenerator:
                 assert occ.get("message") is not None
 
                 # Should be a fragment
-                assert occ.tag == "fragment"
+                assert "fragment" in occ.tag
         finally:
             output_path.unlink()
 
@@ -498,9 +496,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test element imports
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_element_imports(self):
         """Test that element imports are added at model level."""
         generator = RhapsodyXmiGenerator()
@@ -519,10 +515,8 @@ class TestRhapsodyXmiGenerator:
             model = self._find_element(root, "Model", self.UML_NAMESPACE)
             assert model is not None
 
-            # Check for element imports
-            elem_imports = self._find_elements(
-                model, f"{{{self.UML_NAMESPACE}}}elementImport"
-            )
+            # Check for element imports using helper method
+            elem_imports = self._find_elements(model, "ElementImport", self.UML_NAMESPACE)
             assert len(elem_imports) > 0
 
             # Verify import structure
@@ -542,9 +536,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test lifeline represents role
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_lifeline_represents_role(self):
         """Test that lifelines reference role definitions."""
         generator = RhapsodyXmiGenerator()
@@ -578,9 +570,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test lifeline interaction attribute
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_lifeline_interaction_attribute(self):
         """Test that lifelines have interaction attribute."""
         generator = RhapsodyXmiGenerator()
@@ -611,9 +601,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test conditional blocks (opt/loop/alt)
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_conditional_blocks_rhapsody(self):
         """Test opt/loop blocks in Rhapsody format."""
         # Create a tree with conditional blocks
@@ -672,13 +660,8 @@ class TestRhapsodyXmiGenerator:
             tree_parsed = etree.parse(str(output_path))
             root = tree_parsed.getroot()
 
-            # Check for combined fragments
-            fragments = self._find_elements(root, "fragment", self.UML_NAMESPACE)
-            combined_fragments = [
-                f
-                for f in fragments
-                if f.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:CombinedFragment"
-            ]
+            # Check for combined fragments using helper method
+            combined_fragments = self._find_elements(root, "CombinedFragment", self.UML_NAMESPACE)
 
             # Should find at least one combined fragment
             assert len(combined_fragments) > 0
@@ -689,7 +672,7 @@ class TestRhapsodyXmiGenerator:
                 if frag.get("interactionOperator") == "opt":
                     opt_found = True
                     # Verify operand has condition name
-                    operand = frag.find(f"{{{self.UML_NAMESPACE}}}operand")
+                    operand = self._find_element(frag, "operand", self.UML_NAMESPACE)
                     assert operand is not None
                     assert operand.get("name") == "mode == 0x05"
                     break
@@ -699,9 +682,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test loop blocks
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_loop_blocks(self):
         """Test loop block generation."""
         tree = CallTreeNode(
@@ -753,12 +734,8 @@ class TestRhapsodyXmiGenerator:
             tree_parsed = etree.parse(str(output_path))
             root = tree_parsed.getroot()
 
-            fragments = self._find_elements(root, "fragment", self.UML_NAMESPACE)
-            combined_fragments = [
-                f
-                for f in fragments
-                if f.get(f"{{{self.XMI_NAMESPACE}}}type") == "uml:CombinedFragment"
-            ]
+            # Check for combined fragments using helper method
+            combined_fragments = self._find_elements(root, "CombinedFragment", self.UML_NAMESPACE)
 
             assert len(combined_fragments) > 0
 
@@ -768,7 +745,7 @@ class TestRhapsodyXmiGenerator:
                 if frag.get("interactionOperator") == "loop":
                     loop_found = True
                     # Verify operand has loop condition
-                    operand = frag.find(f"{{{self.UML_NAMESPACE}}}operand")
+                    operand = self._find_element(frag, "operand", self.UML_NAMESPACE)
                     assert operand is not None
                     assert operand.get("name") == "i < 10"
                     break
@@ -838,9 +815,7 @@ class TestRhapsodyXmiGenerator:
             generator.generate(result, "/tmp/test.xmi")
 
     # Test multiple participants
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_multiple_participants(self):
         """Test call tree with multiple participants."""
         tree = CallTreeNode(
@@ -909,9 +884,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test recursive call handling
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_recursive_call_handling(self):
         """Test handling of recursive calls."""
         tree = CallTreeNode(
@@ -969,9 +942,7 @@ class TestRhapsodyXmiGenerator:
             output_path.unlink()
 
     # Test parameter handling in messages
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_parameter_handling(self):
         """Test function parameters in message signatures."""
         params = [
@@ -1068,9 +1039,7 @@ class TestRhapsodyXmiGenerator:
             assert output_path.parent.exists()
 
     # Test Rhapsody version metadata
-    @pytest.mark.skip(
-        reason="Test needs update for lxml XML structure - generator works correctly"
-    )
+    # SKIP REMOVED: Re-enabled test
     def test_rhapsody_version_metadata(self):
         """Test that Rhapsody version is included in metadata."""
         generator = RhapsodyXmiGenerator()
@@ -1085,12 +1054,12 @@ class TestRhapsodyXmiGenerator:
             tree = etree.parse(str(output_path))
             root = tree.getroot()
 
-            # Check comments for Rhapsody version
-            comments = self._find_elements(root, "ownedComment", self.UML_NAMESPACE)
+            # Check comments for Rhapsody version using helper method
+            comments = self._find_elements(root, "Comment", self.UML_NAMESPACE)
 
             version_found = False
             for comment in comments:
-                body = comment.find(f"{{{self.UML_NAMESPACE}}}body")
+                body = self._find_element(comment, "body", self.UML_NAMESPACE)
                 if body is not None and body.text:
                     if "Rhapsody" in body.text:
                         version_found = True
