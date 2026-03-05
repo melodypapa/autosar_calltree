@@ -1,0 +1,47 @@
+# AUTOSAR Call Tree Preprocessor Configuration
+#
+# This file configures the C preprocessor (cpp) used by pycparser
+# to handle #include directives, #ifdef conditionals, and standard C macros.
+#
+# Usage:
+#   calltree --start-function Demo_Init --preprocess-config demo/preprocessor_config.yaml
+#
+# Or combine with module config:
+#   calltree --start-function Demo_Init \
+#            --module-config demo/module_mapping.yaml \
+#            --preprocess-config demo/preprocessor_config.yaml
+
+version: "1.0"
+
+preprocessor:
+  # Preprocessor command to use
+  # Options: "gcc", "clang", or full path like "/usr/bin/gcc"
+  command: "gcc"
+
+  # Include directories to search for header files
+  # These are passed to the preprocessor as -I flags
+  # Use relative paths (relative to current working directory) or absolute paths
+  include_dirs:
+    - "./demo/include"
+    - "./src"
+    # Example: System AUTOSAR include paths
+    # - "/opt/autosar/include"
+    # - "/opt/autosar/rtos/include"
+
+  # Additional preprocessor flags
+  # Common flags:
+  #   -DNAME=value  : Define a macro
+  #   -U NAME       : Undefine a macro
+  #   -std=c99      : Specify C standard
+  #   -nostdinc     : Skip standard include directories
+  extra_flags:
+    # Example: Define common AUTOSAR macros
+    # - "-DUSE_RTE=1"
+    # - "-DDEBUG"
+    # - "-std=c99"
+
+  # Enable or disable cpp preprocessing
+  # When enabled: runs source through gcc -E before parsing
+  # When disabled: uses regex-based preprocessing only
+  # Set to false if cpp is not available or causes issues
+  enabled: true

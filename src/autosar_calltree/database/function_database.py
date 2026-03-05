@@ -19,6 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ..config import PreprocessorConfig
 from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser
 from ..parsers.c_parser import CParser
@@ -63,6 +64,7 @@ class FunctionDatabase:
         source_dir: str,
         cache_dir: Optional[str] = None,
         module_config: Optional[ModuleConfig] = None,
+        preprocessor_config: Optional[PreprocessorConfig] = None,
     ):
         """
         Initialize the function database.
@@ -71,6 +73,7 @@ class FunctionDatabase:
             source_dir: Root directory containing source files
             cache_dir: Directory for cache files (default: .cache in source_dir)
             module_config: Module configuration for SW module mappings
+            preprocessor_config: Preprocessor configuration for cpp settings
         """
         self.source_dir = Path(source_dir)
 
@@ -95,7 +98,7 @@ class FunctionDatabase:
 
         # Parsers
         self.autosar_parser = AutosarParser()
-        self.c_parser = CParser()
+        self.c_parser = CParser(preprocessor_config=preprocessor_config)
         self.parser_type = "pycparser"
 
         # Module configuration
