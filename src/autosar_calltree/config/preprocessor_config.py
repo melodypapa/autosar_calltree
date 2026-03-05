@@ -58,8 +58,10 @@ class PreprocessorConfig:
         self.include_dirs: List[str] = []
         self.extra_flags: List[str] = []
         self.enabled: bool = True
+        self._config_dir: Optional[Path] = None
 
         if config_path:
+            self._config_dir = config_path.parent.resolve()
             self.load_config(config_path)
 
     def load_config(self, config_path: Path) -> None:
@@ -95,6 +97,17 @@ class PreprocessorConfig:
             command = "gcc"
         if not isinstance(command, str):
             raise ValueError("'command' must be a string")
+
+        # Resolve relative command paths to absolute paths
+        # For relative paths like "demo/cpp_windows/cpp.exe", resolve from CWD
+        if command and ("/" in command or "\\" in command):
+            # This looks like a path (not a simple command like "gcc")
+            command_path = Path(command)
+            if not command_path.is_absolute():
+                # Resolve relative to current working directory
+                resolved_path = Path.cwd() / command_path
+                if resolved_path.exists():
+                    command = str(resolved_path.resolve())
         self.command = command
 
         # Load include directories
