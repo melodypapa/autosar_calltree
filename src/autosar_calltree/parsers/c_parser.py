@@ -6,17 +6,20 @@ AUTOSAR macros are handled via preprocessing before parsing.
 
 Example usage:
     from autosar_calltree.parsers.c_parser import CParser
+    from autosar_calltree.config import PreprocessorConfig
 
-    parser = CParser()
+    parser = CParser(preprocessor_config=PreprocessorConfig())
     functions = parser.parse_file(Path("example.c"))
 """
 
 import re
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from pycparser import c_ast, c_parser
 
+from ..config import PreprocessorConfig
 from ..database.models import FunctionCall, FunctionInfo, FunctionType, Parameter
 
 
@@ -473,9 +476,16 @@ class CParser:
         "StatusType",
     }
 
-    def __init__(self):
-        """Initialize the pycparser-based C parser."""
+    def __init__(self, preprocessor_config: Optional[PreprocessorConfig] = None):
+        """
+        Initialize the pycparser-based C parser.
+
+        Args:
+            preprocessor_config: Optional PreprocessorConfig for cpp settings.
+                                 If None, uses regex-based preprocessing only.
+        """
         self.parser = c_parser.CParser()
+        self.preprocessor_config = preprocessor_config
 
     def parse_file(self, file_path: Path) -> List[FunctionInfo]:
         """
@@ -535,7 +545,12 @@ class CParser:
         # Remove AUTOSAR function declarations before preprocessing
         # so they don't get converted and parsed as traditional C functions
         content_for_traditional_c = self._remove_autosar_functions(content)
-        preprocessed = self._preprocess_content(content_for_traditional_c)
+
+        # Use cpp preprocessor if config is provided and enabled
+        if self.preprocessor_config and self.preprocessor_config.enabled:
+            preprocessed = self._preprocess_with_cpp(content_for_traditional_c, file_path)
+        else:
+            preprocessed = self._preprocess_content(content_for_traditional_c)
 
         # Check if file contains any traditional C functions
         if self._has_traditional_c_functions(preprocessed):
@@ -559,6 +574,69 @@ class CParser:
                 pass
 
         return all_functions
+
+    def _preprocess_with_cpp(self, content: str, file_path: Path) -> str:
+        """
+        Preprocess C source code using the C preprocessor (cpp).
+
+        This method runs the source file through gcc/clang's preprocessor
+        to handle #include, #ifdef, and standard C macros. The result
+        is then further processed by _preprocess_content() to handle
+        AUTOSAR-specific macros.
+
+        Args:
+            content: Original C source code (used as fallback)
+            file_path: Path to the C source file
+
+        Returns:
+            Preprocessed C code from cpp, or regex-preprocessed content on error
+        """
+        if not self.preprocessor_config:
+            return self._preprocess_content(content)
+
+        try:
+            # Build cpp command
+            cmd = [self.preprocessor_config.command, "-E"]
+
+            # Add include directories
+            for inc_dir in self.preprocessor_config.include_dirs:
+                cmd.extend(["-I", inc_dir])
+
+            # Add extra flags
+            cmd.extend(self.preprocessor_config.extra_flags)
+
+            # Add input file
+            cmd.append(str(file_path))
+
+            # Run preprocessor
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
+                errors="ignore",
+            )
+
+            # The cpp output still needs AUTOSAR macro handling
+            cpp_output = result.stdout
+            return self._preprocess_content(cpp_output)
+
+        except subprocess.CalledProcessError as e:
+            # Log error and fallback to regex preprocessing
+            # This can happen if cpp is not installed or file has issues
+            print(f"Warning: cpp preprocessing failed: {e.stderr}")
+            return self._preprocess_content(content)
+        except FileNotFoundError:
+            # cpp command not found, fallback to regex preprocessing
+            print(
+                f"Warning: {self.preprocessor_config.command} not found. "
+                "Using regex preprocessing."
+            )
+            return self._preprocess_content(content)
+        except Exception:
+            # Any other error, fallback to regex preprocessing
+            return self._preprocess_content(content)
 
     def _preprocess_content(self, content: str) -> str:
         """

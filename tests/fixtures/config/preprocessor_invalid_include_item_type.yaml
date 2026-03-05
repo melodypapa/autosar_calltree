@@ -1,0 +1,5 @@
+version: "1.0"
+preprocessor:
+  include_dirs:
+    - "./include"
+    - 123

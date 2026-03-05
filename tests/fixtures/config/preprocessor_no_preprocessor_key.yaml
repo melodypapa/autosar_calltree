@@ -1,0 +1,2 @@
+# Config without preprocessor key (uses defaults)
+version: "1.0"

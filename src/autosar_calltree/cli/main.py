@@ -14,6 +14,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from ..analyzers.call_tree_builder import CallTreeBuilder
+from ..config import PreprocessorConfig
 from ..config.module_config import ModuleConfig
 from ..database.function_database import FunctionDatabase
 from ..generators.mermaid_generator import MermaidGenerator
@@ -172,6 +173,11 @@ def _generate_rhapsody_output(result, output_path, use_module_names, rhapsody_pa
     default=None,
     help="Custom name for the UML model in Rhapsody XMI output (default: CallTree_{root_function})",
 )
+@click.option(
+    "--cpp-config",
+    type=click.Path(exists=True),
+    help="Path to YAML file with C preprocessor (cpp) settings (include_dirs, extra_flags, command)",
+)
 @click.version_option(version=__version__, prog_name="autosar-calltree")
 def cli(
     start_function: str,
@@ -192,6 +198,7 @@ def cli(
     enable_conditionals: bool,
     rhapsody_package_path: Optional[str],
     rhapsody_model_name: Optional[str],
+    cpp_config: Optional[str],
 ):
     """
     AUTOSAR Call Tree Analyzer
@@ -240,6 +247,32 @@ def cli(
                 console.print(f"[bold red]Error loading module config:[/bold red] {e}")
                 sys.exit(1)
 
+        # Load preprocessor configuration if provided
+        preprocessor_cfg = None
+        if cpp_config:
+            try:
+                preprocessor_cfg = PreprocessorConfig(Path(cpp_config))
+                if verbose:
+                    console.print(
+                        f"[cyan]Loaded preprocessor configuration from {cpp_config}[/cyan]"
+                    )
+                    prep_stats = preprocessor_cfg.get_statistics()
+                    console.print(
+                        f"  - Command: {prep_stats['command']}"
+                    )
+                    console.print(
+                        f"  - Include directories: {prep_stats['include_dirs_count']}"
+                    )
+                    console.print(
+                        f"  - Extra flags: {prep_stats['extra_flags_count']}"
+                    )
+                    console.print(
+                        f"  - Enabled: {prep_stats['enabled']}"
+                    )
+            except Exception as e:
+                console.print(f"[bold red]Error loading preprocessor config:[/bold red] {e}")
+                sys.exit(1)
+
         # Initialize database
         use_cache = not no_cache
 
@@ -252,7 +285,7 @@ def cli(
             # Build database
             task = progress.add_task("", total=None)
 
-            db = FunctionDatabase(source_dir, cache_dir=cache_dir, module_config=config)
+            db = FunctionDatabase(source_dir, cache_dir=cache_dir, module_config=config, preprocessor_config=preprocessor_cfg)
             db.build_database(
                 use_cache=use_cache, rebuild_cache=rebuild_cache, verbose=verbose
             )

@@ -665,6 +665,139 @@ class TestCLIEdgeCases:
         assert "--search" in result.output
 
 
+class TestCppConfigOption:
+    """Test SWR_CLI_CPP_00001: CPP Configuration Option"""
+
+    def test_cpp_config_loads_successfully(self, demo_dir):
+        """Test that --cpp-config loads YAML file."""
+        cpp_config = demo_dir / "preprocessor_config.yaml"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cpp-config",
+                    str(cpp_config),
+                ],
+            )
+            assert result.exit_code == 0
+
+    def test_cpp_config_shows_stats_in_verbose(self, demo_dir):
+        """Test that --cpp-config shows statistics in verbose mode."""
+        cpp_config = demo_dir / "preprocessor_config.yaml"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cpp-config",
+                    str(cpp_config),
+                    "--verbose",
+                ],
+            )
+            assert result.exit_code == 0
+            assert "Loaded preprocessor configuration" in result.output
+            assert "Command:" in result.output
+            assert "Include directories:" in result.output
+
+    def test_cpp_config_error_invalid_file(self, demo_dir, tmp_path):
+        """Test error handling for invalid config file."""
+        invalid_config = tmp_path / "invalid.yaml"
+        invalid_config.write_text("invalid: yaml: [")
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cpp-config",
+                    str(invalid_config),
+                ],
+            )
+            assert result.exit_code == 1
+            assert "Error loading preprocessor config" in result.output
+
+    def test_cpp_config_with_module_config(self, demo_dir):
+        """Test that --cpp-config works with --module-config."""
+        cpp_config = demo_dir / "preprocessor_config.yaml"
+        module_config = demo_dir / "module_mapping.yaml"
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cpp-config",
+                    str(cpp_config),
+                    "--module-config",
+                    str(module_config),
+                    "--use-module-names",
+                ],
+            )
+            assert result.exit_code == 0
+
+    def test_cpp_config_nonexistent_file(self, demo_dir):
+        """Test error handling for non-existent config file."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cpp-config",
+                    "nonexistent_config.yaml",
+                ],
+            )
+            # Click returns exit code 2 for parameter validation errors
+            assert result.exit_code != 0
+
+    def test_cpp_config_with_different_commands(self, demo_dir, tmp_path):
+        """Test that different preprocessor commands work."""
+        # Create config with clang
+        clang_config = tmp_path / "clang_config.yaml"
+        clang_config.write_text(
+            """
+version: "1.0"
+preprocessor:
+  command: "clang"
+  enabled: true
+"""
+        )
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(
+                cli,
+                [
+                    "--source-dir",
+                    str(demo_dir),
+                    "--start-function",
+                    "Demo_Init",
+                    "--cpp-config",
+                    str(clang_config),
+                    "--verbose",
+                ],
+            )
+            assert result.exit_code == 0
+            assert "clang" in result.output
+
+
 class TestCLICoverageGaps:
     """Additional tests to achieve 100% coverage for CLI"""
 

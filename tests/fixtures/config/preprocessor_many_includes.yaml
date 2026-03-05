@@ -1,0 +1,9 @@
+# Config with many include directories
+version: "1.0"
+preprocessor:
+  command: "gcc"
+  include_dirs:
+    - "./include1"
+    - "./include2"
+    - "./include3"
+  enabled: true
