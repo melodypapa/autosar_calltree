@@ -1,0 +1,5 @@
+# Config with enabled: false
+version: "1.0"
+preprocessor:
+  command: "gcc"
+  enabled: false

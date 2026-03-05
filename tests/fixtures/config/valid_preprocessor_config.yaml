@@ -1,0 +1,11 @@
+# Valid preprocessor configuration file for testing
+version: "1.0"
+preprocessor:
+  command: "gcc"
+  include_dirs:
+    - "./demo/include"
+    - "/opt/autosar/include"
+  extra_flags:
+    - "-DUSE_RTE=1"
+    - "-std=c99"
+  enabled: true

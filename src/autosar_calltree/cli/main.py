@@ -174,9 +174,9 @@ def _generate_rhapsody_output(result, output_path, use_module_names, rhapsody_pa
     help="Custom name for the UML model in Rhapsody XMI output (default: CallTree_{root_function})",
 )
 @click.option(
-    "--preprocess-config",
+    "--cpp-config",
     type=click.Path(exists=True),
-    help="Path to YAML file with C preprocessor settings (include_dirs, extra_flags, command)",
+    help="Path to YAML file with C preprocessor (cpp) settings (include_dirs, extra_flags, command)",
 )
 @click.version_option(version=__version__, prog_name="autosar-calltree")
 def cli(
@@ -198,7 +198,7 @@ def cli(
     enable_conditionals: bool,
     rhapsody_package_path: Optional[str],
     rhapsody_model_name: Optional[str],
-    preprocess_config: Optional[str],
+    cpp_config: Optional[str],
 ):
     """
     AUTOSAR Call Tree Analyzer
@@ -249,12 +249,12 @@ def cli(
 
         # Load preprocessor configuration if provided
         preprocessor_cfg = None
-        if preprocess_config:
+        if cpp_config:
             try:
-                preprocessor_cfg = PreprocessorConfig(Path(preprocess_config))
+                preprocessor_cfg = PreprocessorConfig(Path(cpp_config))
                 if verbose:
                     console.print(
-                        f"[cyan]Loaded preprocessor configuration from {preprocess_config}[/cyan]"
+                        f"[cyan]Loaded preprocessor configuration from {cpp_config}[/cyan]"
                     )
                     prep_stats = preprocessor_cfg.get_statistics()
                     console.print(

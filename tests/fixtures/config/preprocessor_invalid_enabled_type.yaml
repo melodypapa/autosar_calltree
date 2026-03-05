@@ -1,0 +1,3 @@
+version: "1.0"
+preprocessor:
+  enabled: "not a boolean"

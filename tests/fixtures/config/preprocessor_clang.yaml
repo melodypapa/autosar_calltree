@@ -1,0 +1,5 @@
+# Config with clang command
+version: "1.0"
+preprocessor:
+  command: "clang"
+  enabled: true

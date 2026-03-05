@@ -1,0 +1,3 @@
+# Invalid config - root is a list, not a dict
+- item1
+- item2

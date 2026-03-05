@@ -1,0 +1,3 @@
+# Minimal preprocessor configuration (empty preprocessor section)
+version: "1.0"
+preprocessor: {}

@@ -477,3 +477,215 @@ def test_rich_console_output() -> None:
 
     # Console should be configured for record=True in main.py
     assert console.record
+
+
+# ============================================================================
+# SWUT_CLI_CPP_00001-00006: C Preprocessor Configuration Option Tests
+# ============================================================================
+
+
+def test_cpp_config_option(tmp_path: Path) -> None:
+    """SWUT_CLI_CPP_00001
+
+    Test --cpp-config option accepts path.
+    """
+    # Create test source file
+    create_temp_source_file(tmp_path, "void test_func(void) {}", "test.c")
+
+    # Create preprocessor config
+    cpp_config = tmp_path / "preprocessor_config.yaml"
+    cpp_config.write_text(
+        """
+version: "1.0"
+preprocessor:
+  command: "gcc"
+  include_dirs:
+    - "./include"
+  enabled: true
+"""
+    )
+
+    # Test with cpp-config option
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "test_func", "--cpp-config", str(cpp_config), "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
+    assert result.exit_code == 0
+
+
+def test_cpp_config_nonexistent(tmp_path: Path) -> None:
+    """SWUT_CLI_CPP_00002
+
+    Test error for non-existent config file.
+    """
+    # Create test source file
+    create_temp_source_file(tmp_path, "void test_func(void) {}")
+
+    # Test with non-existent cpp-config
+    result = CliRunner().invoke(
+        cli,
+        [
+            "-s",
+            "test_func",
+            "--cpp-config",
+            "nonexistent_config.yaml",
+            "-i",
+            str(tmp_path),
+        ],
+    )
+    # Click validates the path before our code runs
+    # Should exit with non-zero code
+    assert result.exit_code != 0
+    # Check exception if output is empty (Click validation errors have no output)
+    if result.output == "":
+        assert result.exception is not None
+
+
+def test_cpp_config_invalid_yaml(tmp_path: Path) -> None:
+    """SWUT_CLI_CPP_00003
+
+    Test error for invalid YAML.
+    """
+    # Create test source file
+    create_temp_source_file(tmp_path, "void test_func(void) {}", "test.c")
+
+    # Create invalid YAML file
+    invalid_config = tmp_path / "invalid_config.yaml"
+    invalid_config.write_text("invalid: yaml: [unclosed")
+
+    # Test with invalid YAML
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "test_func", "--cpp-config", str(invalid_config), "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
+    # Should show error
+    assert result.exit_code == 1
+    assert "Error loading preprocessor config" in result.output
+
+
+def test_verbose_shows_preprocessor_stats(tmp_path: Path) -> None:
+    """SWUT_CLI_CPP_00004
+
+    Test verbose shows preprocessor stats.
+    """
+    # Create test source file
+    create_temp_source_file(tmp_path, "void test_func(void) {}", "test.c")
+
+    # Create preprocessor config
+    cpp_config = tmp_path / "preprocessor_config.yaml"
+    cpp_config.write_text(
+        """
+version: "1.0"
+preprocessor:
+  command: "clang"
+  include_dirs:
+    - "./include1"
+    - "./include2"
+  extra_flags:
+    - "-DDEBUG"
+  enabled: true
+"""
+    )
+
+    # Test with verbose mode
+    result = CliRunner().invoke(
+        cli,
+        [
+            "-s",
+            "test_func",
+            "--cpp-config",
+            str(cpp_config),
+            "-v",
+            "-i",
+            str(tmp_path),
+        ],
+        standalone_mode=False,
+    )
+    assert result.exit_code == 0
+    # Should show preprocessor configuration was loaded
+    assert "Loaded preprocessor configuration" in result.output
+    # Should show command
+    assert "Command:" in result.output
+    assert "clang" in result.output
+    # Should show include directories count
+    assert "Include directories:" in result.output
+    # Should show extra flags count
+    assert "Extra flags:" in result.output
+
+
+def test_cpp_config_with_module_config(tmp_path: Path) -> None:
+    """SWUT_CLI_CPP_00005
+
+    Test both configs work together.
+    """
+    # Create test source file
+    create_temp_source_file(tmp_path, "void test_func(void) {}", "test.c")
+
+    # Create module config
+    module_config = tmp_path / "module_config.yaml"
+    module_config.write_text(
+        """
+version: "1.0"
+file_mappings:
+  test.c: TestModule
+"""
+    )
+
+    # Create preprocessor config
+    cpp_config = tmp_path / "preprocessor_config.yaml"
+    cpp_config.write_text(
+        """
+version: "1.0"
+preprocessor:
+  command: "gcc"
+  enabled: true
+"""
+    )
+
+    # Test with both configs
+    result = CliRunner().invoke(
+        cli,
+        [
+            "-s",
+            "test_func",
+            "--module-config",
+            str(module_config),
+            "--cpp-config",
+            str(cpp_config),
+            "-i",
+            str(tmp_path),
+        ],
+        standalone_mode=False,
+    )
+    assert result.exit_code == 0
+
+
+def test_cpp_config_disabled(tmp_path: Path) -> None:
+    """SWUT_CLI_CPP_00006
+
+    Test works with enabled: false.
+    """
+    # Create test source file
+    create_temp_source_file(tmp_path, "void test_func(void) {}", "test.c")
+
+    # Create preprocessor config with enabled: false
+    cpp_config = tmp_path / "preprocessor_config.yaml"
+    cpp_config.write_text(
+        """
+version: "1.0"
+preprocessor:
+  command: "gcc"
+  enabled: false
+"""
+    )
+
+    # Test with disabled preprocessor
+    result = CliRunner().invoke(
+        cli,
+        ["-s", "test_func", "--cpp-config", str(cpp_config), "-i", str(tmp_path)],
+        standalone_mode=False,
+    )
+    # Should still succeed
+    assert result.exit_code == 0

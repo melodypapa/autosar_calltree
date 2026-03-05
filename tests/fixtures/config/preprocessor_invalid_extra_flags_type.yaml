@@ -1,0 +1,3 @@
+version: "1.0"
+preprocessor:
+  extra_flags: "not a list"

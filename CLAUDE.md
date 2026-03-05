@@ -8,7 +8,9 @@ AUTOSAR Call Tree Analyzer is a Python tool that statically analyzes C/AUTOSAR c
 
 **Key capability**: Handles AUTOSAR's proprietary macros that traditional C parsers cannot understand. Use this when working with automotive embedded systems code.
 
-**Latest feature (v0.8.3)**: Comprehensive C comment removal with string literal protection for robust parsing of comment-like patterns in string literals
+**Latest feature (v0.9.0)**: YAML-based C preprocessor configuration for handling complex #include directives and #ifdef conditionals with gcc/clang integration
+
+**Previous feature (v0.8.3)**: Comprehensive C comment removal with string literal protection for robust parsing of comment-like patterns in string literals
 
 ## Development Commands
 
@@ -70,6 +72,10 @@ calltree --start-function Demo_Init --source-dir demo \
          --use-module-names \
          --output demo/demo.md
 
+# Use C preprocessor configuration for complex #include handling
+calltree --start-function Demo_Init --source-dir demo \
+         --cpp-config demo/preprocessor_config.yaml
+
 # Control depth and output format
 calltree --start-function Demo_Init --max-depth 2 --format xmi --output diagrams/demo.xmi
 
@@ -82,6 +88,12 @@ calltree --start-function Demo_Init --source-dir demo \
          --use-module-names \
          --format rhapsody \
          --output demo/rhapsody_demo.xmi
+
+# Combine module and preprocessor configurations
+calltree --start-function Demo_Init --source-dir demo \
+         --module-config demo/module_mapping.yaml \
+         --cpp-config demo/preprocessor_config.yaml \
+         --use-module-names
 
 # Generate both Mermaid and XMI
 calltree --start-function Demo_MainFunction --format both --max-depth 4
@@ -212,6 +224,47 @@ end
 4. **Level 4 - Module preference**: Prefer functions with assigned SW modules over unassigned ones
 
 **Example**: When `Demo_Init` (in demo.c) calls `COM_InitCommunication`, the database must select the implementation from communication.c, not the declaration from demo.c's included header. The smart lookup ensures Mermaid diagrams show `DemoModule->CommunicationModule` instead of `DemoModule->DemoModule`.
+
+### Preprocessor Configuration System (v0.9.0)
+
+**Purpose**: Configure C preprocessor (cpp) settings for handling complex #include directives, #ifdef conditionals, and standard C macros when using pycparser-based parsing.
+
+**Architecture**:
+- `PreprocessorConfig` class (`config/preprocessor_config.py`): Loads YAML, validates, builds compiler arguments
+- Supports gcc/clang preprocessor commands
+- Configurable include directories (-I flags)
+- Additional preprocessor flags (-D macros, -std, etc.)
+- Enable/disable cpp preprocessing per project
+
+**YAML Format**:
+```yaml
+version: "1.0"
+
+preprocessor:
+  # Preprocessor command (gcc, clang, or full path)
+  command: "gcc"
+
+  # Include directories to search for header files
+  include_dirs:
+    - "./demo/include"
+    - "./src"
+    # - "/opt/autosar/include"
+
+  # Additional preprocessor flags
+  extra_flags:
+    # - "-DUSE_RTE=1"
+    # - "-DDEBUG"
+    # - "-std=c99"
+
+  # Enable or disable cpp preprocessing
+  enabled: true
+```
+
+**Integration**:
+- CLI option `--cpp-config` enables preprocessor configuration
+- Used by pycparser-based C parser for AST generation
+- Resolves header file paths across complex include hierarchies
+- Handles platform-specific macros and conditional compilation
 
 ### SW Module Configuration System
 
@@ -387,6 +440,7 @@ tests/
 
 ## Version History
 
+- **v0.9.0** (upcoming): YAML-based C preprocessor configuration for handling complex #include directives and #ifdef conditionals with gcc/clang integration
 - **v0.8.3** (2026-03-05): Comprehensive C comment removal with string literal protection
 - **v0.8.0** (2026-03-01): Full Rhapsody XMI 2.1 compatibility with OMG UML namespace
 - **v0.7.0** (2026-02-14): IBM Rhapsody XMI export for cross-platform compatibility with Rhapsody 8.0+
@@ -410,10 +464,12 @@ pip install -e ".[dev]"  # pycparser is included in core dependencies
 - Better const/volatile qualifier preservation
 - Reliable parameter parsing for complex declarations
 - Fewer false positives from C keywords
+- Integrates with C preprocessor configuration (v0.9.0+) for handling #include and #ifdef
 
 **Limitations**:
 - Does not track conditional/loop context (TODO: `# TODO: Track if/else context` in code)
 - Still requires AutosarParser for AUTOSAR macros (pycparser cannot parse them)
+- Requires gcc/clang preprocessor for full functionality
 
 **Usage**: The parser is not yet integrated into the main CLI. To use it programmatically:
 ```python
