@@ -76,6 +76,13 @@ calltree --start-function Demo_Init --source-dir demo \
 calltree --start-function Demo_Init --source-dir demo \
          --cpp-config demo/preprocessor_config.yaml
 
+# Windows Preprocessor
+# For Windows systems with MinGW/MSYS2 installed:
+calltree --start-function Demo_Init --source-dir demo \
+         --cpp-config demo/preprocessor_config_windows.yaml
+# Note: The included cpp.exe requires full MinGW toolchain.
+# If cpp fails, the tool automatically falls back to regex preprocessing.
+
 # Control depth and output format
 calltree --start-function Demo_Init --max-depth 2 --format xmi --output diagrams/demo.xmi
 

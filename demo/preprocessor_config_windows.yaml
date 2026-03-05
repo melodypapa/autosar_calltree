@@ -1,0 +1,35 @@
+# AUTOSAR Call Tree Preprocessor Configuration for Windows
+#
+# This file configures the C preprocessor (cpp) for Windows systems.
+#
+# NOTE: The included demo/cpp_windows/cpp.exe is a standalone MinGW binary
+# that requires the full MinGW toolchain to work. For production use, install
+# MinGW-w64 or MSYS2 and use "gcc" as the command.
+#
+# Usage:
+#   calltree --start-function Demo_Init --cpp-config demo/preprocessor_config_windows.yaml
+#
+# If cpp fails, the tool automatically falls back to regex-based preprocessing.
+
+version: "1.0"
+
+preprocessor:
+  # For full MinGW/MSYS2 installations, use "gcc" instead:
+  # command: "gcc"
+  # The included cpp.exe requires full MinGW toolchain:
+  command: "demo/cpp_windows/cpp.exe"
+
+  # Include directories to search for header files
+  include_dirs:
+    - "./demo/include"
+    - "./demo/src"
+
+  # Additional preprocessor flags
+  extra_flags:
+    # - "-DUSE_RTE=1"
+    # - "-DDEBUG"
+    # - "-std=c99"
+
+  # Enable cpp preprocessing
+  # Falls back to regex preprocessing if cpp is not available
+  enabled: true
