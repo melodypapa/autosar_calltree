@@ -2,7 +2,7 @@
 
 **Package**: `autosar_calltree.generators`
 **Source Files**: `mermaid_generator.py`, `rhapsody_generator.py`
-**Requirements**: SWR_GEN_00001 - SWR_GEN_00025 (25 requirements)
+**Requirements**: SWR_GEN_00001 - SWR_GEN_00025, SWR_MERMAID_00001 - SWR_MERMAID_00005, SWR_RH_00001 - SWR_RH_00005 (35 requirements)
 
 ---
 
@@ -227,6 +227,54 @@ sequenceDiagram
 
 ---
 
+## Mermaid-Specific Requirements (SWR_MERMAID_00001 - SWR_MERMAID_00005)
+
+### SWR_MERMAID_00001 - Module-Based Participants
+**Purpose**: Support module-based participants in Mermaid diagrams
+
+**Implementation**: `MermaidGenerator._get_participant_name()` method
+
+**Behavior**:
+- Return module name when `use_module_names=True` and module is assigned
+- Fall back to function name when no module assigned
+- Display function names on arrows in module mode
+
+---
+
+### SWR_MERMAID_00002 - Module Column in Function Table
+**Purpose**: Include module column in function table when modules are used
+
+**Implementation**: Table generation with conditional module column
+
+**Behavior**: Show SW module name for each function in table
+
+---
+
+### SWR_MERMAID_00003 - Module Fallback Behavior
+**Purpose**: Gracefully handle functions without module assignment
+
+**Behavior**: Fall back to file name or function name when no module configured
+
+---
+
+### SWR_MERMAID_00004 - Opt Block Generation
+**Purpose**: Generate Mermaid opt blocks for conditional calls
+
+**Implementation**: `_generate_opt_block()` method
+
+**Format**: `opt <condition>` ... `end`
+
+---
+
+### SWR_MERMAID_00005 - Loop Block Generation
+**Purpose**: Generate Mermaid loop blocks for loop calls
+
+**Implementation**: `_generate_loop_block()` method
+
+**Format**: `opt loop <condition>` ... `end`
+
+---
+
 ## Rhapsody XMI Generator (SWR_GEN_00016 - SWR_GEN_00025)
 
 ### SWR_GEN_00016 - Rhapsody XMI 2.1 Document Generation
@@ -338,16 +386,73 @@ sequenceDiagram
 
 ---
 
+## Rhapsody-Specific Requirements (SWR_RH_00001 - SWR_RH_00005)
+
+### SWR_RH_00001 - Rhapsody XMI 2.1 Compatibility
+**Purpose**: Ensure XMI output is compatible with IBM Rhapsody 8.0+
+
+**Implementation**: XMI 2.1 schema with OMG UML 2.1 namespace
+
+**Features**:
+- Uses `http://www.omg.org/spec/UML/20090901` namespace
+- XMI version 2.1
+- Proper GUID+ UUID format for all elements
+
+---
+
+### SWR_RH_00002 - Rhapsody Profile Support
+**Purpose**: Support Rhapsody-specific profile elements
+
+**Implementation**: Profile-related XMI elements in generated documents
+
+**Features**:
+- Nested package support via `--rhapsody-package-path`
+- Proper package hierarchy in XMI structure
+
+---
+
+### SWR_RH_00003 - AUTOSAR Stereotype Support
+**Purpose**: Support AUTOSAR-specific stereotypes in Rhapsody
+
+**Implementation**: Stereotype elements for AUTOSAR components
+
+**Future Enhancement**: Full AUTOSAR profile support
+
+---
+
+### SWR_RH_00004 - UUID-based Element IDs (GUID+ Format)
+**Purpose**: Generate Rhapsody-compatible element IDs
+
+**Format**: `GUID+<UUID>` (e.g., `GUID+_12345678-1234-5678-1234-567812345678`)
+
+**Implementation**: `_generate_guid()` method in `RhapsodyXmiGenerator`
+
+---
+
+### SWR_RH_00005 - Rhapsody-specific Metadata
+**Purpose**: Include Rhapsody-specific metadata in XMI
+
+**Elements**:
+- Model name (customizable via `--rhapsody-model-name`)
+- Package path (customizable via `--rhapsody-package-path`)
+- Timestamp and tool information
+
+---
+
 ## Summary
 
-**Total Requirements**: 25
+**Total Requirements**: 35
+- SWR_GEN_00001 - SWR_GEN_00025: 25 requirements
+- SWR_MERMAID_00001 - SWR_MERMAID_00005: 5 requirements
+- SWR_RH_00001 - SWR_RH_00005: 5 requirements
+
 **Implementation Status**: ✅ All Implemented
 
 **Package Structure**:
 ```
 autosar_calltree.generators/
-├── mermaid_generator.py     # SWR_GEN_00001 - SWR_GEN_00015 (Mermaid)
-└── rhapsody_generator.py    # SWR_GEN_00016 - SWR_GEN_00025 (Rhapsody XMI 2.1)
+├── mermaid_generator.py     # SWR_GEN_00001 - SWR_GEN_00015, SWR_MERMAID_00001 - SWR_MERMAID_00005
+└── rhapsody_generator.py    # SWR_GEN_00016 - SWR_GEN_00025, SWR_RH_00001 - SWR_RH_00005
 ```
 
 **Key Features**:

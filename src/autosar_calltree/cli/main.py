@@ -178,6 +178,21 @@ def _generate_rhapsody_output(result, output_path, use_module_names, rhapsody_pa
     type=click.Path(exists=True),
     help="Path to YAML file with C preprocessor (cpp) settings (include_dirs, extra_flags, command)",
 )
+@click.option(
+    "--keep-temp",
+    is_flag=True,
+    help="Keep preprocessed files for debugging (default: clean up)",
+)
+@click.option(
+    "--temp-dir",
+    type=click.Path(file_okay=False, dir_okay=True),
+    help="Directory for temporary preprocessed files (default: system temp)",
+)
+@click.option(
+    "--preprocess-only",
+    is_flag=True,
+    help="Run only preprocessing stage (for debugging preprocessing issues)",
+)
 @click.version_option(version=__version__, prog_name="autosar-calltree")
 def cli(
     start_function: str,
@@ -199,6 +214,9 @@ def cli(
     rhapsody_package_path: Optional[str],
     rhapsody_model_name: Optional[str],
     cpp_config: Optional[str],
+    keep_temp: bool,
+    temp_dir: Optional[str],
+    preprocess_only: bool,
 ):
     """
     AUTOSAR Call Tree Analyzer
@@ -285,12 +303,31 @@ def cli(
             # Build database
             task = progress.add_task("", total=None)
 
-            db = FunctionDatabase(source_dir, cache_dir=cache_dir, module_config=config, preprocessor_config=preprocessor_cfg)
+            db = FunctionDatabase(
+                source_dir,
+                cache_dir=cache_dir,
+                module_config=config,
+                preprocessor_config=preprocessor_cfg,
+                temp_dir=temp_dir,
+                keep_temp=keep_temp,
+            )
             db.build_database(
-                use_cache=use_cache, rebuild_cache=rebuild_cache, verbose=verbose
+                use_cache=use_cache,
+                rebuild_cache=rebuild_cache,
+                verbose=verbose,
+                preprocess_only=preprocess_only,
             )
 
             progress.update(task, completed=True)
+
+        # If preprocess-only mode, exit after preprocessing
+        if preprocess_only:
+            console.print("\n[bold green]Preprocessing complete![/bold green]")
+            if keep_temp and db.preprocess_stats:
+                # Show where temp files are kept
+                temp_path = temp_dir if temp_dir else ".cache/preprocessed/"
+                console.print(f"[cyan]Preprocessed files kept in: {temp_path}[/cyan]")
+            return
 
         # Print statistics
         stats = db.get_statistics()
