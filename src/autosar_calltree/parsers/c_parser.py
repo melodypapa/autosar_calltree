@@ -14,6 +14,7 @@ Example usage:
 
 import re
 import subprocess
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -21,6 +22,39 @@ from pycparser import c_ast, c_parser
 
 from ..config import PreprocessorConfig
 from ..database.models import FunctionCall, FunctionInfo, FunctionType, Parameter
+
+
+@dataclass
+class ParseResult:
+    """Result of parsing a single file."""
+
+    source_file: Path
+    preprocessed_file: Optional[Path]
+    functions: List[FunctionInfo] = field(default_factory=list)
+    success: bool = True
+    error_message: Optional[str] = None
+    autosar_functions: int = 0
+    traditional_functions: int = 0
+
+
+@dataclass
+class ParseStatistics:
+    """Statistics for parsing stage."""
+
+    total_files: int = 0
+    successful: int = 0
+    failed: int = 0
+    autosar_functions: int = 0
+    traditional_functions: int = 0
+    total_functions: int = 0
+    results: List[ParseResult] = field(default_factory=list)
+
+    @property
+    def correctness_ratio(self) -> float:
+        """Calculate correctness ratio as percentage."""
+        if self.total_files == 0:
+            return 0.0
+        return (self.successful / self.total_files) * 100.0
 
 
 class FunctionVisitor(c_ast.NodeVisitor):
@@ -951,3 +985,205 @@ typedef unsigned long ulong;
                     return True
 
         return False
+
+    def parse_all(
+        self,
+        source_files: List[Path],
+        verbose: bool = True,
+        preprocessed_files: Optional[Dict[Path, Path]] = None,
+    ) -> ParseStatistics:
+        """
+        Parse multiple files with statistics collection.
+
+        Args:
+            source_files: List of source files to parse
+            verbose: Print progress information
+            preprocessed_files: Optional mapping of source_file -> preprocessed_file
+
+        Returns:
+            ParseStatistics with results
+        """
+        stats = ParseStatistics(total_files=len(source_files))
+
+        if verbose:
+            print("=== Parsing Stage ===")
+
+        for idx, source_file in enumerate(source_files, 1):
+            if verbose:
+                print(f"[{idx}/{len(source_files)}] {source_file.name:<30} ", end="")
+
+            # Get preprocessed file path if available
+            preprocessed_file = None
+            if preprocessed_files:
+                preprocessed_file = preprocessed_files.get(source_file)
+
+            result = self.parse_file_with_stats(source_file, preprocessed_file)
+            stats.results.append(result)
+
+            if result.success:
+                stats.successful += 1
+                stats.autosar_functions += result.autosar_functions
+                stats.traditional_functions += result.traditional_functions
+                stats.total_functions += len(result.functions)
+                if verbose:
+                    func_count = len(result.functions)
+                    print(f"OK ({func_count} functions)")
+            else:
+                stats.failed += 1
+                if verbose:
+                    print("FAILED")
+                    if result.error_message:
+                        print(f"    Error: {result.error_message}")
+
+        return stats
+
+    def parse_file_with_stats(
+        self,
+        source_file: Path,
+        preprocessed_file: Optional[Path] = None,
+    ) -> ParseResult:
+        """
+        Parse a single file with statistics collection.
+
+        Args:
+            source_file: Path to source file
+            preprocessed_file: Optional path to preprocessed file
+
+        Returns:
+            ParseResult with outcome and functions
+        """
+        try:
+            # If preprocessed file provided, use it
+            if preprocessed_file and preprocessed_file.exists():
+                functions = self._parse_preprocessed_file(source_file, preprocessed_file)
+            else:
+                # Fall back to regular parsing
+                functions = self.parse_file(source_file)
+
+            # Count function types
+            autosar_count = sum(
+                1 for f in functions
+                if f.function_type in (FunctionType.AUTOSAR_FUNC, FunctionType.AUTOSAR_FUNC_P2VAR, FunctionType.AUTOSAR_FUNC_P2CONST)
+            )
+            traditional_count = len(functions) - autosar_count
+
+            return ParseResult(
+                source_file=source_file,
+                preprocessed_file=preprocessed_file,
+                functions=functions,
+                success=True,
+                autosar_functions=autosar_count,
+                traditional_functions=traditional_count,
+            )
+
+        except Exception as e:
+            return ParseResult(
+                source_file=source_file,
+                preprocessed_file=preprocessed_file,
+                functions=[],
+                success=False,
+                error_message=str(e),
+            )
+
+    def _parse_preprocessed_file(
+        self,
+        source_file: Path,
+        preprocessed_file: Path,
+    ) -> List[FunctionInfo]:
+        """
+        Parse a preprocessed file.
+
+        This method expects the file to already be preprocessed by cpp.
+        It applies regex preprocessing for any remaining AUTOSAR macros.
+
+        Args:
+            source_file: Original source file (for file path in FunctionInfo)
+            preprocessed_file: Path to preprocessed .i file
+
+        Returns:
+            List of FunctionInfo objects
+        """
+        try:
+            content = preprocessed_file.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            return []
+
+        all_functions = []
+        seen_functions = set()
+
+        # First, parse AUTOSAR functions if any
+        if "FUNC(" in content:
+            from .autosar_parser import AutosarParser
+
+            autosar_parser = AutosarParser()
+            lines = content.split("\n")
+            for line_num, line in enumerate(lines, 1):
+                if "FUNC" in line and "(" in line:
+                    autosar_func = autosar_parser.parse_function_declaration(
+                        line, source_file, line_num
+                    )
+                    if autosar_func:
+                        key = (autosar_func.name, autosar_func.line_number)
+                        if key not in seen_functions:
+                            seen_functions.add(key)
+                            all_functions.append(autosar_func)
+
+        # Remove AUTOSAR function declarations before traditional parsing
+        content_for_traditional_c = self._remove_autosar_functions(content)
+
+        # Apply regex preprocessing for any remaining AUTOSAR macros
+        preprocessed = self._preprocess_content(content_for_traditional_c)
+
+        # Check if file contains any traditional C functions
+        if self._has_traditional_c_functions(preprocessed):
+            try:
+                ast = self.parser.parse(preprocessed, filename=str(source_file))
+
+                visitor = FunctionVisitor(source_file, content)
+                visitor.visit(ast)
+
+                for func in visitor.functions:
+                    key = (func.name, func.line_number)
+                    if key not in seen_functions:
+                        seen_functions.add(key)
+                        all_functions.append(func)
+
+            except Exception:
+                pass
+
+        return all_functions
+
+    def get_statistics_summary(self, stats: ParseStatistics) -> str:
+        """
+        Generate a human-readable summary of parsing statistics.
+
+        Args:
+            stats: ParseStatistics to summarize
+
+        Returns:
+            Formatted summary string
+        """
+        lines = [
+            "Parsing Stage:",
+            f"  Files parsed:    {stats.total_files}",
+            f"  Successful:      {stats.successful}",
+            f"  Failed:          {stats.failed}",
+            "",
+            "Functions extracted:",
+            f"  AUTOSAR:       {stats.autosar_functions}",
+            f"  Traditional:   {stats.traditional_functions}",
+            f"  Total:         {stats.total_functions}",
+            "",
+            f"Correctness Ratio: {stats.correctness_ratio:.1f}%",
+        ]
+
+        if stats.failed > 0:
+            lines.append("")
+            lines.append("Failed files:")
+            for result in stats.results:
+                if not result.success:
+                    lines.append(
+                        f"  - {result.source_file.name}: {result.error_message}"
+                    )
+
+        return "\n".join(lines)
