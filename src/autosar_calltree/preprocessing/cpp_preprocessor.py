@@ -24,44 +24,34 @@ from pathlib import Path
 from typing import List, Optional
 
 from ..config import PreprocessorConfig
+from ..utils.statistics import (
+    ProcessingResult,
+    ProcessingStatistics,
+    StatisticsFormatter,
+)
 
 
 @dataclass
-class PreprocessResult:
+class PreprocessResult(ProcessingResult):
     """
     Result of preprocessing a single file.
 
     Implements: SWR_PREPROCESS_00003 (Error visibility and tracking)
     """
 
-    source_file: Path
-    output_file: Optional[Path]  # Path in temp folder, None if failed
-    success: bool
-    error_message: Optional[str] = None
+    output_file: Optional[Path] = None  # Path in temp folder, None if failed
     error_type: Optional[str] = None  # 'cpp_not_found', 'cpp_error', 'timeout'
 
 
 @dataclass
-class PreprocessStatistics:
+class PreprocessStatistics(ProcessingStatistics):
     """
     Statistics for preprocessing stage.
 
     Implements: SWR_PREPROCESS_00002 (Preprocessing metrics collection)
     """
 
-    total_files: int = 0
-    successful: int = 0
-    failed: int = 0
-    skipped: int = 0
-    results: List[PreprocessResult] = field(default_factory=list)
-
-    @property
-    def success_rate(self) -> float:
-        """Calculate success rate as percentage."""
-        processed = self.successful + self.failed
-        if processed == 0:
-            return 0.0
-        return (self.successful / processed) * 100.0
+    results: List[PreprocessResult] = field(default_factory=list)  # type: ignore[assignment]
 
 
 class CPPPreprocessor:
@@ -406,19 +396,4 @@ class CPPPreprocessor:
         Returns:
             Formatted summary string
         """
-        lines = [
-            "Preprocessing Stage:",
-            f"  Files processed: {stats.total_files}",
-            f"  Successful:      {stats.successful}",
-            f"  Failed:          {stats.failed}",
-        ]
-
-        if stats.failed > 0:
-            lines.append("  Failed files:")
-            for result in stats.results:
-                if not result.success:
-                    lines.append(
-                        f"    - {result.source_file.name}: {result.error_message}"
-                    )
-
-        return "\n".join(lines)
+        return StatisticsFormatter.format_summary("Preprocessing Stage", stats)
