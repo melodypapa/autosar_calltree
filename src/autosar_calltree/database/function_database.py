@@ -24,6 +24,7 @@ from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser
 from ..parsers.c_parser import CParser, ParseResult, ParseStatistics
 from ..preprocessing import CPPPreprocessor, PreprocessStatistics
+from ..utils.statistics import StatisticsFormatter
 from .models import FunctionInfo
 
 
@@ -296,18 +297,11 @@ class FunctionDatabase:
         lines = []
 
         if self.preprocess_stats:
-            lines.append("Preprocessing Stage:")
-            lines.append(f"  Files processed: {self.preprocess_stats.total_files}")
-            lines.append(f"  Successful:      {self.preprocess_stats.successful}")
-            lines.append(f"  Failed:          {self.preprocess_stats.failed}")
-
-            if self.preprocess_stats.failed > 0:
-                lines.append("  Failed files:")
-                for result in self.preprocess_stats.results:
-                    if not result.success:
-                        lines.append(
-                            f"    - {result.source_file.name}: {result.error_message}"
-                        )
+            lines.append(StatisticsFormatter.format_summary(
+                "Preprocessing Stage",
+                self.preprocess_stats,
+                show_failures=False
+            ))
 
         if self.parse_stats:
             lines.append("")
