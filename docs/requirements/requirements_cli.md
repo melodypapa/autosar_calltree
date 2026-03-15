@@ -2,7 +2,7 @@
 
 **Package**: `autosar_calltree.cli`
 **Source Files**: `main.py`
-**Requirements**: SWR_CLI_00001 - SWR_CLI_00015 (15 requirements)
+**Requirements**: SWR_CLI_00001 - SWR_CLI_00025 (25 requirements)
 
 ---
 
@@ -32,7 +32,7 @@ The CLI package provides a command-line interface for the AUTOSAR Call Tree Anal
 
 **Flag**: `--start-function` / `-s`
 
-**Required**: Yes
+**Required**: Yes (unless using `--list-functions` or `--search`)
 
 **Validation**: Function must exist in database
 
@@ -209,9 +209,131 @@ The CLI package provides a command-line interface for the AUTOSAR Call Tree Anal
 
 ---
 
-## Error Handling (SWR_CLI_00016 - SWR_CLI_00018)
+## Diagram Feature Options (SWR_CLI_00016 - SWR_CLI_00017)
 
-### SWR_CLI_00016 - Exit Codes
+### SWR_CLI_00016 - Loop Detection Option
+**Purpose**: Enable loop detection in call tree
+
+**Flag**: `--enable-loops`
+
+**Default**: False
+
+**Behavior**: Detect for/while loops and generate loop blocks in diagrams
+
+**Implementation**: Passed to `CallTreeBuilder.build_tree()`
+
+---
+
+### SWR_CLI_00017 - Conditional Detection Option
+**Purpose**: Enable if/else conditional detection in call tree
+
+**Flag**: `--enable-conditionals`
+
+**Default**: False
+
+**Behavior**: Detect if/else blocks and generate opt/alt blocks in diagrams
+
+**Implementation**: Passed to `CallTreeBuilder.build_tree()`
+
+---
+
+## Rhapsody Options (SWR_CLI_00018 - SWR_CLI_00019)
+
+### SWR_CLI_00018 - Rhapsody Package Path Option
+**Purpose**: Specify nested package structure for Rhapsody XMI
+
+**Flag**: `--rhapsody-package-path PATH`
+
+**Default**: None (flat package structure)
+
+**Format**: `Package1/Package2/Package3`
+
+**Behavior**: Creates nested packages in XMI structure
+
+**Implementation**: Passed to `RhapsodyXmiGenerator`
+
+---
+
+### SWR_CLI_00019 - Rhapsody Model Name Option
+**Purpose**: Specify custom UML model name for Rhapsody XMI
+
+**Flag**: `--rhapsody-model-name NAME`
+
+**Default**: `CallTree_{root_function}`
+
+**Behavior**: Sets the UML model name in XMI document
+
+**Implementation**: Passed to `RhapsodyXmiGenerator`
+
+---
+
+## Preprocessor Options (SWR_CLI_00020 - SWR_CLI_00023)
+
+### SWR_CLI_00020 - CPP Configuration Option
+**Purpose**: Specify C preprocessor configuration
+
+**Flag**: `--cpp-config PATH`
+
+**Default**: None (uses regex-based preprocessing)
+
+**Format**: YAML file with preprocessor settings
+
+**Contents**:
+- `command`: CPP executable path
+- `include_dirs`: List of -I directories
+- `extra_flags`: Additional flags (-D, -std, etc.)
+- `enabled`: Enable/disable CPP preprocessing
+
+**Implementation**: Passed to `PreprocessorConfig` and `FunctionDatabase`
+
+---
+
+### SWR_CLI_00021 - Keep Temporary Files Option
+**Purpose**: Keep preprocessed files for debugging
+
+**Flag**: `--keep-temp`
+
+**Default**: False (clean up temp files)
+
+**Behavior**: Preserve .i files in temp directory after processing
+
+**Use Case**: Debug preprocessing issues
+
+**Implementation**: Passed to `CPPPreprocessor`
+
+---
+
+### SWR_CLI_00022 - Temporary Directory Option
+**Purpose**: Specify custom temp directory for preprocessed files
+
+**Flag**: `--temp-dir PATH`
+
+**Default**: System temp directory with `autosar_prep_` prefix
+
+**Behavior**: Store preprocessed .i files in specified directory
+
+**Implementation**: Passed to `CPPPreprocessor`
+
+---
+
+### SWR_CLI_00023 - Preprocess-Only Option
+**Purpose**: Run only preprocessing stage for debugging
+
+**Flag**: `--preprocess-only`
+
+**Default**: False
+
+**Behavior**: Run Stage 1 (preprocessing) only, skip Stage 2 (parsing)
+
+**Use Case**: Debug preprocessing issues without full analysis
+
+**Implementation**: Passed to `FunctionDatabase.build_database()`
+
+---
+
+## Error Handling (SWR_CLI_00024 - SWR_CLI_00025)
+
+### SWR_CLI_00024 - Exit Codes
 **Purpose**: Use standard exit codes
 
 **Codes**:
@@ -223,39 +345,32 @@ The CLI package provides a command-line interface for the AUTOSAR Call Tree Anal
 
 ---
 
-### SWR_CLI_00017 - Error Messages
-**Purpose**: Show user-friendly error messages
+### SWR_CLI_00025 - Error Messages and Interrupt Handling
+**Purpose**: Handle errors and interrupts gracefully
 
-**Messages**:
+**Error Messages**:
 - Clear description of error
 - Suggestions for resolution
 - File/line information when applicable
 
-**Implementation**: Try-except with detailed error reporting
-
----
-
-### SWR_CLI_00018 - Keyboard Interrupt Handling
-**Purpose**: Handle Ctrl+C gracefully
-
-**Behavior**:
+**Keyboard Interrupt**:
 - Cancel current operation
 - Show "Interrupted by user" message
 - Exit with code 130
 
-**Implementation**: Try-except for `KeyboardInterrupt`
+**Implementation**: Try-except blocks with detailed error reporting
 
 ---
 
 ## Summary
 
-**Total Requirements**: 18
+**Total Requirements**: 25
 **Implementation Status**: ✅ All Implemented
 
 **Package Structure**:
 ```
 autosar_calltree.cli/
-└── main.py    # SWR_CLI_00001 - SWR_CLI_00018
+└── main.py    # SWR_CLI_00001 - SWR_CLI_00025
 ```
 
 **Key Features**:
@@ -265,6 +380,7 @@ autosar_calltree.cli/
 - Rich console output
 - Function search and listing
 - Module configuration support
-- Comprehensive error handling
 - Loop and conditional detection options
 - Rhapsody-specific options (package path, model name)
+- Two-stage preprocessing pipeline with CLI options
+- Comprehensive error handling
