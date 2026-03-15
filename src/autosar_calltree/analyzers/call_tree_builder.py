@@ -16,6 +16,7 @@ from ..database.models import (
     CircularDependency,
     FunctionInfo,
 )
+from ..utils.tree_formatter import TreeFormatter
 
 
 class CallTreeBuilder:
@@ -359,42 +360,4 @@ class CallTreeBuilder:
         Returns:
             Text representation as string
         """
-        lines = []
-
-        def traverse(node: CallTreeNode, prefix: str = "", is_last: bool = True):
-            # Build line for current node
-            connector = "└── " if is_last else "├── "
-
-            func_name = node.function_info.name
-            if show_file:
-                file_name = Path(node.function_info.file_path).name
-                line = f"{prefix}{connector}{func_name} ({file_name}:{node.function_info.line_number})"
-            else:
-                line = f"{prefix}{connector}{func_name}"
-
-            if node.is_recursive:
-                line += " [RECURSIVE]"
-
-            lines.append(line)
-
-            # Build lines for children
-            if node.children:
-                new_prefix = prefix + ("    " if is_last else "│   ")
-                for idx, child in enumerate(node.children):
-                    is_last_child = idx == len(node.children) - 1
-                    traverse(child, new_prefix, is_last_child)
-
-        # Start with root (no prefix)
-        func_name = root.function_info.name
-        if show_file:
-            file_name = Path(root.function_info.file_path).name
-            lines.append(f"{func_name} ({file_name}:{root.function_info.line_number})")
-        else:
-            lines.append(func_name)
-
-        # Add children
-        for idx, child in enumerate(root.children):
-            is_last = idx == len(root.children) - 1
-            traverse(child, "", is_last)
-
-        return "\n".join(lines)
+        return TreeFormatter.format_tree(root, show_file=show_file, show_line=show_file)
