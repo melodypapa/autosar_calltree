@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from ..database.models import AnalysisResult, CallTreeNode, FunctionInfo
+from ..utils.tree_formatter import TreeFormatter
 
 
 class MermaidGenerator:
@@ -434,34 +435,7 @@ class MermaidGenerator:
             Markdown formatted text tree
         """
         lines = ["## Call Tree (Text)\n", "```"]
-
-        def traverse(node: CallTreeNode, prefix: str = "", is_last: bool = True):
-            connector = "└── " if is_last else "├── "
-
-            func_name = node.function_info.name
-            file_name = Path(node.function_info.file_path).name
-            line = f"{prefix}{connector}{func_name} ({file_name}:{node.function_info.line_number})"
-
-            if node.is_recursive:
-                line += " [RECURSIVE]"
-
-            lines.append(line)
-
-            if node.children:
-                new_prefix = prefix + ("    " if is_last else "│   ")
-                for idx, child in enumerate(node.children):
-                    is_last_child = idx == len(node.children) - 1
-                    traverse(child, new_prefix, is_last_child)
-
-        # Start with root
-        func_name = root.function_info.name
-        file_name = Path(root.function_info.file_path).name
-        lines.append(f"{func_name} ({file_name}:{root.function_info.line_number})")
-
-        for idx, child in enumerate(root.children):
-            is_last = idx == len(root.children) - 1
-            traverse(child, "", is_last)
-
+        lines.append(TreeFormatter.format_tree(root, show_file=True, show_line=True))
         lines.append("```\n")
         return "\n".join(lines)
 
