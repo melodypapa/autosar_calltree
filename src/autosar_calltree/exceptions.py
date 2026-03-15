@@ -7,7 +7,6 @@ and handling throughout the codebase.
 
 from typing import Optional
 
-
 __all__ = [
     "AutosarCalltreeError",
     "ParseError",
