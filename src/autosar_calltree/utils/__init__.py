@@ -5,9 +5,11 @@ from .statistics import (
     ProcessingStatistics,
     StatisticsFormatter,
 )
+from .tree_formatter import TreeFormatter
 
 __all__ = [
     "ProcessingResult",
     "ProcessingStatistics",
     "StatisticsFormatter",
+    "TreeFormatter",
 ]
