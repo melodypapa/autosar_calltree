@@ -64,6 +64,7 @@ class FunctionDatabase:
         source_dir: str,
         cache_dir: Optional[str] = None,
         module_config: Optional[ModuleConfig] = None,
+        include_dirs: Optional[List[str]] = None,
     ):
         """
         Initialize the function database.
@@ -72,6 +73,7 @@ class FunctionDatabase:
             source_dir: Root directory containing source files
             cache_dir: Directory for cache files (default: .cache in source_dir)
             module_config: Module configuration for SW module mappings
+            include_dirs: List of include directories for header resolution
         """
         self.source_dir = Path(source_dir)
 
@@ -94,9 +96,13 @@ class FunctionDatabase:
         # All functions by file
         self.functions_by_file: Dict[str, List[FunctionInfo]] = {}
 
+        # Detect include directories if not provided
+        if include_dirs is None:
+            include_dirs = self._detect_include_dirs()
+        
         # Parsers
         self.autosar_parser = AutosarParser()
-        self.c_parser = ClangParser()
+        self.c_parser = ClangParser(include_dirs=include_dirs)
         self.parser_type = "clang"
 
         # Module configuration
@@ -107,6 +113,43 @@ class FunctionDatabase:
         self.total_files_scanned = 0
         self.total_functions_found = 0
         self.parse_errors: List[str] = []
+
+    def _detect_include_dirs(self) -> List[str]:
+        """
+        Auto-detect include directories.
+        
+        Looks for common include directory patterns:
+        - <source_dir>/include
+        - <source_dir>/../include
+        - <source_dir>/../../include
+        - <source_dir>/../../infras/include (AUTOSAR pattern)
+        
+        Returns:
+            List of detected include directory paths
+        """
+        include_dirs = []
+        
+        # Check for include directory in source_dir
+        include_in_source = self.source_dir / "include"
+        if include_in_source.exists() and include_in_source.is_dir():
+            include_dirs.append(str(include_in_source))
+        
+        # Check for include directory in parent
+        parent_include = self.source_dir.parent / "include"
+        if parent_include.exists() and parent_include.is_dir():
+            include_dirs.append(str(parent_include))
+        
+        # Check for include directory in grandparent
+        grandparent_include = self.source_dir.parent.parent / "include"
+        if grandparent_include.exists() and grandparent_include.is_dir():
+            include_dirs.append(str(grandparent_include))
+        
+        # Check for AUTOSAR pattern: ../../infras/include
+        infras_include = self.source_dir.parent.parent / "infras" / "include"
+        if infras_include.exists() and infras_include.is_dir():
+            include_dirs.append(str(infras_include))
+        
+        return include_dirs
 
     def build_database(
         self,

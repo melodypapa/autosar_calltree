@@ -62,4 +62,18 @@ class ClangParser:
             args.extend(['-I', inc_dir])
         
         args.extend(self.compiler_flags)
+        
+        # Add common system include directories
+        # These are typical locations for system headers on Unix-like systems
+        system_includes = [
+            '/usr/include',
+            '/usr/local/include',
+            '/opt/homebrew/include',  # macOS with Homebrew
+        ]
+        
+        for sys_inc in system_includes:
+            import os
+            if os.path.exists(sys_inc):
+                args.extend(['-I', sys_inc])
+        
         return args
