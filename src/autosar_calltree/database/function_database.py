@@ -19,7 +19,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..config import PreprocessorConfig
 from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser
 from ..parsers.clang_parser import ClangParser
