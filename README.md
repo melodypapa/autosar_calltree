@@ -26,6 +26,38 @@ A powerful Python package to analyze C/AUTOSAR codebases and generate function c
 
 ## What's New
 
+### Version 0.12.0 (2026-05-31)
+
+**🎉 Major Migration: Clang Parser for Enhanced Accuracy**
+
+This release migrates from pycparser to clang (libclang) for significantly improved parsing accuracy and robustness.
+
+**New Features**:
+- 🔧 **Clang-based Parser**: Uses libclang for production-grade C parsing
+- 🎯 **Built-in Preprocessing**: No external preprocessor configuration needed
+- 📊 **Enhanced AST Analysis**: More accurate function call extraction
+- 🚀 **Improved Macro Handling**: Better AUTOSAR macro support through clang's preprocessing
+
+**Benefits**:
+- ✅ More accurate parsing of complex C code constructs
+- ✅ Better handling of compiler-specific extensions
+- ✅ Improved macro expansion and resolution
+- ✅ No need for separate preprocessing step
+- ✅ All 396 tests passing with 94% code coverage
+
+**Technical Changes**:
+- Replaced pycparser with libclang>=16.0.0
+- Removed preprocessing pipeline (--cpp-config, --keep-temp, --temp-dir, --preprocess-only options)
+- New `ClangParser` and `ClangFunctionVisitor` classes
+- Simplified `FunctionDatabase` initialization
+
+**Breaking Changes**:
+- Removed CLI options: `--cpp-config`, `--keep-temp`, `--temp-dir`, `--preprocess-only`
+- Removed `PreprocessorConfig` class
+- Removed preprocessing-related code from database and CLI
+
+---
+
 ### Version 0.8.3 (2026-03-05)
 
 **🎉 Major Feature: Comprehensive C Comment Removal with String Literal Protection**
@@ -207,6 +239,33 @@ sequenceDiagram
 - 298 tests passing with 89% code coverage
 
 ## Changelog
+
+### [Version 0.12.0] - 2026-05-31
+
+#### Added
+- **Clang-based C parser**: Migrated from pycparser to libclang for production-grade parsing
+- **ClangParser class**: New parser using libclang for accurate AST analysis
+- **ClangFunctionVisitor class**: AST visitor for extracting function definitions and calls
+- **Built-in preprocessing**: No external preprocessor configuration required
+- **Enhanced macro handling**: Better AUTOSAR macro support through clang's preprocessing
+
+#### Removed
+- **PreprocessorConfig class**: No longer needed with clang's built-in preprocessing
+- **CLI preprocessing options**: Removed `--cpp-config`, `--keep-temp`, `--temp-dir`, `--preprocess-only`
+- **Preprocessing pipeline**: Simplified architecture with clang handling preprocessing internally
+
+#### Changed
+- **FunctionDatabase initialization**: Simplified to remove preprocessing parameters
+- **Parser architecture**: Replaced pycparser with clang throughout the codebase
+- **Dependencies**: Replaced pycparser with libclang>=16.0.0
+
+#### Technical
+- All 396 tests passing with 94% code coverage
+- ClangParser coverage: 95%
+- ClangFunctionVisitor coverage: 97%
+- FunctionDatabase coverage: 97%
+
+---
 
 ### [Version 0.8.3] - 2026-03-05
 
