@@ -10,6 +10,9 @@ from clang.cindex import Index, TranslationUnit
 from pathlib import Path
 from typing import List, Optional
 
+from .clang_function_visitor import ClangFunctionVisitor
+from ..database.models import FunctionInfo
+
 
 class ClangParser:
     """C parser using libclang for maximum accuracy."""
@@ -30,7 +33,7 @@ class ClangParser:
         self.include_dirs = include_dirs or []
         self.compiler_flags = compiler_flags or []
     
-    def parse_file(self, file_path: Path) -> List:
+    def parse_file(self, file_path: Path) -> List[FunctionInfo]:
         """
         Parse a C source file and extract all function definitions.
         
@@ -38,6 +41,25 @@ class ClangParser:
             file_path: Path to the C source file
             
         Returns:
-            List of FunctionInfo objects (placeholder for now)
+            List of FunctionInfo objects
         """
-        return []
+        args = self._get_clang_args()
+        
+        tu = self.index.parse(
+            str(file_path),
+            args=args,
+            options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
+        )
+        
+        visitor = ClangFunctionVisitor(file_path, tu)
+        return visitor.extract_functions()
+    
+    def _get_clang_args(self) -> List[str]:
+        """Build clang compiler arguments."""
+        args = ['-fsyntax-only']
+        
+        for inc_dir in self.include_dirs:
+            args.extend(['-I', inc_dir])
+        
+        args.extend(self.compiler_flags)
+        return args
