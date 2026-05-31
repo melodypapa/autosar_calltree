@@ -746,6 +746,11 @@ class TestQueryMethods:
                 src = Path("./demo/src") / filename
                 if src.exists():
                     shutil.copy(src, temp_path / filename)
+            
+            # Also copy the demo.h header file for AUTOSAR macros
+            demo_h = Path("./demo/src") / "demo.h"
+            if demo_h.exists():
+                shutil.copy(demo_h, temp_path / "demo.h")
 
             db = FunctionDatabase(source_dir=str(temp_path))
             db.build_database(use_cache=False, verbose=False)
@@ -796,6 +801,11 @@ class TestQueryMethods:
                 src = Path("./demo/src") / filename
                 if src.exists():
                     shutil.copy(src, temp_path / filename)
+            
+            # Also copy the demo.h header file for AUTOSAR macros
+            demo_h = Path("./demo/src") / "demo.h"
+            if demo_h.exists():
+                shutil.copy(demo_h, temp_path / "demo.h")
 
             db = FunctionDatabase(source_dir=str(temp_path))
             db.build_database(use_cache=False, verbose=False)
