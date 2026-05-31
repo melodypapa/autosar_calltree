@@ -5,7 +5,6 @@ This module uses clang for accurate parsing of C code with built-in
 preprocessing and comprehensive AST analysis.
 """
 
-import clang.cindex
 from clang.cindex import Index, TranslationUnit
 from pathlib import Path
 from typing import List, Optional

@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional
 from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser
 from ..parsers.clang_parser import ClangParser
-from ..utils.statistics import StatisticsFormatter
 from .models import FunctionInfo
 
 
