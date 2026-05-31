@@ -81,7 +81,13 @@ class ClangFunctionVisitor:
             calls=[]
         )
         
+        self.current_function = func_info
+        
+        # Extract calls from function body
+        self._extract_calls_from_body(cursor)
+        
         self.functions.append(func_info)
+        self.current_function = None
     
     def _extract_parameters(self, cursor: Cursor) -> List[Parameter]:
         """Extract function parameters."""
@@ -96,3 +102,33 @@ class ClangFunctionVisitor:
             )
             params.append(param)
         return params
+    
+    def _extract_calls_from_body(self, cursor: Cursor):
+        """Extract all function calls from function body."""
+        for child in cursor.get_children():
+            self._extract_calls_recursive(child)
+    
+    def _extract_calls_recursive(self, cursor: Cursor):
+        """Recursively extract calls from AST nodes."""
+        if cursor.kind == CursorKind.CALL_EXPR:
+            self._handle_call_expr(cursor)
+        
+        for child in cursor.get_children():
+            self._extract_calls_recursive(child)
+    
+    def _handle_call_expr(self, cursor: Cursor):
+        """Handle function call expression."""
+        if not self.current_function:
+            return
+        
+        callee_name = cursor.spelling
+        
+        if callee_name in self.C_KEYWORDS:
+            return
+        
+        call = FunctionCall(
+            name=callee_name,
+            line_number=cursor.location.line
+        )
+        
+        self.current_function.calls.append(call)
