@@ -66,6 +66,9 @@ class ClangFunctionVisitor:
         if not cursor.is_definition():
             return  # Skip declarations, only process definitions
         
+        # Extract parameters
+        parameters = self._extract_parameters(cursor)
+        
         # Extract function info
         func_info = FunctionInfo(
             name=cursor.spelling,
@@ -74,8 +77,22 @@ class ClangFunctionVisitor:
             line_number=cursor.location.line,
             is_static=cursor.storage_class == clang.cindex.StorageClass.STATIC,
             function_type=FunctionType.TRADITIONAL_C,
-            parameters=[],
+            parameters=parameters,
             calls=[]
         )
         
         self.functions.append(func_info)
+    
+    def _extract_parameters(self, cursor: Cursor) -> List[Parameter]:
+        """Extract function parameters."""
+        params = []
+        for arg in cursor.get_arguments():
+            param_type = arg.type.spelling
+            param = Parameter(
+                name=arg.spelling,
+                param_type=param_type,
+                is_pointer='*' in param_type,
+                is_const='const' in param_type
+            )
+            params.append(param)
+        return params

@@ -30,3 +30,26 @@ void simple_function(void) {
     assert isinstance(functions[0], FunctionInfo)
     assert functions[0].name == 'simple_function'
     assert functions[0].return_type == 'void'
+
+
+def test_clang_parser_extract_parameters():
+    """Test that ClangParser extracts function parameters."""
+    parser = ClangParser()
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.c', delete=False) as f:
+        f.write("""
+int add(int a, int b) {
+    return a + b;
+}
+""")
+        fixture_path = Path(f.name)
+    
+    functions = parser.parse_file(fixture_path)
+    
+    assert len(functions) == 1
+    assert functions[0].name == 'add'
+    assert len(functions[0].parameters) == 2
+    assert functions[0].parameters[0].name == 'a'
+    assert functions[0].parameters[0].param_type == 'int'
+    assert functions[0].parameters[1].name == 'b'
+    assert functions[0].parameters[1].param_type == 'int'
