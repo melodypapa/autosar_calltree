@@ -9,7 +9,7 @@ from .analyzers.call_tree_builder import CallTreeBuilder
 from .database.function_database import FunctionDatabase
 from .generators.mermaid_generator import MermaidGenerator
 from .parsers.autosar_parser import AutosarParser
-from .parsers.c_parser import CParser
+from .parsers.clang_parser import ClangParser
 from .version import __author__, __email__, __version__
 
 __all__ = [
@@ -20,5 +20,5 @@ __all__ = [
     "CallTreeBuilder",
     "MermaidGenerator",
     "AutosarParser",
-    "CParser",
+    "ClangParser",
 ]

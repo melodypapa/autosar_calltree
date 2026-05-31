@@ -19,12 +19,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..config import PreprocessorConfig
 from ..config.module_config import ModuleConfig
 from ..parsers.autosar_parser import AutosarParser
-from ..parsers.c_parser import CParser, ParseResult, ParseStatistics
-from ..preprocessing import CPPPreprocessor, PreprocessStatistics
-from ..utils.statistics import StatisticsFormatter
+from ..parsers.clang_parser import ClangParser
 from .models import FunctionInfo
 
 
@@ -66,9 +63,7 @@ class FunctionDatabase:
         source_dir: str,
         cache_dir: Optional[str] = None,
         module_config: Optional[ModuleConfig] = None,
-        preprocessor_config: Optional[PreprocessorConfig] = None,
-        temp_dir: Optional[str] = None,
-        keep_temp: bool = False,
+        include_dirs: Optional[List[str]] = None,
     ):
         """
         Initialize the function database.
@@ -77,9 +72,7 @@ class FunctionDatabase:
             source_dir: Root directory containing source files
             cache_dir: Directory for cache files (default: .cache in source_dir)
             module_config: Module configuration for SW module mappings
-            preprocessor_config: Preprocessor configuration for cpp settings
-            temp_dir: Directory for temporary preprocessed files
-            keep_temp: Whether to keep temporary files after processing
+            include_dirs: List of include directories for header resolution
         """
         self.source_dir = Path(source_dir)
 
@@ -102,35 +95,66 @@ class FunctionDatabase:
         # All functions by file
         self.functions_by_file: Dict[str, List[FunctionInfo]] = {}
 
+        # Detect include directories if not provided
+        if include_dirs is None:
+            include_dirs = self._detect_include_dirs()
+        
         # Parsers
         self.autosar_parser = AutosarParser()
-        self.c_parser = CParser(preprocessor_config=preprocessor_config)
-        self.parser_type = "pycparser"
+        self.c_parser = ClangParser(include_dirs=include_dirs)
+        self.parser_type = "clang"
 
         # Module configuration
         self.module_config = module_config
         self.module_stats: Dict[str, int] = {}
-
-        # Preprocessor configuration
-        self.preprocessor_config = preprocessor_config
-        self.temp_dir = Path(temp_dir) if temp_dir else None
-        self.keep_temp = keep_temp
 
         # Statistics
         self.total_files_scanned = 0
         self.total_functions_found = 0
         self.parse_errors: List[str] = []
 
-        # Two-stage pipeline statistics
-        self.preprocess_stats: Optional[PreprocessStatistics] = None
-        self.parse_stats: Optional[ParseStatistics] = None
+    def _detect_include_dirs(self) -> List[str]:
+        """
+        Auto-detect include directories.
+        
+        Looks for common include directory patterns:
+        - <source_dir>/include
+        - <source_dir>/../include
+        - <source_dir>/../../include
+        - <source_dir>/../../infras/include (AUTOSAR pattern)
+        
+        Returns:
+            List of detected include directory paths
+        """
+        include_dirs = []
+        
+        # Check for include directory in source_dir
+        include_in_source = self.source_dir / "include"
+        if include_in_source.exists() and include_in_source.is_dir():
+            include_dirs.append(str(include_in_source))
+        
+        # Check for include directory in parent
+        parent_include = self.source_dir.parent / "include"
+        if parent_include.exists() and parent_include.is_dir():
+            include_dirs.append(str(parent_include))
+        
+        # Check for include directory in grandparent
+        grandparent_include = self.source_dir.parent.parent / "include"
+        if grandparent_include.exists() and grandparent_include.is_dir():
+            include_dirs.append(str(grandparent_include))
+        
+        # Check for AUTOSAR pattern: ../../infras/include
+        infras_include = self.source_dir.parent.parent / "infras" / "include"
+        if infras_include.exists() and infras_include.is_dir():
+            include_dirs.append(str(infras_include))
+        
+        return include_dirs
 
     def build_database(
         self,
         use_cache: bool = True,
         rebuild_cache: bool = False,
         verbose: bool = False,
-        preprocess_only: bool = False,
     ) -> None:
         """
         Build the function database by scanning all source files.
@@ -139,7 +163,6 @@ class FunctionDatabase:
             use_cache: Whether to use cached data if available
             rebuild_cache: Force rebuild of cache even if valid
             verbose: Print progress information
-            preprocess_only: Only run preprocessing stage (for debugging)
         """
         if verbose:
             print(f"Scanning source directory: {self.source_dir}")
@@ -169,81 +192,12 @@ class FunctionDatabase:
         # Print build progress message before processing files
         print(f"Building function database from {self.source_dir}...")
 
-        # Use two-stage pipeline if preprocessor config is provided and enabled
-        if self.preprocessor_config and self.preprocessor_config.enabled:
-            self._build_with_two_stage_pipeline(c_files, verbose, preprocess_only)
-        else:
-            # Fall back to single-stage processing
-            self._build_with_single_stage(c_files, verbose)
+        # Parse all files with ClangParser
+        self._build_with_single_stage(c_files, verbose)
 
         # Save to cache
-        if use_cache and not preprocess_only:
+        if use_cache:
             self._save_to_cache(verbose)
-
-    def _build_with_two_stage_pipeline(
-        self,
-        c_files: List[Path],
-        verbose: bool,
-        preprocess_only: bool,
-    ) -> None:
-        """
-        Build database using two-stage preprocessing and parsing pipeline.
-
-        Args:
-            c_files: List of C source files to process
-            verbose: Print progress information
-            preprocess_only: Only run preprocessing stage
-        """
-        # Stage 1: Preprocess all files
-        preprocessor = CPPPreprocessor(
-            config=self.preprocessor_config,
-            temp_dir=self.temp_dir,
-            keep_temp=self.keep_temp,
-        )
-
-        self.preprocess_stats = preprocessor.preprocess_all(c_files, verbose=verbose)
-
-        print(self.c_parser.get_statistics_summary(
-            self._convert_prep_stats_to_parse_format(self.preprocess_stats)
-        ))
-
-        if preprocess_only:
-            print("\nPreprocessing only mode - skipping parsing stage")
-            return
-
-        # Build mapping of source files to preprocessed files
-        preprocessed_files: Dict[Path, Path] = {}
-        for result in self.preprocess_stats.results:
-            if result.success and result.output_file:
-                preprocessed_files[result.source_file] = result.output_file
-
-        # Stage 2: Parse preprocessed files
-        self.parse_stats = self.c_parser.parse_all(
-            source_files=c_files,
-            verbose=verbose,
-            preprocessed_files=preprocessed_files,
-        )
-
-        # Add functions from parse results to database
-        parse_results: List[ParseResult] = self.parse_stats.results
-        for parse_result in parse_results:
-            for func_info in parse_result.functions:
-                self._add_function(func_info)
-
-            # Track functions by file
-            if parse_result.functions:
-                file_key = str(parse_result.source_file)
-                self.functions_by_file[file_key] = parse_result.functions
-
-        self.total_files_scanned = len(c_files)
-
-        # Clean up temp files if not keeping them
-        if not self.keep_temp:
-            preprocessor.cleanup()
-
-        # Print summary
-        print("\n=== Summary ===")
-        print(self._get_pipeline_summary())
 
     def _build_with_single_stage(
         self,
@@ -279,54 +233,6 @@ class FunctionDatabase:
             print(f"  - Functions found: {self.total_functions_found}")
             print(f"  - Unique function names: {len(self.functions)}")
             print(f"  - Parse errors: {len(self.parse_errors)}")
-
-    def _convert_prep_stats_to_parse_format(
-        self, prep_stats: PreprocessStatistics
-    ) -> ParseStatistics:
-        """Convert preprocessing stats to parse stats format for display."""
-        from ..parsers.c_parser import ParseStatistics
-
-        return ParseStatistics(
-            total_files=prep_stats.total_files,
-            successful=prep_stats.successful,
-            failed=prep_stats.failed,
-        )
-
-    def _get_pipeline_summary(self) -> str:
-        """Generate summary of two-stage pipeline results."""
-        lines = []
-
-        if self.preprocess_stats:
-            lines.append(StatisticsFormatter.format_summary(
-                "Preprocessing Stage",
-                self.preprocess_stats,
-                show_failures=False
-            ))
-
-        if self.parse_stats:
-            lines.append("")
-            lines.append("Parsing Stage:")
-            lines.append(f"  Files parsed:    {self.parse_stats.total_files}")
-            lines.append(f"  Successful:      {self.parse_stats.successful}")
-            lines.append(f"  Failed:          {self.parse_stats.failed}")
-            lines.append("")
-            lines.append("Functions extracted:")
-            lines.append(f"  AUTOSAR:       {self.parse_stats.autosar_functions}")
-            lines.append(f"  Traditional:   {self.parse_stats.traditional_functions}")
-            lines.append(f"  Total:         {self.parse_stats.total_functions}")
-            lines.append("")
-            lines.append(f"Correctness Ratio: {self.parse_stats.correctness_ratio:.1f}%")
-
-            if self.parse_stats.failed > 0:
-                lines.append("")
-                lines.append("Failed files:")
-                for parse_result in self.parse_stats.results:
-                    if not parse_result.success:
-                        lines.append(
-                            f"  - {parse_result.source_file.name}: {parse_result.error_message}"
-                        )
-
-        return "\n".join(lines)
 
     def _parse_file(self, file_path: Path) -> None:
         """
